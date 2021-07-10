@@ -1,0 +1,50 @@
+&fuellist
+! ----------------------------------
+! FIRETEC domain info
+! ----------------------------------
+      nx=200 ny=200 nz=41     ! Size of HIGRAD/FIRETEC grid [cells]
+      dx=2.0 dy=2.0 dz=15.0   ! Grid Resolution [m]
+      aa1=0.1                 ! Vertical stretching component [default=0.1]
+      topofile='flat'  	      ! 'flat' -> no topo, 'name.dat' of topo file for topo
+
+! ----------------------------------
+! Data import from existing files
+! ----------------------------------
+      ifuelin=0                     ! Fuel read-in flag (0 no existing fuel files, 1 read-in exisiting fuel files)
+      inx=1500 iny=1500 inz=128     ! Size of HIGRAD/FIRETEC grid [cells]
+      idx=2.0 idy=2.0 idz=1.0       ! Grid Resolution [m]
+      iaa1=0.0                      ! Vertical stretching component [default=0.1]
+      infuel=1                      ! Number of Fuel Types
+      rhoffile='rhof.dat.orig'      ! Existing rhof fuel file
+      ssfile='sav.dat.orig'         ! Existing sizescale fuel file
+      moistfile='moisture.dat.orig' ! Existing moisture fuel file
+      afdfile='depth.dat.orig'      ! Existing depth fuel file
+
+! ----------------------------------
+! Input dataset info
+! ----------------------------------
+      igrass=1                ! Grass flag (1 is generalized grass data, 2 is if already have a file with 2d arrays for groundfuels)
+      ngrass=1                ! Number of Grass Species
+      grassconstant=5         ! Exponential constant used to determine the decay of grass mass with tree shading
+      grassfile='grass.txt'   ! Grass text file with generalized-data
+
+      itrees=1                ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
+      ntspecies=2             ! Number of Tree Species
+      tfuelbins=1             ! Number of size bins to distribute branches
+      treefile='treelist.txt' ! Trees text file with data
+      tdnx=                   ! Range of x cells with trees (if unspecified then whole domain)
+      tdny=                   ! Range of y cells with trees (if unspecified then whole domain)
+
+      ilitter=1               ! Litter flag
+      litterconstant=5        ! Exponential constant to determine increase of litter mass under trees
+      litterfile='litter.txt' ! Litter text file with generalized-data
+
+      itreatment=0            ! Treatment flag (0 is no treatment, 1 slashlayer, 2 slashpile, 3 clearing)
+      sdnx=25,75              ! Range of x cells undergoing treatment
+      sdny=25,75              ! Range of y cells undergoing treatment
+      sdiameter=25            ! Diameter of slashpiles
+      sheight=15              ! Height of slashpiles
+      sprho=30                ! Bulk density of slashpiles
+      smoist=0.15             ! Moisture content of slash
+      sdepth=0.2              ! Depth of slash layer
+/
