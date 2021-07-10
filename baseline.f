@@ -61,8 +61,7 @@
         print*,'Filling Litter Baseline'
         call litter_baseline
         do ift=1,ntspecies
-          if (sum(trhof(ift,:,:,1)).lt.sum(trhof(ift,:,:,:))*0.01
-     +      .and.ldepth(ift).lt.zcart(1*dz,0)) then
+          if (sum(trhof(ift,:,:,1)).lt.sum(trhof(ift,:,:,:))*0.01) then
             print*,'Little to no fuel from tree type',ift,'in first cell combining with litter'
             do i=1,nx
               do j=1,ny
@@ -86,7 +85,7 @@
           endif
         enddo
       endif
-      
+
       end subroutine baseline
       
       subroutine grass_baseline
@@ -344,7 +343,7 @@
           enddo
         enddo
       endif
-      print*,'Trees target fuel mass:',target_mass,t1bulkdensity,tcrowndiameter(1,:),theight(1,:),tcrownbotheight(1,:)
+      print*,'Trees target fuel mass:',target_mass
       actual_mass = 0
       do ift=1,ntspecies*tfuelbins
         do i=tdnx(1),tdnx(2)
@@ -428,7 +427,7 @@
       do i=1,ntspecies
         target_mass = target_mass + ntrees(i)*ldepth(i)*PI*tcrowndiameter(1,i)**2.*lrho(i)/4.
       enddo
-      print*,'Litter target fuel mass:',target_mass,ntrees,ldepth,tcrowndiameter,lrho
+      print*,'Litter target fuel mass:',target_mass
       actual_mass = 0
       do ift=1,ntspecies
         do i=1,nx
