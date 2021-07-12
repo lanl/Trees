@@ -20,7 +20,7 @@
       call define_grid_variables
       
       !-----Fuel Read-in
-      if(ifuelin.eq.1) call fuel_readin
+      if(ifuelin.ne.0) call fuel_readin
 
       !-----Establish baseline
       call baseline
