@@ -29,6 +29,10 @@
       if(itreatment.eq.1) call treatment
       
       !-----Export data to binary files
-      call output
+      if(singlefuel.eq.1)then
+        call output_1fuel
+      else
+        call output_nfuel
+      endif
 
       end

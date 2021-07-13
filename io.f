@@ -15,7 +15,7 @@
       implicit none
 
       namelist/fuellist/
-     .   nx,ny,nz,dx,dy,dz,aa1,topofile,
+     .   nx,ny,nz,dx,dy,dz,aa1,singlefuel,topofile,
      .   ifuelin,rhoffile,moistfile,ssfile,afdfile,
      .   inx,iny,inz,idx,idy,idz,iaa1,infuel,
      .   igrass,ngrass,grassconstant,grassfile,
@@ -78,7 +78,7 @@
 
       end subroutine namelist_input
 
-      subroutine output
+      subroutine output_nfuel
       !-----------------------------------------------------------------
       ! output is a function which writes the .dat files for use in 
       ! FIRETEC or QUIC-Fire
@@ -128,4 +128,58 @@
       print*,'Your nfuel is',int(sum(nonzero(:)))
       print*,'Your lfuel is',lfuel
       
-      end subroutine output
+      end subroutine output_nfuel
+      
+      subroutine output_1fuel
+      !-----------------------------------------------------------------
+      ! output_1fuel is a function which writes the .dat files for use in 
+      ! FIRETEC or QUIC-Fire but combines all fuels into a single fuel
+      ! type.
+      !-----------------------------------------------------------------
+      use grid_variables
+      implicit none
+      integer ift,i,j,k,lfuel
+      real,allocatable :: srhof(:,:,:),sss(:,:,:),smoist(:,:,:),safd(:,:,:)
+      
+      allocate(srhof(nx,ny,nz))
+      allocate(sss(nx,ny,nz))
+      allocate(smoist(nx,ny,nz))
+      allocate(safd(nx,ny,nz))
+      do i=1,nx
+        do j=1,ny
+          do k=1,nz
+            do ift=1,nfuel
+              if(rhof(ift,i,j,k).gt.0)then
+                sss(i,j,k)=(sss(i,j,k)*srhof(i,j,k)+sizescale(ift,i,j,k)*rhof(ift,i,j,k))
+     &            /(srhof(i,j,k)+rhof(ift,i,j,k))
+                smoist(i,j,k)=(smoist(i,j,k)*srhof(i,j,k)+moist(ift,i,j,k)*rhof(ift,i,j,k))
+     &            /(srhof(i,j,k)+rhof(ift,i,j,k))
+                safd(i,j,k)=(safd(i,j,k)*srhof(i,j,k)+fueldepth(ift,i,j,k)*rhof(ift,i,j,k))
+     &            /(srhof(i,j,k)+rhof(ift,i,j,k))
+                srhof(i,j,k)=srhof(i,j,k)+rhof(ift,i,j,k)
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
+
+      print*,'Exporting data to .dat files'
+      open (1,file='treesrhof.dat',form='unformatted',status='unknown')
+      write (1) srhof
+      close (1)
+
+      open (1,file='treesfueldepth.dat',form='unformatted',status='unknown')
+      write (1) safd
+      close (1)
+
+      open (1,file='treesss.dat',form='unformatted',status='unknown')
+      write (1) sss
+      close (1)
+
+      open (1,file='treesmoist.dat',form='unformatted',status='unknown')
+      write (1) smoist
+      close (1)
+
+      print*,'Your nfuel is 1'
+      
+      end subroutine output_1fuel

@@ -26,7 +26,8 @@ nz            -- Required             -- Number of cells in the z-dimension
 dx            -- Required             -- Spacing of cells in the x-dimension (m)
 dy            -- Required             -- Spacing of cells in the y-dimension (m)
 dz            -- Required             -- Spacing of cells in the z-dimension before stretching (m)
-aa1           -- 0.1                  -- Vertical stretching component defined in zcart function of metryc.f, 0 if no stretching or no topo to vertical size.
+aa1           -- 0.1                  -- Vertical stretching component defined in zcart function of metryc.f, 0 if no stretching or no topo to vertical size
+singlefuel    -- 0                    -- Flag for averaging cells' fuels into a single fuel type
 topofile      -- ‘flat’               -- Name of topo file to be read in if using  topography
 !-------------------------------------------------------------------------------------------------
 ifuelin       -- 0                    -- Flag for reading existing fuel data files

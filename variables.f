@@ -21,7 +21,7 @@
       integer nx,ny,nz
       real    dx,dy,dz
       real    aa1
-      integer nfuel,zmax
+      integer nfuel,zmax,singlefuel
       real,allocatable:: rhof(:,:,:,:),sizescale(:,:,:,:),moist(:,:,:,:),fueldepth(:,:,:,:)
       real,allocatable:: zs(:,:),zheight(:,:,:)
       character:: topofile*50
