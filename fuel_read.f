@@ -1,16 +1,3 @@
-      subroutine fuel_readin
-      !-----------------------------------------------------------------
-      ! fuel_readin is a function calls various readins for different
-      ! types of existing files
-      !-----------------------------------------------------------------
-      use infile_variables
-      implicit none
-      
-      if(ifuelin.eq.1) call grid_readin
-      if(ifuelin.eq.2) call json_readin
-      
-      end subroutine fuel_readin
-
       subroutine grid_readin
       !-----------------------------------------------------------------
       ! grid_readin is a function which reads in .dat files for use in 
@@ -157,41 +144,3 @@
       deallocate(iafd)
       
       end subroutine grid_readin
-      
-      subroutine json_readin
-      !-----------------------------------------------------------------
-      ! json_readin is a function which reads in .json files for use in 
-      ! FIRETEC or QUIC-Fire
-      !-----------------------------------------------------------------
-      use grid_variables
-      use json_module
-      implicit none
-      type(json_file) :: json
-      type(json_core) :: jCore
-      character(LEN=20):: treePointer
-      type(json_value),POINTER :: plotsPointer,treesPointer
-      logical :: isFound
-      integer :: i,ntrees
-      real              :: lat
-
-      ! Initialize the json_file object
-      call json%initialize()
-      
-      ! Load the file
-      call json%load_file('treelist.json'); if(json%failed()) stop
-
-      ! Read in the data
-      call json%get_core(jCore)
-      call json%info('plots(1).trees', n_children=ntrees)
-      do i=1,ntrees
-      !  call json%get('plots(1).trees('//i//').x',lat,isFound)
-      !  print*,i,treePointer,lat,ntrees,isFound
-      enddo
-      call json%get('plots(1).trees(1).x',lat,isFound)
-      print*,isFound
-      call jCore%get_child(plotsPointer,'pltId',treesPointer,isFound)
-      print*,isFound
-      if(isFound) call jCore%get(treesPointer,lat); if(json%failed()) stop
-      print*,'trees',lat
-      stop
-      end subroutine json_readin

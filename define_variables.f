@@ -187,80 +187,11 @@
       ! Tree variables unique to the tree baseline
       !-----------------------------------------------------------------
       if (itrees.eq.1) then
-        allocate(ntrees(ntspecies)) ! Number of trees for each species
-        allocate(tstemdensity(ntspecies)) ! Stem density of each species [stem/ha]
-        allocate(theight(2,ntspecies)) ! Tree heights [m]
-        allocate(tcrownbotheight(2,ntspecies)) ! Height to live crown [m]
-        allocate(tcrowndiameter(2,ntspecies)) ! Crown diameter [m]
-        allocate(tcrownmaxheight(2,ntspecies)) ! Height to max crown diameter [m]
-        allocate(t1bulkdensity(tfuelbins,ntspecies)) ! Crown fuel bulk density [kg/m3]
-        allocate(t1moisture(tfuelbins,ntspecies)) ! Crown fuel moisture content [fraction]
-        allocate(t1ss(tfuelbins,ntspecies)) ! Crown fuel size scale [m]
-      
-        open (2,file=treefile)
-        read (2,*) tstemdensity
-        read (2,*) theight(1,:)
-        read (2,*) theight(2,:)
-        read (2,*) tcrownbotheight(1,:)
-        read (2,*) tcrownbotheight(2,:)
-        read (2,*) tcrowndiameter(1,:)
-        read (2,*) tcrowndiameter(2,:)
-        read (2,*) tcrownmaxheight(1,:)
-        read (2,*) tcrownmaxheight(2,:)
-        do i=1,tfuelbins
-          read(2,*) t1bulkdensity(i,:)
-          read(2,*) t1moisture(i,:)
-          read(2,*) t1ss(i,:)
-        enddo
-        close (2)
-      endif
-      
-      if (itrees.eq.2.or.itrees.eq.3) then
-        itree = 0
-        open (2,file=treefile)
-        do
-          read (2,*,end=10)
-          itree = itree+1
-        enddo
-10      rewind(2)
-        
-        allocate(tspecies(itree))
-        do i=1,itree
-          read(2,*) temp_array(:)
-          tspecies(i)=temp_array(1)
-        enddo
-        rewind(2)
-        ntspecies = maxval(tspecies)
-        allocate(ntrees(ntspecies)) ! Total number of trees for each species
-        ntrees=0
-        do i=1,itree
-          ntrees(tspecies(i)) = ntrees(tspecies(i))+1
-        enddo
-        allocate(tlocation(ntspecies,maxval(ntrees),2)) ! Tree cartesian coordinates [m,m]
-        allocate(theight(maxval(ntrees),ntspecies)) ! Tree heights [m]
-        allocate(tcrownbotheight(maxval(ntrees),ntspecies)) ! Height to live crown [m]
-        allocate(tcrowndiameter(maxval(ntrees),ntspecies)) ! Crown diameter [m]
-        allocate(tcrownmaxheight(maxval(ntrees),ntspecies)) ! Height to max crown diameter [m]
-        allocate(t2bulkdensity(maxval(ntrees),tfuelbins,ntspecies)) ! Crown fuel bulk density [kg/m3]
-        allocate(t2moisture(maxval(ntrees),tfuelbins,ntspecies)) ! Crown fuel moisture content [fraction]
-        allocate(t2ss(maxval(ntrees),tfuelbins,ntspecies)) ! Crown fuel size scale [m]
-        allocate(numarray(ntspecies))
-        numarray(:)=0
-        do i=1,itree
-          read(2,*) temp_array(:)
-          numarray(tspecies(i)) = numarray(tspecies(i))+1
-          tlocation(tspecies(i),numarray(tspecies(i)),:) = temp_array(2:3)
-          theight(numarray(tspecies(i)),tspecies(i)) = temp_array(4)
-          tcrownbotheight(numarray(tspecies(i)),tspecies(i)) = temp_array(5)
-          tcrowndiameter(numarray(tspecies(i)),tspecies(i)) = temp_array(6)
-          tcrownmaxheight(numarray(tspecies(i)),tspecies(i)) = temp_array(7)
-          do j=1,tfuelbins
-            t2bulkdensity(numarray(tspecies(i)),j,tspecies(i)) = temp_array(8+3*(j-1))
-            t2moisture(numarray(tspecies(i)),j,tspecies(i)) = temp_array(9+3*(j-1))
-            t2ss(numarray(tspecies(i)),j,tspecies(i)) = temp_array(10+3*(j-1))
-          enddo
-        enddo
-        close (2)
+        call treesGeneral_readin
+      else if(itrees.eq.2.or.itrees.eq.3) then
+        call treelist_readin
+      else if(itrees.eq.4) then
+        call json_readin()
       endif
 
       if (ilitter.eq.1) then

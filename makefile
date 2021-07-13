@@ -1,26 +1,21 @@
-## Commands below for pink - must have loaded modules with 
-#              module load lampi intel
+#--Top level trees makefile--
+JSONDIR:= ./jsonfortran
+VPATH   = ${JSONDIR}
+ODIR    = obj
+OBJS    = variables.o main.o define_variables.o \
+					json_kinds.o json_parameters.o \
+			 		json_string_utilities.o json_value_module.o \
+			 		json_file_module.o json_module.o \
+				  io.o metryc.o shapes.o distribution.o \
+			 		baseline.o treatments.o \
+			 		fuel_read.o trees_read.o \
+#OBJS    = $(patsubst %,$(ODIR)/%,$(OBJS_))
 
-## Linux cluster (ie, pink) options - select only one FFLAGS definition
-#----------------------------------------
-  FC = gfortran   ## compiler
-  #MPILIB =  -L${MPI_ROOT}/lib64 -lmpi -I${MPI_ROOT}/include/
-  #MPILIB =  -I${MPI_ROOT}/include/
-  FFLAGS = -O2 -ffixed-line-length-none 
-#  FFLAGS = -g -extend_source 
-#   FFLAGS = -g -extend_source -warn all -check bounds -check overflow 
-
-JSONDIR = json-fortran
-
-OBJS = variables.o main.o define_variables.o \
-			 io.o metryc.o shapes.o distribution.o \
-			 baseline.o treatments.o \
-			 json_kinds.o json_parameters.o \
-			 json_string_utilities.o json_value_module.o \
-			 json_file_module.o json_module.o fuel_read.o \
+FC = gfortran   ## compiler
+FFLAGS = -O2 -ffixed-line-length-none
 
 trees: ${OBJS}
-	${FC} -o $@  ${FFLAGS} ${OBJS} ${MPILIB}
+	${FC} -o $@ ${FFLAGS} ${OBJS}
 
 clean: 
 	rm trees *.o *.mod *.dat
