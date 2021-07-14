@@ -168,6 +168,7 @@
           call json%get('plots('//istr1//').trees('//istr2//').crownHeight',rtemp,isFound)
           tcrownmaxheight(temp,1)=tcrownbotheight(temp,1)+rtemp/3.
           call json%get('plots('//istr1//').trees('//istr2//').crownBulkDensity',t2bulkdensity(temp,1,1),isFound)
+          t2moisture(temp,1,1)=t2bulkdensity(temp,1,1)
           call json%get('plots('//istr1//').trees('//istr2//').inverseSav',rtemp,isFound)
           t2ss(temp,1,1)=2./rtemp
         enddo
