@@ -7,6 +7,7 @@
       program fuel_maps
 
       use infile_variables
+      use grid_variables
       use treatment_variables
 
       print *,'===================================='
@@ -29,6 +30,7 @@
       if(itreatment.eq.1) call treatment
       
       !-----Export data to binary files
+      print*,'Singlefuel',singlefuel
       if(singlefuel.eq.1)then
         call output_1fuel
       else
