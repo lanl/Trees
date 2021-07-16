@@ -8,7 +8,6 @@
 
       use grid_variables
       use infile_variables
-      use grid_variables
       use treatment_variables
 
       print *,'===================================='
