@@ -20,6 +20,7 @@
      .   inx,iny,inz,idx,idy,idz,iaa1,infuel,
      .   igrass,ngrass,grassconstant,grassfile,
      .   itrees,ntspecies,tfuelbins,tdnx,tdny,treefile,
+     .   ndatax,ndatay,datalocx,datalocy, !JSM added for populate function
      .   ilitter,litterconstant,litterfile,
      .   itreatment,sdnx,sdny,
      .   sdiameter,sheight,sprho,smoist,sdepth
@@ -38,6 +39,8 @@
       ntspecies = 1
       tfuelbins = 1
       litterconstant = 5
+      datalocx = 0  !JSM added for populate function
+      datalocy = 0  !JSM added for populate function
 
       open(unit=15,file='fuellist',form='formatted',status='old')
            read (15,nml=fuellist)

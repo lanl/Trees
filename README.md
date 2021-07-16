@@ -49,10 +49,14 @@ grassconstant -- 5                    -- Exponential constant used to determine 
 ngrass        -- Required if igrass=1 -- Number of grass species (for multiple fuels)
 grassfile     -- Required if igrass=2 -- Name of grassfile with the additional information to be read
 !-------------------------------------------------------------------------------------------------
-itrees        -- 0                    -- Flag for trees, 0 if no trees, 1 if generalized treefile, 2 if specific treefile w/ locations, 3 if specific treefile w/ random locations
+itrees        -- 0                    -- Flag for trees, 0 if no trees, 1 if generalized treefile, 2 if specific treefile w/ locations randomized to fill the domain, 3 if specific treefile w/ random locations using base area to fill the domain
 ntspecies     -- 1                    -- Number of tree species
 tfuelbins     -- 1                    -- Number of size bins to distribute canopy fuels (foliage, branches, etc)
 treefile      -- ‘ ‘                  -- Name of treefile with the additional information to be read
+ndatax        --                      -- Size of dataset domain in x direction (m)
+ndatay        --                      -- Size of dataset domain in y direction (m)
+datalocx      --                      -- Bottom left corner x coordinate for where dataset should be placed (if unspecified, = 0)
+datalocy      --                      -- Bottom left corner y coordinate for where dataset should be placed (if unspecified, = 0)
 tdnx          -- [0,nx*dx]            -- x range of the domain to be populated with trees (m)
 tdny          -- [0,ny*dy]            -- y range of the domain to be populated with trees (m)
 !-------------------------------------------------------------------------------------------------

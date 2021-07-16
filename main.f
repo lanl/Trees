@@ -6,6 +6,7 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       program fuel_maps
 
+      use grid_variables
       use infile_variables
       use treatment_variables
 

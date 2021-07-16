@@ -51,6 +51,16 @@
       integer i,j,ift,itree
       integer,allocatable:: numarray(:)
       real,dimension(7+3*tfuelbins):: temp_array
+
+      !!!------JSM: Parameters/Variables for populate function-----!!!
+
+      real:: nsub,nsubdecimal,rnum,newx,newy
+      !real,allocatable:: nsubdecimal(:) 
+      integer:: q,r,s,tindex,dataleft,dataright,databottom,datatop
+      integer,allocatable:: rounddown(:),ntreesold(:)
+
+
+
         
       itree = 0
       open (2,file=treefile)
@@ -72,6 +82,50 @@
       do i=1,itree
         ntrees(tspecies(i)) = ntrees(tspecies(i))+1
       enddo
+
+  !!!!!------JSM added the following block of code for populate------!!!!!
+
+      !---Determine how many dataset subdomains fit within your main domain
+      if(ndatax.lt.nx*dx.or.ndatay.lt.ny*dy) then
+         nsub = (nx*dx*ny*dy)/(ndatax*ndatay)
+         !nsub = 4.8  !FOR TESTING PURPOSES ONLY
+         print*,'Number of subdomains = ',nsub
+      endif
+      allocate(ntreesold(ntspecies))
+      ntreesold = ntrees
+
+      !---If there is an integer number of subdomains, just multiply the number
+      !of trees in each column of ntrees by that number of subdomains (minus 1
+      !for the original dataset trees that are already in ntrees) - if it is not
+      !an integer, we need to determine how many of the trees of each species
+      !that we need to multiply by the integer above the decimal, and those we
+      !need to multiply by the integer below the decimal...
+      if(nsub.eq.nint(nsub)) then
+         ntrees = ntrees*(nsub-1)
+         print*,'ntrees = ',ntrees
+      else
+         allocate(rounddown(ntspecies)) 
+         print*,'Not an integer number of subdomains...'
+         nsubdecimal = (nint(nsub)-nsub)
+         if(nsubdecimal.lt.0) then
+             rounddown = nint((1-abs(nsubdecimal))*ntrees)
+         else
+             rounddown = nint(nsubdecimal*ntrees)
+         endif
+         print*,'Number of trees to replicate rounded down for each species',rounddown
+
+         print*,'old ntrees = ',ntrees
+         print*,'rounddown integer = ',floor(nsub)
+         print*,'roundup integer = ',ceiling(nsub)
+         do i=1,ntspecies
+             ntrees(i) = rounddown(i)*(floor(nsub)) + (ntreesold(i)-rounddown(i))*(ceiling(nsub))
+         enddo
+         print*,'new ntrees = ',ntrees
+
+      endif
+
+  !!!!!------END of JSM additions for populate-------!!!!!
+
       allocate(tlocation(ntspecies,maxval(ntrees),2)) ! Tree cartesian coordinates [m,m]
       allocate(theight(maxval(ntrees),ntspecies)) ! Tree heights [m]
       allocate(tcrownbotheight(maxval(ntrees),ntspecies)) ! Height to live crown [m]
@@ -81,11 +135,22 @@
       allocate(t2moisture(maxval(ntrees),tfuelbins,ntspecies)) ! Crown fuel moisture content [fraction]
       allocate(t2ss(maxval(ntrees),tfuelbins,ntspecies)) ! Crown fuel size scale [m]
       allocate(numarray(ntspecies))
+      !!!!MORE JSM ADDITIONS FOR POPULATE!!!!
+      tlocation(:,:,:) = 0.0
+      theight(:,:) = 0.0
+      tcrownbotheight(:,:) = 0.0
+      tcrowndiameter(:,:) = 0.0
+      tcrownmaxheight(:,:) = 0.0
+      t2bulkdensity(:,:,:) = 0.0
+      t2moisture(:,:,:) = 0.0
+      t2ss(:,:,:) = 0.0
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       numarray(:)=0
       do i=1,itree
         read(2,*) temp_array(:)
         numarray(tspecies(i)) = numarray(tspecies(i))+1
-        tlocation(tspecies(i),numarray(tspecies(i)),:) = temp_array(2:3)
+        tlocation(tspecies(i),numarray(tspecies(i)),1) = temp_array(2)+datalocx
+        tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(3)+datalocy
         theight(numarray(tspecies(i)),tspecies(i)) = temp_array(4)
         tcrownbotheight(numarray(tspecies(i)),tspecies(i)) = temp_array(5)
         tcrowndiameter(numarray(tspecies(i)),tspecies(i)) = temp_array(6)
@@ -97,7 +162,95 @@
         enddo
       enddo
       close (2)
-      
+
+      !!!-------JSM More populate stuff-------!!!
+      ! For each of the trees in the dataset which are placed above, we copy the
+      ! information for each of them into the arrays and choose a new location;
+      ! if the initial random location is within the chosen dataset area, we
+      ! choose another one
+
+      !First we need to find the area for where the dataset will live
+
+      dataleft = datalocx
+      dataright = (datalocx + ndatax)
+      databottom = datalocy
+      datatop = (datalocy + ndatay)
+
+      print*,'dataset lives at these coordinates: ',dataleft,dataright,databottom,datatop
+
+      do q=1,ntspecies
+          tindex = ntreesold(q)
+          do r=1,rounddown(q)
+              do s=1,floor(nsub)-1
+                  tindex=tindex+1
+                  !print*,'original index = ',r
+                  !print*,'tindex = ',tindex
+                  !Choose a new location
+                  newx = tlocation(q,r,1)
+                  newy = tlocation(q,r,2)
+                  !print*,'old location = ',newx,newy   
+                  do while (newx.ge.dataleft.and.newx.le.dataright.or.newx.gt.nx*dx.or.newx.lt.0)
+                     call random_number(rnum)
+                     newx = rnum*nx*dx
+                  enddo
+                  do while(newy.ge.databottom.and.newy.le.datatop.or.newy.gt.ny*dy.or.newy.lt.0)
+                     call random_number(rnum)
+                     newy = rnum*ny*dy
+                  enddo
+                  !print*,'new location = ',newx,newy
+                  tlocation(q,tindex,1) = newx
+                  tlocation(q,tindex,2) = newy
+                  theight(tindex,q) = theight(r,q)
+                  tcrownbotheight(tindex,q) = tcrownbotheight(r,q)
+                  tcrowndiameter(tindex,q) = tcrowndiameter(r,q)
+                  tcrownmaxheight(tindex,q) = tcrownmaxheight(r,q)
+                  do j=1,tfuelbins
+                    t2bulkdensity(tindex,j,q) = t2bulkdensity(r,j,q)
+                    t2moisture(tindex,j,q) = t2moisture(r,j,q)
+                    t2ss(tindex,j,q) = t2ss(r,j,q)
+                  enddo
+                  !print*,'theight old = ',theight(r,q)
+                  !print*,'theight new = ',theight(r,q)
+              enddo
+          enddo
+          do r=rounddown(q)+1,ntreesold(q)
+              do s=1,ceiling(nsub)-1
+                  tindex=tindex+1
+                  !print*,'original index = ',r
+                  !print*,'tindex = ',tindex
+                  !Choose a new location
+                  newx = tlocation(q,r,1)
+                  newy = tlocation(q,r,2)
+                  !print*,'old location = ',newx,newy
+                  do while (newx.ge.dataleft.and.newx.le.dataright.or.newx.gt.nx*dx.or.newx.lt.0)
+                     call random_number(rnum)
+                     newx = rnum*nx*dx
+                  enddo
+                  do while(newy.ge.databottom.and.newy.le.datatop.or.newy.gt.ny*dy.or.newy.lt.0)
+                     call random_number(rnum)
+                     newy = rnum*ny*dy
+                  enddo
+                  !print*,'new location = ',newx,newy
+                  tlocation(q,tindex,1) = newx
+                  tlocation(q,tindex,2) = newy
+                  theight(tindex,q) = theight(r,q)
+                  tcrownbotheight(tindex,q) = tcrownbotheight(r,q)
+                  tcrowndiameter(tindex,q) = tcrowndiameter(r,q)
+                  tcrownmaxheight(tindex,q) = tcrownmaxheight(r,q)
+                  do j=1,tfuelbins
+                    t2bulkdensity(tindex,j,q) = t2bulkdensity(r,j,q)
+                    t2moisture(tindex,j,q) = t2moisture(r,j,q)
+                    t2ss(tindex,j,q) = t2ss(r,j,q)
+                  enddo
+                  !print*,'theight old = ',theight(r,q)
+                  !print*,'theight new = ',theight(r,q)
+
+              enddo
+          enddo
+      enddo
+
+      !!!---------END OF JSM ADDITIONS FOR POPULATE----------!!!
+
       end subroutine treelist_readin
       
       subroutine json_readin
@@ -122,7 +275,6 @@
       
       ! Load the file
       call json%load_file('treelist.json'); if(json%failed()) stop
-
       ! Determine number of trees
       ntspecies=1
       allocate(ntrees(ntspecies))
@@ -182,5 +334,5 @@
       print*,"Size of fuel domain:"
       print*,"x(min)",minval(tlocation(1,:,1)),"x(max)",maxval(tlocation(1,:,1))
       print*,"y(min)",minval(tlocation(1,:,2)),"y(max)",maxval(tlocation(1,:,2))
-      
+     
       end subroutine json_readin

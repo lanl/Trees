@@ -20,7 +20,7 @@
             
       integer nx,ny,nz
       real    dx,dy,dz
-      real    aa1
+      real    aa1,ndatax,ndatay,datalocx,datalocy !JSM added ndatax, etc.
       integer nfuel,zmax,singlefuel
       real,allocatable:: rhof(:,:,:,:),sizescale(:,:,:,:),moist(:,:,:,:),fueldepth(:,:,:,:)
       real,allocatable:: zs(:,:),zheight(:,:,:)
