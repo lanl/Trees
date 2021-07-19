@@ -56,7 +56,7 @@
 
       real:: nsub,nsubdecimal,rnum,newx,newy
       !real,allocatable:: nsubdecimal(:) 
-      integer:: q,r,s,tindex,dataleft,dataright,databottom,datatop
+      integer:: q,t,r,s,tindex,dataleft,dataright,databottom,datatop,treecount,num
       integer,allocatable:: rounddown(:),ntreesold(:)
 
 
@@ -248,6 +248,44 @@
               enddo
           enddo
       enddo
+
+      treecount = 0
+      do q=1,ntspecies
+          treecount = treecount + ntrees(q)
+      enddo
+      print*,'Treecount = ',treecount
+
+     !!!----Relocate any trees that were randomly placed too close together----!!!
+
+      do q=1,ntspecies
+          do t=1,ntrees(q)
+              do r=1,ntspecies
+                  do s=1,ntrees(r)
+                      if (q.ne.r.or.t.ne.s) then
+                         do while (abs(tlocation(q,t,1)-tlocation(r,s,1)).lt.0.1.and.abs(tlocation(q,t,2)-tlocation(r,s,2)).lt.0.1)
+                            call random_number(rnum)
+                            newx = rnum*nx*dx
+                            call random_number(rnum)
+                            newy = rnum*ny*dy
+                            do while (newx.ge.dataleft.and.newx.le.dataright.or.newx.gt.nx*dx.or.newx.lt.0)
+                                call random_number(rnum)
+                                newx = rnum*nx*dx
+                            enddo
+                            do while(newy.ge.databottom.and.newy.le.datatop.or.newy.gt.ny*dy.or.newy.lt.0)
+                                call random_number(rnum)
+                                newy = rnum*ny*dy
+                            enddo
+                            num = num+1
+                            tlocation(q,t,1) = newx
+                            tlocation(q,t,2) = newy
+                         enddo
+                      endif
+                  enddo
+               enddo
+           enddo
+      enddo
+
+      print*,'Number of relocation due to crowding = ',num
 
       !!!---------END OF JSM ADDITIONS FOR POPULATE----------!!!
 
