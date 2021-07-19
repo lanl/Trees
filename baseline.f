@@ -57,7 +57,7 @@
       endif
 
       ! Fill litter arrays
-      if (ilitter.ne.0) then
+      if (ilitter.ne.0.and.ilitter.ne.2) then
         print*,'Filling Litter Baseline'
         call litter_baseline
         do ift=1,ntspecies
@@ -167,6 +167,13 @@
       real,external:: paraboloid,normal 
       real x
 
+      !!!!JSM BELOW IS ONLY FOR ILITTER=2 USING JENNA'S SURFACE FUEL PROGRAM!!!!  
+      integer w,tottrees
+      integer,allocatable:: treespec(:),xtree(:),ytree(:)
+      real,allocatable:: treeht(:,:,:),rhospecies(:,:,:,:)
+      !!!!!!
+
+
       !-----Determine the number of trees for each species
       if(itrees.eq.1) then
         totarea = nx*dx*ny*dy
@@ -176,8 +183,29 @@
       endif
       print*,'Number of trees of each species:',ntrees
 
+      !!!!!!!!!!!!!!!!
+      tottrees = 0
+      if(ilitter.eq.2) then  !JSM added to find total amount of trees
+         do i=1,ntspecies
+            tottrees = tottrees + ntrees(i)
+         enddo
+
+         w=1  !JSM added to initialize tree location arrays 
+
+         print*,'tottrees = ',tottrees
+      endif
+      !!!!!!!!!!!!!!!!
+
+
+
       !----- Begin loop which fills arrays with information for each tree
       allocate(rhoftemp(tfuelbins))
+
+      if(ilitter.eq.2) then  !JSM added for surface fuel arrays   
+         allocate(treeht(nx,ny,nz),xtree(tottrees),ytree(tottrees),
+     +            treespec(tottrees),rhospecies(nx,ny,nz,ntspecies))
+      endif
+
       do i=1,ntspecies
         print*,'Species',i,'with',ntrees(i),'trees'
         do j=1,ntrees(i)
@@ -303,11 +331,23 @@
      +                  (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
                     endif
                   trhof(ift_index,ii_real,jj_real,kk) = trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)
+                    if(ilitter.eq.2) then
+                       rhospecies(ii_real,jj_real,kk,ift) = trhof(ift_index,ii_real,jj_real,kk)  !JSM
+                    endif
                   endif
                 enddo
               enddo
             enddo
           enddo
+          !!!!!! JSM added the following section for litter project  !!!!!!!!!!
+          if(ilitter.eq.2) then
+             treeht(xcor,ycor,zbot:ztop) = canopytop
+             xtree(w) = xtest
+             ytree(w) = ytest
+             treespec(w) = i
+             w=w+1
+          endif
+          !!!!!!
         enddo
       enddo
       deallocate(rhoftemp)
@@ -356,6 +396,40 @@
       enddo
       print*,'Trees actual fuel mass:',actual_mass
       print*,'Trees error:',actual_mass/target_mass*100,'%'
+
+      if(ilitter.eq.2) then  !JSM added the following to write the files required for surface fuels
+
+         print*,'Using Jennas Litter program so no grass or litter recorded'
+
+         print*,'Writing xtree'
+         open  (191,file='xtree.dat', form='unformatted',status='unknown')
+         write (191) xtree
+         close (191)
+
+         print*,'Writing ytree'
+         open  (192,file='ytree.dat', form='unformatted',status='unknown')
+         write (192) ytree
+         close (192)
+
+         print*,'Writing treespec'
+         open  (193,file='stree.dat', form='unformatted',status='unknown')
+         write (193) treespec
+         close (193)
+
+         print*,'Writing treeht'
+         open  (194,file='treeht.dat', form='formatted',status='unknown')
+         write (194,*) treeht
+         close (194)
+
+         print*,'Writing rhospecies'
+         open  (195,file='rhospecies.dat', form='formatted',status='unknown')
+         write (195,*) rhospecies
+         close (195)
+
+         deallocate(xtree,ytree,treespec,treeht)
+
+      endif
+
      
       end subroutine tree_baseline 
 
