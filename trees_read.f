@@ -255,19 +255,18 @@
       enddo
       print*,'Treecount = ',treecount
 
-     !!!----Relocate any trees that were randomly placed too close together----!!!
-
+      num=0
       do q=1,ntspecies
-          do t=1,ntrees(q)
+          do t=ntreesold(q)+1,ntrees(q)
               do r=1,ntspecies
                   do s=1,ntrees(r)
                       if (q.ne.r.or.t.ne.s) then
-                         do while (abs(tlocation(q,t,1)-tlocation(r,s,1)).lt.0.1.and.abs(tlocation(q,t,2)-tlocation(r,s,2)).lt.0.1)
+                         do while(abs(tlocation(q,t,1)-tlocation(r,s,1)).lt.0.1.and.abs(tlocation(q,t,2)-tlocation(r,s,2)).lt.0.1)
                             call random_number(rnum)
                             newx = rnum*nx*dx
                             call random_number(rnum)
                             newy = rnum*ny*dy
-                            do while (newx.ge.dataleft.and.newx.le.dataright.or.newx.gt.nx*dx.or.newx.lt.0)
+                            do while(newx.ge.dataleft.and.newx.le.dataright.or.newx.gt.nx*dx.or.newx.lt.0)
                                 call random_number(rnum)
                                 newx = rnum*nx*dx
                             enddo

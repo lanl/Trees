@@ -168,8 +168,8 @@
       real x
 
       !!!!JSM BELOW IS ONLY FOR ILITTER=2 USING JENNA'S SURFACE FUEL PROGRAM!!!!  
-      integer w,tottrees
-      integer,allocatable:: treespec(:),xtree(:),ytree(:)
+      integer w,tottrees,jk,ns
+      real,allocatable:: treespec(:),xtree(:),ytree(:)
       real,allocatable:: treeht(:,:,:),rhospecies(:,:,:,:)
       !!!!!!
 
@@ -204,6 +204,7 @@
       if(ilitter.eq.2) then  !JSM added for surface fuel arrays   
          allocate(treeht(nx,ny,nz),xtree(tottrees),ytree(tottrees),
      +            treespec(tottrees),rhospecies(nx,ny,nz,ntspecies))
+         treeht = 0.0
       endif
 
       do i=1,ntspecies
@@ -333,6 +334,10 @@
                   trhof(ift_index,ii_real,jj_real,kk) = trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)
                     if(ilitter.eq.2) then
                        rhospecies(ii_real,jj_real,kk,ift) = trhof(ift_index,ii_real,jj_real,kk)  !JSM
+                       if (rhospecies(ii_real,jj_real,kk,ift).ne.0) then
+                           treeht(ii_real,jj_real,kk) = canopytop
+                           !print*,ii_real,jj_real,kk,ift,'canopytop = ',treeht(ii_real,jj_real,kk) !JSM
+                       endif
                     endif
                   endif
                 enddo
@@ -341,7 +346,6 @@
           enddo
           !!!!!! JSM added the following section for litter project  !!!!!!!!!!
           if(ilitter.eq.2) then
-             treeht(xcor,ycor,zbot:ztop) = canopytop
              xtree(w) = xtest
              ytree(w) = ytest
              treespec(w) = i
@@ -351,7 +355,7 @@
         enddo
       enddo
       deallocate(rhoftemp)
-
+      !print*,'treeht = ',treeht
       !----- Tree fuel depth is equal to height of the first cell
       do i=1,ntspecies
         do j=1,tfuelbins
@@ -415,6 +419,8 @@
          open  (193,file='stree.dat', form='unformatted',status='unknown')
          write (193) treespec
          close (193)
+
+         print*,'treeht size = ',shape(treeht)
 
          print*,'Writing treeht'
          open  (194,file='treeht.dat', form='formatted',status='unknown')
