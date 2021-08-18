@@ -1,5 +1,5 @@
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-! define_variables definess all variables, both constant and 
+! define_variables defines all variables, both constant and 
 ! user-defined, used throughout the program
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine define_constant_variables
@@ -30,11 +30,13 @@
       real,external:: zcart
       real,dimension(2):: xcor,ycor
            
-      nfuel = infuel+ngrass+ntspecies*(ilitter+tfuelbins)
-      allocate(rhof(nfuel,nx,ny,nz))
-      allocate(sizescale(nfuel,nx,ny,nz))
-      allocate(moist(nfuel,nx,ny,nz))
-      allocate(fueldepth(nfuel,nx,ny,nz))
+      ntreefueltypes = istem*2+tfuelbins
+      nfuel = infuel+ngrass+ntspecies*ntreefueltypes
+      if(ilitter.eq.1) nfuel=nfuel+ntspecies
+      allocate(rhof(nfuel,nx,ny,nz)); rhof(:,:,:,:)=0.0
+      allocate(sizescale(nfuel,nx,ny,nz)); sizescale(:,:,:,:)=0.0
+      allocate(moist(nfuel,nx,ny,nz)); moist(:,:,:,:)=0.0
+      allocate(fueldepth(nfuel,nx,ny,nz)); fueldepth(:,:,:,:)=0.0
       
       !-----------------------------------------------------------------
       ! Create topo layer (Should be adjusted for non-flat topo)
@@ -133,27 +135,25 @@
 
       implicit none
 
-      integer i,j,ift,itree
-      integer,allocatable:: numarray(:)
-      real,dimension(7+3*tfuelbins):: temp_array
-      
+      integer ift
+
       if (igrass.ne.0) then
-        allocate(grhof(ngrass,nx,ny,nz))
-        allocate(gsizescale(ngrass,nx,ny,nz))
-        allocate(gmoist(ngrass,nx,ny,nz))
-        allocate(gfueldepth(ngrass,nx,ny))
+        allocate(grhof(ngrass,nx,ny,nz)); grhof(:,:,:,:)=0.0
+        allocate(gsizescale(ngrass,nx,ny,nz)); gsizescale(:,:,:,:)=0.0
+        allocate(gmoist(ngrass,nx,ny,nz)); gmoist(:,:,:,:)=0.0
+        allocate(gfueldepth(ngrass,nx,ny)); gfueldepth(:,:,:)=0.0
       endif
       if (itrees.ne.0) then
-        allocate(trhof(ntspecies*tfuelbins,nx,ny,nz))
-        allocate(tsizescale(ntspecies*tfuelbins,nx,ny,nz))
-        allocate(tmoist(ntspecies*tfuelbins,nx,ny,nz))
-        allocate(tfueldepth(ntspecies*tfuelbins,nx,ny))
+        allocate(trhof(ntspecies*ntreefueltypes,nx,ny,nz)); trhof(:,:,:,:)=0.0
+        allocate(tsizescale(ntspecies*ntreefueltypes,nx,ny,nz)); tsizescale(:,:,:,:)=0.0
+        allocate(tmoist(ntspecies*ntreefueltypes,nx,ny,nz)); tmoist(:,:,:,:)=0.0
+        allocate(tfueldepth(ntspecies*ntreefueltypes,nx,ny)); tfueldepth(:,:,:)=0.0
       endif
       if (ilitter.ne.0) then
-        allocate(lrhof(ntspecies,nx,ny,nz))
-        allocate(lsizescale(ntspecies,nx,ny,nz))
-        allocate(lmoist(ntspecies,nx,ny,nz))
-        allocate(lfueldepth(ntspecies,nx,ny))
+        allocate(lrhof(ntspecies,nx,ny,nz)); lrhof(:,:,:,:)=0.0
+        allocate(lsizescale(ntspecies,nx,ny,nz)); lsizescale(:,:,:,:)=0.0
+        allocate(lmoist(ntspecies,nx,ny,nz)); lmoist(:,:,:,:)=0.0
+        allocate(lfueldepth(ntspecies,nx,ny)); lfueldepth(:,:,:)=0.0
       endif
 
       !-----------------------------------------------------------------

@@ -19,28 +19,36 @@
      .   ifuelin,rhoffile,moistfile,ssfile,afdfile,
      .   inx,iny,inz,idx,idy,idz,iaa1,infuel,
      .   igrass,ngrass,grassconstant,grassfile,
-     .   itrees,ntspecies,tfuelbins,tdnx,tdny,treefile,
+     .   itrees,ntspecies,tfuelbins,tdnx,tdny,treefile,istem,
      .   ndatax,ndatay,datalocx,datalocy, !JSM added for populate function
      .   ilitter,litterconstant,litterfile,
      .   itreatment,sdnx,sdny,
      .   sdiameter,sheight,sprho,smoist,sdepth
       
       ! Area of interest arrays need to be allocated before calling namelist
-      allocate(tdnx(2)) ! Array of the cell range (x)  where the trees are applied
-      allocate(tdny(2)) ! Array of the cell range (x)  where the trees are applied
-      allocate(sdnx(2)) ! Array of the cell range (x)  where the treatment is applied
-      allocate(sdny(2)) ! Array of the cell range (x)  where the treatment is applied
+      allocate(tdnx(2)); tdnx(:)=0 ! Array of the cell range (x)  where the trees are applied
+      allocate(tdny(2)); tdny(:)=0 ! Array of the cell range (x)  where the trees are applied
+      allocate(sdnx(2)); sdnx(:)=0 ! Array of the cell range (x)  where the treatment is applied
+      allocate(sdny(2)); sdny(:)=0 ! Array of the cell range (x)  where the treatment is applied
       
       ! Set the default values that will be overwritten by the namelist if present
-      aa1 = 0.1
-      iaa1= -1
-      topofile = 'flat'
-      grassconstant = 5
-      ntspecies = 1
-      tfuelbins = 1
-      litterconstant = 5
-      datalocx = 0  !JSM added for populate function
-      datalocy = 0  !JSM added for populate function
+      aa1           =0.1
+      singlefuel    =0.0
+      topofile      ='flat'
+      ifuelin       =0
+      iaa1          =-1
+      igrass        =0
+      ngrass        =1
+      grassconstant =5
+      itrees        =1
+      ntspecies     =1
+      tfuelbins     =1
+      istem         =0
+      datalocx      =0  !JSM added for populate function
+      datalocy      =0  !JSM added for populate function
+      ilitter       =0
+      litterconstant=5
+      itreatment    =0
 
       open(unit=15,file='fuellist',form='formatted',status='old')
            read (15,nml=fuellist)

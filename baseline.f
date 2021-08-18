@@ -23,7 +23,7 @@
       ! Fill grass arrays
       if (igrass.ne.0) then     
         print*,'Filling Grass Baseline'
-        if (igrass.eq.1) call grass_baseline
+        call grass_baseline
         do ift=1,ngrass
           do i=1,nx
             do j=1,ny
@@ -42,7 +42,7 @@
       if (itrees.ne.0) then
         print*,'Filling Trees Baseline'
         call tree_baseline
-        do ift=1,ntspecies*tfuelbins
+        do ift=1,ntspecies*ntreefueltypes
           do i=1,nx
             do j=1,ny
               do k=1,nz
@@ -65,21 +65,21 @@
             print*,'Little to no fuel from tree type',ift,'in first cell combining with litter'
             do i=1,nx
               do j=1,ny
-                rhof(infuel+ngrass+(ift-1)*tfuelbins+1,i,j,1)      = lrhof(ift,i,j,1)
-                sizescale(infuel+ngrass+(ift-1)*tfuelbins+1,i,j,1) = lsizescale(ift,i,j,1)
-                moist(infuel+ngrass+(ift-1)*tfuelbins+1,i,j,1)     = lmoist(ift,i,j,1)
-                fueldepth(infuel+ngrass+(ift-1)*tfuelbins+1,i,j,1) = lfueldepth(ift,i,j)
+                rhof(infuel+ngrass+(ift-1)*ntreefueltypes+1,i,j,1)      = lrhof(ift,i,j,1)
+                sizescale(infuel+ngrass+(ift-1)*ntreefueltypes+1,i,j,1) = lsizescale(ift,i,j,1)
+                moist(infuel+ngrass+(ift-1)*ntreefueltypes+1,i,j,1)     = lmoist(ift,i,j,1)
+                fueldepth(infuel+ngrass+(ift-1)*ntreefueltypes+1,i,j,1) = lfueldepth(ift,i,j)
               enddo
             enddo
           else
             do i=1,nx
               do j=1,ny
                 do k=1,nz
-                  rhof(ift+infuel+ngrass+ntspecies*tfuelbins,i,j,k)      = lrhof(ift,i,j,k)
-                  sizescale(ift+infuel+ngrass+ntspecies*tfuelbins,i,j,k) = lsizescale(ift,i,j,k)
-                  moist(ift+infuel+ngrass+ntspecies*tfuelbins,i,j,k)     = lmoist(ift,i,j,k)
+                  rhof(ift+infuel+ngrass+ntreefueltypes,i,j,k)      = lrhof(ift,i,j,k)
+                  sizescale(ift+infuel+ngrass+ntreefueltypes,i,j,k) = lsizescale(ift,i,j,k)
+                  moist(ift+infuel+ngrass+ntreefueltypes,i,j,k)     = lmoist(ift,i,j,k)
                 enddo
-                fueldepth(ift+infuel+ngrass+ntspecies*tfuelbins,i,j,1) = lfueldepth(ift,i,j)
+                fueldepth(ift+infuel+ngrass+ntreefueltypes,i,j,1) = lfueldepth(ift,i,j)
               enddo
             enddo
           endif
@@ -157,23 +157,21 @@
       integer ii_real,jj_real
       integer ift_index
       real totarea
-      real xtest,ytest,xloc,yloc
+      real xtest,ytest,ztest,xloc,yloc
       integer xcor,ycor
       integer xtop,xbot,ybot,ytop,zbot,ztop
       real canopytop,canopybot,canopydiameter,canopymaxh
       real atop,abot,test_height,bot_height,top_height
+      real dbh,barkthick,sstemp,srhoftemp
       real target_mass,actual_mass
       real,allocatable:: rhoftemp(:)
       real,external:: paraboloid,normal 
       real x
-
       !!!!JSM BELOW IS ONLY FOR ILITTER=2 USING JENNA'S SURFACE FUEL PROGRAM!!!!  
       integer w,tottrees,jk,ns
       real,allocatable:: treespec(:),xtree(:),ytree(:)
       real,allocatable:: treeht(:,:,:),rhospecies(:,:,:,:)
-      !!!!!!
-
-
+      
       !-----Determine the number of trees for each species
       if(itrees.eq.1) then
         totarea = nx*dx*ny*dy
@@ -182,31 +180,17 @@
         enddo
       endif
       print*,'Number of trees of each species:',ntrees
-
-      !!!!!!!!!!!!!!!!
-      tottrees = 0
-      if(ilitter.eq.2) then  !JSM added to find total amount of trees
-         do i=1,ntspecies
-            tottrees = tottrees + ntrees(i)
-         enddo
-
-         w=1  !JSM added to initialize tree location arrays 
-
-         print*,'tottrees = ',tottrees
+      
+      if(ilitter.eq.2) then  !JSM added for surface fuel arrays
+        tottrees=sum(ntrees)   
+        allocate(treeht(nx,ny,nz),xtree(sum(ntrees)),ytree(tottrees),
+     +    treespec(sum(ntrees)),rhospecies(nx,ny,nz,ntspecies))
+        treeht = 0.0
+        w=1  !JSM added to initialize tree location arrays 
       endif
-      !!!!!!!!!!!!!!!!
-
-
 
       !----- Begin loop which fills arrays with information for each tree
       allocate(rhoftemp(tfuelbins))
-
-      if(ilitter.eq.2) then  !JSM added for surface fuel arrays   
-         allocate(treeht(nx,ny,nz),xtree(tottrees),ytree(tottrees),
-     +            treespec(tottrees),rhospecies(nx,ny,nz,ntspecies))
-         treeht = 0.0
-      endif
-
       do i=1,ntspecies
         print*,'Species',i,'with',ntrees(i),'trees'
         do j=1,ntrees(i)
@@ -241,14 +225,12 @@
             canopydiameter = tcrowndiameter(j,i)
             canopymaxh= tcrownmaxheight(j,i)+zs(xcor,ycor)
           endif
-
+          
           !----- Translate tree shape to grid
           xbot = floor((xtest-canopydiameter/2.)/dx+1)
           xtop = floor((xtest+canopydiameter/2.)/dx+1)
           ybot = floor((ytest-canopydiameter/2.)/dy+1)
           ytop = floor((ytest+canopydiameter/2.)/dy+1)
-          zbot = 0.
-          ztop = 0.
           
           do k=1,nz-1
             if (canopybot.le.zheight(nint(xtest/dx+1),nint(ytest/dy+1),k+1)) then
@@ -264,7 +246,33 @@
             endif
           enddo
           
-          ! Ellipitical paraboloid used to determine tree contours
+          !----- Translate stem and bark to grid
+          if(istem.ne.0) then
+            ift_index = (i-1)*ntreefueltypes+tfuelbins
+            dbh = max(0.001,normal(tdbh(1,i),tdbh(2,i)))
+            barkthick = max(0.0001,normal(tbarkthick(1,i),tbarkthick(2,i)))
+            do k=1,ztop
+              ! Fill stem array
+              ztest = min(canopytop,(zheight(xcor,ycor,k+1)+zheight(xcor,ycor,k))/2.)
+              sstemp = dbh/2.*(canopytop-ztest)/(canopytop-1.5)
+              srhoftemp = trhomicro(i)*PI*sstemp**2./(dy*dx)
+              tsizescale(ift_index+1,xcor,ycor,k) = (trhof(ift_index+1,xcor,ycor,k)*
+     +          tsizescale(ift_index+1,xcor,ycor,k)+srhoftemp*sstemp)/(trhof(ift_index+1,xcor,ycor,k)+srhoftemp)
+              tmoist(ift_index+1,xcor,ycor,k) = (trhof(ift_index+1,xcor,ycor,k)*
+     +          tmoist(ift_index+1,xcor,ycor,k)+srhoftemp*tstemmoist(i))/(trhof(ift_index+1,xcor,ycor,k)+srhoftemp)
+              trhof(ift_index+1,xcor,ycor,k) = trhof(ift_index+1,xcor,ycor,k)+srhoftemp
+
+              ! Fill bark array
+              srhoftemp = trhomicro(i)*PI*((sstemp+barkthick)**2.-sstemp**2.)/(dy*dx)
+              tsizescale(ift_index+2,xcor,ycor,k) = (trhof(ift_index+2,xcor,ycor,k)*
+     +          tsizescale(ift_index+2,xcor,ycor,k)+srhoftemp*barkthick)/(trhof(ift_index+2,xcor,ycor,k)+srhoftemp)
+              tmoist(ift_index+2,xcor,ycor,k) = (trhof(ift_index+2,xcor,ycor,k)*
+     +          tmoist(ift_index+2,xcor,ycor,k)+srhoftemp*tbarkmoist(i))/(trhof(ift_index+2,xcor,ycor,k)+srhoftemp)
+              trhof(ift_index+2,xcor,ycor,k) = trhof(ift_index+2,xcor,ycor,k)+srhoftemp
+            enddo
+          endif
+          
+          ! Ellipitical paraboloid used to determine tree canopy contours
           atop = 0.25*canopydiameter**2./(canopymaxh-canopytop)
           abot = 0.25*canopydiameter**2./(canopymaxh-canopybot)
           do ii=xbot,xtop
@@ -285,7 +293,7 @@
               endif
               do kk=zbot,ztop
                 ! Determine how many of subcells of a cell are within the paraboloid, the fraction of the subcells is equal to the fraction of the cell within the paraboloid
-                rhoftemp = 0 ! Density of fuels to be added to current cell of interest
+                rhoftemp(:) = 0 ! Density of fuels to be added to current cell of interest
                 do iii=1,10
                   do jjj=1,10
                     do kkk=1,10
@@ -315,7 +323,7 @@
                 !----- Fill in the 3D arrays for a tree
                 do ift=1,tfuelbins
                   if (rhoftemp(ift).gt.0) then
-                    ift_index = (i-1)*tfuelbins+ift
+                    ift_index = (i-1)*ntreefueltypes+ift
                     if (itrees.eq.1) then
                       tsizescale(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)*
      +                  tsizescale(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)*t1ss(ift,i))/
@@ -355,13 +363,13 @@
         enddo
       enddo
       deallocate(rhoftemp)
-      !print*,'treeht = ',treeht
+      
       !----- Tree fuel depth is equal to height of the first cell
       do i=1,ntspecies
-        do j=1,tfuelbins
+        do j=1,ntreefueltypes
           do ii=tdnx(1),tdnx(2)
             do jj=tdny(1),tdny(2)
-              tfueldepth((i-1)*tfuelbins+j,ii,jj) = zheight(ii,jj,2)
+              tfueldepth((i-1)*ntreefueltypes+j,ii,jj) = zheight(ii,jj,2)
             enddo
           enddo
         enddo
@@ -375,6 +383,10 @@
             target_mass = target_mass + ntrees(i)*t1bulkdensity(j,i)*PI*tcrowndiameter(1,i)**2./
      +        8.*(theight(1,i)-tcrownbotheight(1,i))
           enddo
+          if (istem.eq.1) then
+            target_mass = target_mass+ntrees(i)*trhomicro(i)*PI*tdbh(1,i)**2.*theight(1,i)/12.
+            target_mass = target_mass+ntrees(i)*trhomicro(i)*PI*((tdbh(1,i)+tbarkthick(1,i))**2.-tdbh(1,i)**2.)*theight(1,i)
+          endif
         enddo
       endif
       if (itrees.ne.1) then
@@ -389,7 +401,7 @@
       endif
       print*,'Trees target fuel mass:',target_mass
       actual_mass = 0
-      do ift=1,ntspecies*tfuelbins
+      do ift=1,ntspecies*ntreefueltypes
         do i=tdnx(1),tdnx(2)
           do j=tdny(1),tdny(2)
             do k=1,zmax

@@ -27,10 +27,12 @@
 !----------------------------------------------------------------------
       use grid_variables
       use treatment_variables
+      use baseline_variables
 
       implicit none
       
       integer i,j,k,ift
+      real Cremove
       real,allocatable:: srho(:)
       real,allocatable:: total_mass(:),total_ss(:)
       real actual_mass,target_mass
@@ -57,8 +59,14 @@
         do i=sdnx(1),sdnx(2)
           do j=sdny(1),sdny(2)
             do k=1,zmax
-              total_mass(ift) = total_mass(ift)+rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
-              total_ss(ift)   = total_ss(ift)+sizescale(ift,i,j,k)*rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
+              Cremove = 0.
+              if (istem.eq.1)then
+                if (MOD(ift-ngrass,ntreefueltypes).eq.tfuelbins+1) Cremove = 0.8
+                if (MOD(ift-ngrass,ntreefueltypes).eq.tfuelbins+2) Cremove = 0.4
+              endif
+              total_mass(ift) = total_mass(ift)+(1-Cremove)*rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
+              total_ss(ift)  = total_ss(ift)+sizescale(ift,i,j,k)*(1-Cremove)*rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
+              target_mass = target_mass-Cremove*rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
             enddo
           enddo
         enddo
@@ -116,12 +124,13 @@
       use constant_variables
       use grid_variables
       use treatment_variables
-      use baseline_variables, only :ngrass
+      use baseline_variables
 
       implicit none
       
       integer ift,i,ii,iii,j,jj,jjj,k,kk,kkk
       integer snx,sny,sxnum,synum
+      real Cremove
       real sxloc,syloc
       real snumber
       real xtest,ytest
@@ -153,10 +162,16 @@
           do i=sdnx(1),sdnx(2)
             do j=sdny(1),sdny(2)
               do k=1,zmax
-                total_mass(ift)= total_mass(ift)+rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
-                total_ss(ift)  = total_ss(ift)+sizescale(ift,i,j,k)*rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
-                rhof(ift,i,j,k)= 0.
-                moist(ift,i,j,k)=0.
+                Cremove = 0.
+                if (istem.eq.1)then
+                  if (MOD(ift-ngrass,ntreefueltypes).eq.tfuelbins+1) Cremove = 0.8
+                  if (MOD(ift-ngrass,ntreefueltypes).eq.tfuelbins+2) Cremove = 0.4
+                endif
+                total_mass(ift)= total_mass(ift)+(1-Cremove)*rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
+                total_ss(ift)  = total_ss(ift)+sizescale(ift,i,j,k)*(1-Cremove)*rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
+                target_mass = target_mass-Cremove*rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
+                rhof(ift,i,j,k) = 0.
+                moist(ift,i,j,k)= 0.
                 sizescale(ift,i,j,k) = 0.
               enddo
             enddo
@@ -167,7 +182,7 @@
       ! Compute the number and location of slash piles within the clearing
       snx = sdnx(2)-sdnx(1)
       sny = sdny(2)-sdny(1)
-      snumber = sum(total_mass)/(PI/8.*sdiameter**2.*sheight*sprho)
+      snumber = sum(total_mass)/(PI/4.*sdiameter**2.*sheight*sprho)
       print*,'Total number of slash piles:',ceiling(snumber)
       sxnum   = floor(snx/(snx*sny/ceiling(snumber))**0.5)
       synum   = ceiling(snumber/sxnum)
@@ -296,7 +311,7 @@
       do ift=1,nfuel
         do i=sdnx(1),sdnx(2)
           do j=sdny(1),sdny(2)
-            fueldepth(ift,i,j,1)= 0
+            fueldepth(ift,i,j,1) = zheight(i,j,k+1)
             do k=1,zmax
               sizescale(ift,i,j,k) = 0
               rhof(ift,i,j,k) = 0

@@ -1,4 +1,7 @@
-
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! defines subroutines for reading and interpreting various types of 
+! tree data files
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine treesGeneral_readin
       !-----------------------------------------------------------------
       ! treesGeneral_readin is a function which reads in a general trees
@@ -10,7 +13,7 @@
       implicit none
       integer i
         
-      allocate(ntrees(ntspecies)) ! Number of trees for each species
+      allocate(ntrees(ntspecies)); ntrees(:)=0.0 ! Number of trees for each species
       allocate(tstemdensity(ntspecies)) ! Stem density of each species [stem/ha]
       allocate(theight(2,ntspecies)) ! Tree heights [m]
       allocate(tcrownbotheight(2,ntspecies)) ! Height to live crown [m]
@@ -19,7 +22,14 @@
       allocate(t1bulkdensity(tfuelbins,ntspecies)) ! Crown fuel bulk density [kg/m3]
       allocate(t1moisture(tfuelbins,ntspecies)) ! Crown fuel moisture content [fraction]
       allocate(t1ss(tfuelbins,ntspecies)) ! Crown fuel size scale [m]
-      
+      if(istem.eq.1)then
+        allocate(trhomicro(ntspecies)) ! Micro-density of tree species [kg/m3]
+        allocate(tdbh(2,ntspecies)) ! Tree diameter breast heights [m]
+        allocate(tstemmoist(ntspecies)) ! Tree stem moisture content [fraction]
+        allocate(tbarkthick(2,ntspecies)) ! Bark Thickness [m]
+        allocate(tbarkmoist(ntspecies)) ! Bark moisture content [fraction]
+      endif
+
       open (2,file=treefile)
       read (2,*) tstemdensity
       read (2,*) theight(1,:)
@@ -30,6 +40,15 @@
       read (2,*) tcrowndiameter(2,:)
       read (2,*) tcrownmaxheight(1,:)
       read (2,*) tcrownmaxheight(2,:)
+      if(istem.eq.1)then
+        read (2,*) trhomicro(:)
+        read (2,*) tdbh(1,:)
+        read (2,*) tdbh(2,:)
+        read (2,*) tstemmoist(:)
+        read (2,*) tbarkthick(1,:)
+        read (2,*) tbarkthick(2,:)
+        read (2,*) tbarkmoist(:)
+      endif 
       do i=1,tfuelbins
         read(2,*) t1bulkdensity(i,:)
         read(2,*) t1moisture(i,:)
@@ -51,16 +70,11 @@
       integer i,j,ift,itree
       integer,allocatable:: numarray(:)
       real,dimension(7+3*tfuelbins):: temp_array
-
+      
       !!!------JSM: Parameters/Variables for populate function-----!!!
-
       real:: nsub,nsubdecimal,rnumx,rnumy,newx,newy
-      !real,allocatable:: nsubdecimal(:) 
       integer:: q,t,r,s,tindex,dataleft,dataright,databottom,datatop,treecount,num
       integer,allocatable:: rounddown(:),ntreesold(:)
-
-
-
         
       itree = 0
       open (2,file=treefile)
@@ -88,7 +102,6 @@
       !---Determine how many dataset subdomains fit within your main domain
       if(ndatax.lt.nx*dx.or.ndatay.lt.ny*dy) then
          nsub = (nx*dx*ny*dy)/(ndatax*ndatay)
-         !nsub = 4.8  !FOR TESTING PURPOSES ONLY
          print*,'Number of subdomains = ',nsub
       endif
       allocate(ntreesold(ntspecies))
@@ -121,31 +134,17 @@
              ntrees(i) = rounddown(i)*(floor(nsub)) + (ntreesold(i)-rounddown(i))*(ceiling(nsub))
          enddo
          print*,'new ntrees = ',ntrees
-
       endif
-
   !!!!!------END of JSM additions for populate-------!!!!!
-
-      allocate(tlocation(ntspecies,maxval(ntrees),2)) ! Tree cartesian coordinates [m,m]
-      allocate(theight(maxval(ntrees),ntspecies)) ! Tree heights [m]
-      allocate(tcrownbotheight(maxval(ntrees),ntspecies)) ! Height to live crown [m]
-      allocate(tcrowndiameter(maxval(ntrees),ntspecies)) ! Crown diameter [m]
-      allocate(tcrownmaxheight(maxval(ntrees),ntspecies)) ! Height to max crown diameter [m]
-      allocate(t2bulkdensity(maxval(ntrees),tfuelbins,ntspecies)) ! Crown fuel bulk density [kg/m3]
-      allocate(t2moisture(maxval(ntrees),tfuelbins,ntspecies)) ! Crown fuel moisture content [fraction]
-      allocate(t2ss(maxval(ntrees),tfuelbins,ntspecies)) ! Crown fuel size scale [m]
-      allocate(numarray(ntspecies))
-      !!!!MORE JSM ADDITIONS FOR POPULATE!!!!
-      tlocation(:,:,:) = 0.0
-      theight(:,:) = 0.0
-      tcrownbotheight(:,:) = 0.0
-      tcrowndiameter(:,:) = 0.0
-      tcrownmaxheight(:,:) = 0.0
-      t2bulkdensity(:,:,:) = 0.0
-      t2moisture(:,:,:) = 0.0
-      t2ss(:,:,:) = 0.0
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      numarray(:)=0
+      allocate(tlocation(ntspecies,maxval(ntrees),2)); tlocation(:,:,:)=0.0 ! Tree cartesian coordinates [m,m]
+      allocate(theight(maxval(ntrees),ntspecies)); theight(:,:)=0.0 ! Tree heights [m]
+      allocate(tcrownbotheight(maxval(ntrees),ntspecies)); tcrownbotheight(:,:)=0.0 ! Height to live crown [m]
+      allocate(tcrowndiameter(maxval(ntrees),ntspecies)); tcrowndiameter(:,:)=0.0 ! Crown diameter [m]
+      allocate(tcrownmaxheight(maxval(ntrees),ntspecies)); tcrownmaxheight(:,:)=0.0 ! Height to max crown diameter [m]
+      allocate(t2bulkdensity(maxval(ntrees),tfuelbins,ntspecies)); t2bulkdensity(:,:,:)=0.0 ! Crown fuel bulk density [kg/m3]
+      allocate(t2moisture(maxval(ntrees),tfuelbins,ntspecies)); t2moisture(:,:,:)=0.0 ! Crown fuel moisture content [fraction]
+      allocate(t2ss(maxval(ntrees),tfuelbins,ntspecies)); t2ss(:,:,:)=0.0 ! Crown fuel size scale [m]
+      allocate(numarray(ntspecies)); numarray(:)=0
       do i=1,itree
         read(2,*) temp_array(:)
         numarray(tspecies(i)) = numarray(tspecies(i))+1
