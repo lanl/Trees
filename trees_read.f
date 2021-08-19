@@ -100,10 +100,10 @@
   !!!!!------JSM added the following block of code for populate------!!!!!
 
       !---Determine how many dataset subdomains fit within your main domain
-      if(ndatax.lt.nx*dx.or.ndatay.lt.ny*dy) then
-         nsub = (nx*dx*ny*dy)/(ndatax*ndatay)
-         print*,'Number of subdomains = ',nsub
-      endif
+      !if(ndatax.lt.nx*dx.or.ndatay.lt.ny*dy) then
+      nsub = (nx*dx*ny*dy)/(ndatax*ndatay)
+      print*,'Number of subdomains = ',nsub
+      !endif
       allocate(ntreesold(ntspecies))
       ntreesold = ntrees
 
@@ -114,7 +114,7 @@
       !that we need to multiply by the integer above the decimal, and those we
       !need to multiply by the integer below the decimal...
       if(nsub.eq.nint(nsub)) then
-         ntrees = ntrees*(nsub-1)
+         ntrees = ntrees*(nsub)
          print*,'ntrees = ',ntrees
       else
          allocate(rounddown(ntspecies)) 
@@ -136,6 +136,7 @@
          print*,'new ntrees = ',ntrees
       endif
   !!!!!------END of JSM additions for populate-------!!!!!
+
       allocate(tlocation(ntspecies,maxval(ntrees),2)); tlocation(:,:,:)=0.0 ! Tree cartesian coordinates [m,m]
       allocate(theight(maxval(ntrees),ntspecies)); theight(:,:)=0.0 ! Tree heights [m]
       allocate(tcrownbotheight(maxval(ntrees),ntspecies)); tcrownbotheight(:,:)=0.0 ! Height to live crown [m]
@@ -177,6 +178,7 @@
 
       print*,'dataset lives at these coordinates: ',dataleft,dataright,databottom,datatop
 
+      if (nsub.gt.1) then
       do q=1,ntspecies
           tindex = ntreesold(q)
           do r=1,rounddown(q)
@@ -288,6 +290,7 @@
       enddo
 
       print*,'Number of relocation due to crowding = ',num
+      endif
 
       !!!---------END OF JSM ADDITIONS FOR POPULATE----------!!!
 

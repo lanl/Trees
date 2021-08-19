@@ -168,7 +168,7 @@
       real,external:: paraboloid,normal 
       real x
       !!!!JSM BELOW IS ONLY FOR ILITTER=2 USING JENNA'S SURFACE FUEL PROGRAM!!!!  
-      integer w,tottrees,jk,ns
+      integer w,jk,ns
       real,allocatable:: treespec(:),xtree(:),ytree(:)
       real,allocatable:: treeht(:,:,:),rhospecies(:,:,:,:)
       
@@ -181,11 +181,14 @@
       endif
       print*,'Number of trees of each species:',ntrees
       
-      if(ilitter.eq.2) then  !JSM added for surface fuel arrays
-        tottrees=sum(ntrees)   
-        allocate(treeht(nx,ny,nz),xtree(sum(ntrees)),ytree(tottrees),
+      if(ilitter.eq.2) then  !JSM added for surface fuel arrays   
+        allocate(treeht(nx,ny,nz),xtree(sum(ntrees)),ytree(sum(ntrees)),
      +    treespec(sum(ntrees)),rhospecies(nx,ny,nz,ntspecies))
-        treeht = 0.0
+        treeht(:,:,:) = 0.0
+        xtree(:) = 0.0
+        ytree(:) = 0.0
+        treespec(:) = 0.0
+        rhospecies(:,:,:,:) = 0.0
         w=1  !JSM added to initialize tree location arrays 
       endif
 
@@ -308,11 +311,13 @@
                           if (itrees.eq.1)then
                             rhoftemp(ift) = rhoftemp(ift)+3./2000.*t1bulkdensity(ift,i)*
      +                        (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-xtest)**2.+
-     +                        (yloc-ytest)**2.)**0.5/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density
+     +                        (yloc-ytest)**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density
                           else 
                             rhoftemp(ift) = rhoftemp(ift)+3./2000.*t2bulkdensity(j,ift,i)*
      +                        (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-xtest)**2.+
-     +                        (yloc-ytest)**2.)**0.5/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density
+     +                        (yloc-ytest)**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density; 
+                          !note the 4 in the above equations is for making canopydiameter a radius by 
+                          !dividing by 2 and then squaring that in the denominator of the denominator
                           endif
                         enddo
                       endif
