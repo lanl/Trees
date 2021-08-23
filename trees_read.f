@@ -116,6 +116,7 @@
       if(nsub.eq.nint(nsub)) then
          ntrees = ntrees*(nsub)
          print*,'ntrees = ',ntrees
+
       else
          allocate(rounddown(ntspecies)) 
          print*,'Not an integer number of subdomains...'
@@ -179,10 +180,43 @@
       print*,'dataset lives at these coordinates: ',dataleft,dataright,databottom,datatop
 
       if (nsub.gt.1) then
-      do q=1,ntspecies
-          tindex = ntreesold(q)
-          do r=1,rounddown(q)
-              do s=1,floor(nsub)-1
+          if (nsub.eq.int(nsub)) then
+             do q=1,ntspecies
+                tindex = ntreesold(q)
+                do r=1,ntreesold(q)
+                    do s=1,int(nsub)-1         
+                       tindex = tindex+1
+                       newx = tlocation(q,r,1)
+                       newy = tlocation(q,r,2)
+                       !print*,'old location = ',newx,newy   
+                       do while (newx.ge.dataleft.and.newx.le.dataright.and.newy.ge.databottom.and.newy.le.datatop.or.newx.gt.nx*dx.or.newx.lt.0.or.newy.gt.ny*dy.or.newy.lt.0)
+                          call random_number(rnumx)
+                          newx = rnumx*nx*dx
+                          call random_number(rnumy)
+                          newy = rnumy*ny*dy
+                       enddo
+
+                    tlocation(q,tindex,1) = newx
+                    tlocation(q,tindex,2) = newy
+                    theight(tindex,q) = theight(r,q)
+                    tcrownbotheight(tindex,q) = tcrownbotheight(r,q)
+                    tcrowndiameter(tindex,q) = tcrowndiameter(r,q)
+                    tcrownmaxheight(tindex,q) = tcrownmaxheight(r,q)
+                    do j=1,tfuelbins
+                       t2bulkdensity(tindex,j,q) = t2bulkdensity(r,j,q)
+                       t2moisture(tindex,j,q) = t2moisture(r,j,q)
+                       t2ss(tindex,j,q) = t2ss(r,j,q)
+                    enddo
+                    !print*,'theight old = ',theight(r,q)
+                    !print*,'theight new = ',theight(r,q)
+                    enddo
+                enddo
+             enddo
+          else
+           do q=1,ntspecies
+           tindex = ntreesold(q)
+             do r=1,rounddown(q)
+                do s=1,floor(nsub)-1
                   tindex=tindex+1
                   !print*,'original index = ',r
                   !print*,'tindex = ',tindex
@@ -216,7 +250,7 @@
                   !print*,'theight old = ',theight(r,q)
                   !print*,'theight new = ',theight(r,q)
               enddo
-          enddo
+           enddo
           do r=rounddown(q)+1,ntreesold(q)
               do s=1,ceiling(nsub)-1
                   tindex=tindex+1
@@ -253,7 +287,7 @@
               enddo
           enddo
       enddo
-
+      endif
       treecount = 0
       do q=1,ntspecies
           treecount = treecount + ntrees(q)
@@ -291,7 +325,7 @@
 
       print*,'Number of relocation due to crowding = ',num
       endif
-
+      
       !!!---------END OF JSM ADDITIONS FOR POPULATE----------!!!
 
       end subroutine treelist_readin
