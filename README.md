@@ -54,8 +54,8 @@ ntspecies     -- 1                    -- Number of tree species
 tfuelbins     -- 1                    -- Number of size bins to distribute canopy fuels (foliage, branches, etc)
 treefile      -- ‘ ‘                  -- Name of treefile with the additional information to be read
 istem         -- 0                    -- Adds tree stems and bark to fuel arrays, DO NOT USE!!!!
-ndatax        -- Required if itrees=2 -- Size of dataset domain in x direction (m)
-ndatay        -- Required if itrees=2 -- Size of dataset domain in y direction (m)
+ndatax        -- nx                   -- Size of dataset domain in x direction (m)
+ndatay        -- ny                   -- Size of dataset domain in y direction (m)
 datalocx      -- 0                    -- Bottom left corner x coordinate for where dataset should be placed
 datalocy      -- 0                    -- Bottom left corner y coordinate for where dataset should be placed
 tdnx          -- [0,nx*dx]            -- x range of the domain to be populated with trees (m)

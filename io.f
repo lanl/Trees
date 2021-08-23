@@ -40,10 +40,12 @@
       igrass        =0
       ngrass        =1
       grassconstant =5
-      itrees        =1
+      itrees        =0
       ntspecies     =1
       tfuelbins     =1
       istem         =0
+      ndatax        =0
+      ndatay        =0
       datalocx      =0  !JSM added for populate function
       datalocy      =0  !JSM added for populate function
       ilitter       =0
@@ -75,6 +77,9 @@
       sdnx(2)=ceiling(sdnx(2)/dx)
       sdny(1)=floor(sdny(1)/dy+1)
       sdny(2)=ceiling(sdny(2)/dy)
+      
+      if (ndatax.eq.0) ndatax=nx
+      if (ndatay.eq.0) ndatay=ny
 
       if (ifuelin.eq.1) then
         if(inx.eq.0) inx=nx

@@ -3,9 +3,6 @@ JSONDIR:= ./jsonfortran
 VPATH   = ${JSONDIR}
 ODIR    = obj
 OBJS    = variables.o main.o define_variables.o \
-					json_kinds.o json_parameters.o \
-			 		json_string_utilities.o json_value_module.o \
-			 		json_file_module.o json_module.o \
 				  io.o metryc.o shapes.o distribution.o \
 			 		baseline.o treatments.o \
 			 		fuel_read.o trees_read.o \

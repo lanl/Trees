@@ -190,8 +190,6 @@
         call treesGeneral_readin
       else if(itrees.eq.2.or.itrees.eq.3) then
         call treelist_readin
-      else if(itrees.eq.4) then
-        call json_readin()
       endif
 
       if (ilitter.eq.1) then
