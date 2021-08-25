@@ -196,132 +196,125 @@
                           newy = rnumy*ny*dy
                        enddo
 
-                    tlocation(q,tindex,1) = newx
-                    tlocation(q,tindex,2) = newy
-                    theight(tindex,q) = theight(r,q)
-                    tcrownbotheight(tindex,q) = tcrownbotheight(r,q)
-                    tcrowndiameter(tindex,q) = tcrowndiameter(r,q)
-                    tcrownmaxheight(tindex,q) = tcrownmaxheight(r,q)
-                    do j=1,tfuelbins
-                       t2bulkdensity(tindex,j,q) = t2bulkdensity(r,j,q)
-                       t2moisture(tindex,j,q) = t2moisture(r,j,q)
-                       t2ss(tindex,j,q) = t2ss(r,j,q)
-                    enddo
+                       tlocation(q,tindex,1) = newx
+                       tlocation(q,tindex,2) = newy
+                       theight(tindex,q) = theight(r,q)
+                       tcrownbotheight(tindex,q) = tcrownbotheight(r,q)
+                       tcrowndiameter(tindex,q) = tcrowndiameter(r,q)
+                       tcrownmaxheight(tindex,q) = tcrownmaxheight(r,q)
+                       do j=1,tfuelbins
+                          t2bulkdensity(tindex,j,q) = t2bulkdensity(r,j,q)
+                          t2moisture(tindex,j,q) = t2moisture(r,j,q)
+                          t2ss(tindex,j,q) = t2ss(r,j,q)
+                       enddo
                     !print*,'theight old = ',theight(r,q)
                     !print*,'theight new = ',theight(r,q)
                     enddo
                 enddo
              enddo
           else
-           do q=1,ntspecies
-           tindex = ntreesold(q)
-             do r=1,rounddown(q)
-                do s=1,floor(nsub)-1
-                  tindex=tindex+1
-                  !print*,'original index = ',r
-                  !print*,'tindex = ',tindex
-                  !Choose a new location
-                  newx = tlocation(q,r,1)
-                  newy = tlocation(q,r,2)
-                  !print*,'old location = ',newx,newy   
-                  do while (newx.ge.dataleft.and.newx.le.dataright.and.newy.ge.databottom.and.newy.le.datatop.or.newx.gt.nx*dx.or.newx.lt.0.or.newy.gt.ny*dy.or.newy.lt.0)
-                     call random_number(rnumx)
-                     newx = rnumx*nx*dx
-                     call random_number(rnumy)
-                     newy = rnumy*ny*dy
-                  enddo
+             do q=1,ntspecies
+             tindex = ntreesold(q)
+                do r=1,rounddown(q)
+                    do s=1,floor(nsub)-1
+                       tindex=tindex+1
+                       !print*,'original index = ',r
+                       !print*,'tindex = ',tindex
+                       !Choose a new location
+                       newx = tlocation(q,r,1)
+                       newy = tlocation(q,r,2)
+                       !print*,'old location = ',newx,newy   
+                       do while (newx.ge.dataleft.and.newx.le.dataright.and.newy.ge.databottom.and.newy.le.datatop.or.newx.gt.nx*dx.or.newx.lt.0.or.newy.gt.ny*dy.or.newy.lt.0)
+                          call random_number(rnumx)
+                          newx = rnumx*nx*dx
+                          call random_number(rnumy)
+                          newy = rnumy*ny*dy
+                       enddo
                  
-                  !do while(newy.ge.databottom.and.newy.le.datatop.and.newx.le.dataright.and.newx.ge.dataleft.or.newy.gt.ny*dy.or.newy.lt.0)
-                  !   call random_number(rnum)
-                  !   newy = rnum*ny*dy
-                  !enddo
-                  !print*,'new location = ',newx,newy
-                  tlocation(q,tindex,1) = newx
-                  tlocation(q,tindex,2) = newy
-                  theight(tindex,q) = theight(r,q)
-                  tcrownbotheight(tindex,q) = tcrownbotheight(r,q)
-                  tcrowndiameter(tindex,q) = tcrowndiameter(r,q)
-                  tcrownmaxheight(tindex,q) = tcrownmaxheight(r,q)
-                  do j=1,tfuelbins
-                    t2bulkdensity(tindex,j,q) = t2bulkdensity(r,j,q)
-                    t2moisture(tindex,j,q) = t2moisture(r,j,q)
-                    t2ss(tindex,j,q) = t2ss(r,j,q)
-                  enddo
-                  !print*,'theight old = ',theight(r,q)
-                  !print*,'theight new = ',theight(r,q)
-              enddo
-           enddo
-          do r=rounddown(q)+1,ntreesold(q)
-              do s=1,ceiling(nsub)-1
-                  tindex=tindex+1
-                  !print*,'original index = ',r
-                  !print*,'tindex = ',tindex
-                  !Choose a new location
-                  newx = tlocation(q,r,1)
-                  newy = tlocation(q,r,2)
-                  !print*,'old location = ',newx,newy
+                       tlocation(q,tindex,1) = newx
+                       tlocation(q,tindex,2) = newy
+                       theight(tindex,q) = theight(r,q)
+                       tcrownbotheight(tindex,q) = tcrownbotheight(r,q)
+                       tcrowndiameter(tindex,q) = tcrowndiameter(r,q)
+                       tcrownmaxheight(tindex,q) = tcrownmaxheight(r,q)
+                       do j=1,tfuelbins
+                         t2bulkdensity(tindex,j,q) = t2bulkdensity(r,j,q)
+                         t2moisture(tindex,j,q) = t2moisture(r,j,q)
+                         t2ss(tindex,j,q) = t2ss(r,j,q)
+                       enddo
+                       !print*,'theight old = ',theight(r,q)
+                       !print*,'theight new = ',theight(r,q)
+                    enddo
+                enddo
+                do r=rounddown(q)+1,ntreesold(q)
+                   do s=1,ceiling(nsub)-1
+                      tindex=tindex+1
+                      !print*,'original index = ',r
+                      !print*,'tindex = ',tindex
+                      !Choose a new location
+                      newx = tlocation(q,r,1)
+                      newy = tlocation(q,r,2)
+                      !print*,'old location = ',newx,newy
 
-                  do while (newx.ge.dataleft.and.newx.le.dataright.and.newy.ge.databottom.and.newy.le.datatop.or.newx.gt.nx*dx.or.newx.lt.0.or.newy.gt.ny*dy.or.newy.lt.0)
-                     call random_number(rnumx)
-                     newx = rnumx*nx*dx
-                     call random_number(rnumy)
-                     newy = rnumy*ny*dy
-                  enddo
+                      do while (newx.ge.dataleft.and.newx.le.dataright.and.newy.ge.databottom.and.newy.le.datatop.or.newx.gt.nx*dx.or.newx.lt.0.or.newy.gt.ny*dy.or.newy.lt.0)
+                         call random_number(rnumx)
+                         newx = rnumx*nx*dx
+                         call random_number(rnumy)
+                         newy = rnumy*ny*dy
+                      enddo
 
 
-                  !print*,'new location = ',newx,newy
-                  tlocation(q,tindex,1) = newx
-                  tlocation(q,tindex,2) = newy
-                  theight(tindex,q) = theight(r,q)
-                  tcrownbotheight(tindex,q) = tcrownbotheight(r,q)
-                  tcrowndiameter(tindex,q) = tcrowndiameter(r,q)
-                  tcrownmaxheight(tindex,q) = tcrownmaxheight(r,q)
-                  do j=1,tfuelbins
-                    t2bulkdensity(tindex,j,q) = t2bulkdensity(r,j,q)
-                    t2moisture(tindex,j,q) = t2moisture(r,j,q)
-                    t2ss(tindex,j,q) = t2ss(r,j,q)
-                  enddo
-                  !print*,'theight old = ',theight(r,q)
-                  !print*,'theight new = ',theight(r,q)
+                      !print*,'new location = ',newx,newy
+                      tlocation(q,tindex,1) = newx
+                      tlocation(q,tindex,2) = newy
+                      theight(tindex,q) = theight(r,q)
+                      tcrownbotheight(tindex,q) = tcrownbotheight(r,q)
+                      tcrowndiameter(tindex,q) = tcrowndiameter(r,q)
+                      tcrownmaxheight(tindex,q) = tcrownmaxheight(r,q)
+                      do j=1,tfuelbins
+                         t2bulkdensity(tindex,j,q) = t2bulkdensity(r,j,q)
+                         t2moisture(tindex,j,q) = t2moisture(r,j,q)
+                         t2ss(tindex,j,q) = t2ss(r,j,q)
+                      enddo
+                      !print*,'theight old = ',theight(r,q)
+                      !print*,'theight new = ',theight(r,q)
+ 
+                   enddo
+                enddo
+             enddo
+         endif
+         treecount = 0
+         treecount = sum(ntrees)
+         print*,'Treecount = ',treecount
 
-              enddo
-          enddo
-      enddo
-      endif
-      treecount = 0
-      do q=1,ntspecies
-          treecount = treecount + ntrees(q)
-      enddo
-      print*,'Treecount = ',treecount
-
-      num=0
-      do q=1,ntspecies
-          do t=ntreesold(q)+1,ntrees(q)
-              do r=1,ntspecies
-                  do s=1,ntrees(r)
-                      if (q.ne.r.or.t.ne.s) then
-                         do while(abs(tlocation(q,t,1)-tlocation(r,s,1)).lt.0.1.and.abs(tlocation(q,t,2)-tlocation(r,s,2)).lt.0.1)
-                            call random_number(rnumx)
-                            newx = rnumx*nx*dx
-                            call random_number(rnumy)
-                            newy = rnumy*ny*dy
-
-                            do while (newx.ge.dataleft.and.newx.le.dataright.and.newy.ge.databottom.and.newy.le.datatop.or.newx.gt.nx*dx.or.newx.lt.0.or.newy.gt.ny*dy.or.newy.lt.0)
+         num=0
+         do q=1,ntspecies
+             do t=ntreesold(q)+1,ntrees(q)
+                 do r=1,ntspecies
+                     do s=1,ntrees(r)
+                         if (q.ne.r.or.t.ne.s) then
+                            do while(abs(tlocation(q,t,1)-tlocation(r,s,1)).lt.0.1.and.abs(tlocation(q,t,2)-tlocation(r,s,2)).lt.0.1)
                                call random_number(rnumx)
                                newx = rnumx*nx*dx
                                call random_number(rnumy)
                                newy = rnumy*ny*dy
-                            enddo
 
-                            num = num+1
-                            tlocation(q,t,1) = newx
-                            tlocation(q,t,2) = newy
-                         enddo
-                      endif
+                               do while (newx.ge.dataleft.and.newx.le.dataright.and.newy.ge.databottom.and.newy.le.datatop.or.newx.gt.nx*dx.or.newx.lt.0.or.newy.gt.ny*dy.or.newy.lt.0)
+                                  call random_number(rnumx)
+                                  newx = rnumx*nx*dx
+                                  call random_number(rnumy)
+                                  newy = rnumy*ny*dy
+                               enddo
+
+                               num = num+1
+                               tlocation(q,t,1) = newx
+                               tlocation(q,t,2) = newy
+                            enddo
+                         endif
+                     enddo
                   enddo
-               enddo
-           enddo
-      enddo
+              enddo
+         enddo
 
       print*,'Number of relocation due to crowding = ',num
       endif
@@ -329,3 +322,4 @@
       !!!---------END OF JSM ADDITIONS FOR POPULATE----------!!!
 
       end subroutine treelist_readin
+      
