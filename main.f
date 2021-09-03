@@ -27,7 +27,7 @@
       call baseline
 
       !-----Perform fuel treatments
-      if(itreatment.eq.1) call treatment
+      if(itreatment.ne.0) call treatment
       
       !-----Export data to binary files
       print*,'Singlefuel',singlefuel
