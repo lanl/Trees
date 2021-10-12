@@ -15,7 +15,8 @@
       implicit none
 
       namelist/fuellist/
-     .   nx,ny,nz,dx,dy,dz,aa1,singlefuel,topofile,
+     .   nx,ny,nz,dx,dy,dz,aa1,topofile,
+     .   singlefuel,ifiretecshock,
      .   ifuelin,rhoffile,moistfile,ssfile,afdfile,
      .   inx,iny,inz,idx,idy,idz,iaa1,infuel,
      .   igrass,ngrass,grassconstant,grassfile,
@@ -33,7 +34,8 @@
       
       ! Set the default values that will be overwritten by the namelist if present
       aa1           =0.1
-      singlefuel    =0.0
+      singlefuel    =0
+      ifiretecshock =0
       topofile      ='flat'
       ifuelin       =0
       iaa1          =-1
@@ -117,29 +119,32 @@
       enddo
 
       print*,'Exporting data to .dat files'
-      open (1,file='treesrhof.dat',form='unformatted',status='unknown')
-      do ift=1,nfuel
-        if (nonzero(ift).ne.0)  write (1) rhof(ift,:,:,:)
-      enddo
-      close (1)
-
-      open (1,file='treesfueldepth.dat',form='unformatted',status='unknown')
-      do ift=1,nfuel
-        if (nonzero(ift).ne.0)  write (1) fueldepth(ift,:,:,:)
-      enddo
-      close (1)
-
-      open (1,file='treesss.dat',form='unformatted',status='unknown')
-      do ift=1,nfuel
-        if (nonzero(ift).ne.0)  write (1) sizescale(ift,:,:,:)
-      enddo
-      close (1)
-
-      open (1,file='treesmoist.dat',form='unformatted',status='unknown')
-      do ift=1,nfuel
-        if (nonzero(ift).ne.0)  write (1) moist(ift,:,:,:)
-      enddo
-      close (1)
+      if(ifiretecshock.eq.1)then
+        open(1,file='fuelArrays.dat',access='stream',form='unformatted',
+     +    status='unknown')
+        do ift=1,nfuel
+          if (nonzero(ift).ne.0)  write (1) rhof(ift,:,:,1:lfuel)
+          if (nonzero(ift).ne.0)  write (1) moist(ift,:,:,:)*rhof(ift,:,:,1:lfuel)
+          if (nonzero(ift).ne.0)  write (1) sizescale(ift,:,:,1:lfuel)
+          if (nonzero(ift).ne.0)  write (1) fueldepth(ift,:,:,1)
+        enddo
+        close(1)
+      else
+        open (1,file='treesrhof.dat',form='unformatted',status='unknown')
+        open (2,file='treesfueldepth.dat',form='unformatted',status='unknown')
+        open (3,file='treesss.dat',form='unformatted',status='unknown')
+        open (4,file='treesmoist.dat',form='unformatted',status='unknown')
+        do ift=1,nfuel
+          if (nonzero(ift).ne.0)  write (1) rhof(ift,:,:,:)
+          if (nonzero(ift).ne.0)  write (2) fueldepth(ift,:,:,:)
+          if (nonzero(ift).ne.0)  write (3) sizescale(ift,:,:,:)
+          if (nonzero(ift).ne.0)  write (4) moist(ift,:,:,:)
+        enddo
+        close (1)
+        close (2)
+        close (3)
+        close (4)
+      endif
 
       print*,'Your nfuel is',int(sum(nonzero(:)))
       print*,'Your lfuel is',lfuel
