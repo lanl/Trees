@@ -56,8 +56,8 @@
       total_mass(:) = 0.
       total_ss(:)   = 0.
       do ift=1,nfuel
-        do i=sdnx(1),sdnx(2)
-          do j=sdny(1),sdny(2)
+        do i=int(sdnx(1)/dx+1),int(sdnx(2)/dx+1)
+          do j=int(sdny(1)/dy+1),int(sdny(2)/dy+1)
             do k=1,zmax
               Cremove = 0.
               if (istem.eq.1)then
@@ -72,14 +72,14 @@
         enddo
 
         ! Compute mass density of slash layer give
-        srho(ift) = total_mass(ift)/((sdnx(2)-sdnx(1))*dx*(sdny(2)-sdny(1))*dy*sdepth)
+        srho(ift) = total_mass(ift)/((sdnx(2)-sdnx(1))*(sdny(2)-sdny(1))*sdepth)
       enddo
       print*,'Mass density of slash layer',sum(srho)
 
       ! Distribute that mass into the array
       do ift=1,nfuel
-        do i=sdnx(1),sdnx(2)
-          do j=sdny(1),sdny(2)
+        do i=int(sdnx(1)/dx+1),int(sdnx(2)/dx+1)
+          do j=int(sdny(1)/dy+1),int(sdny(2)/dy+1)
             fueldepth(ift,i,j,1)= sdepth
             do k=1,zmax
               sizescale(ift,i,j,k) = total_ss(ift)/total_mass(ift)
@@ -131,7 +131,6 @@
       integer ift,i,ii,iii,j,jj,jjj,k,kk,kkk
       integer snx,sny,sxnum,synum
       real Cremove
-      real sxloc,syloc
       real snumber
       real xtest,ytest
       integer xtestbot,xtesttop,ytestbot,ytesttop,ztesttop
@@ -149,18 +148,18 @@
       ! Sum together all the mass throughout the entire domain minus the ground layer
       target_mass = 0
       do ift = 1,nfuel
-        do i=1,nx
-          do j=1,ny
-            do k=1,zmax
-              target_mass = target_mass+rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
+        if (ift.gt.ngrass) then
+          do i=1,nx
+            do j=1,ny
+              do k=1,zmax
+                target_mass = target_mass+rhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
+              enddo
             enddo
           enddo
-        enddo
-        if (ift.gt.ngrass) then
           total_ss(ift)   = 0.
           total_mass(ift) = 0.
-          do i=sdnx(1),sdnx(2)
-            do j=sdny(1),sdny(2)
+          do i=int(sdnx(1)/dx+1),int(sdnx(2)/dx+1)
+            do j=int(sdny(1)/dy+1),int(sdny(2)/dy+1)
               do k=1,zmax
                 Cremove = 0.
                 if (istem.eq.1)then
@@ -188,12 +187,10 @@
       synum   = ceiling(snumber/sxnum)
       ! Resolve the full slash piles
       do i=1,floor(snumber)
-        sxloc = sdnx(1)+(1+mod(i-1,sxnum))*snx/(sxnum+1)
-        xtest = sxloc*dx
+        xtest = sdnx(1)+(1+mod(i-1,sxnum))*snx/(sxnum+1)
         xtestbot = floor((xtest-sdiameter/2.)/dx)
         xtesttop = floor((xtest+sdiameter/2.)/dx)
-        syloc = sdny(1)+(1+((i-1)/sxnum))*sny/(synum+1)
-        ytest = syloc*dy
+        ytest = sdny(1)+(1+((i-1)/sxnum))*sny/(synum+1)
         ytestbot = floor((ytest-sdiameter/2.)/dx)
         ytesttop = floor((ytest+sdiameter/2.)/dx)
         do k=1,zmax
@@ -236,12 +233,10 @@
       ! Hack in the case that there's only 1 pile
       spmass  = sum(total_mass)-floor(snumber)*(PI/4.*sdiameter**2.*sheight*sprho)
       spheight= 3.*spmass/(sprho*PI*sdiameter**2.)
-      sxloc = sdnx(1)+(1+mod(i-1,sxnum))*snx/(sxnum+1)
-      xtest = sxloc*dx
+      xtest = sdnx(1)+(1+mod(i-1,sxnum))*snx/(sxnum+1)
       xtestbot = floor((xtest-sdiameter/2.)/dx)
       xtesttop = floor((xtest+sdiameter/2.)/dx)
-      syloc = sdny(1)+(1+(i-1)/sxnum)*sny/(synum+1)
-      ytest = syloc*dy
+      ytest = sdny(1)+(1+(i-1)/sxnum)*sny/(synum+1)
       ytestbot = floor((ytest-sdiameter/2.)/dx)
       ytesttop = floor((ytest+sdiameter/2.)/dx)
       do k=1,zmax
@@ -280,7 +275,7 @@
       enddo
 
       ! Print out the target and actual fuel masses for comparisons sake
-      print*,'Slashpile target fuel mass:',target_mass,sum(total_mass)
+      print*,'Slashpile target fuel mass:',target_mass
       actual_mass = 0
       do ift=1,nfuel
         do i=1,nx
@@ -309,8 +304,8 @@
       
       ! Clear fuels out of the treatment area
       do ift=1,nfuel
-        do i=sdnx(1),sdnx(2)
-          do j=sdny(1),sdny(2)
+        do i=int(sdnx(1)/dx+1),int(sdnx(2)/dx+1)
+          do j=int(sdny(1)/dy+1),int(sdny(2)/dy+1)
             fueldepth(ift,i,j,1) = zheight(i,j,k+1)
             do k=1,zmax
               sizescale(ift,i,j,k) = 0

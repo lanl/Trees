@@ -174,7 +174,7 @@
       
       !-----Determine the number of trees for each species
       if(itrees.eq.1) then
-        totarea = nx*dx*ny*dy
+        totarea = (tdnx(2)-tdnx(1))*(tdny(2)-tdny(1))
         do i=1,ntspecies
           ntrees(i) = ceiling(totarea*tstemdensity(i)/100.**2.)
         enddo
@@ -197,15 +197,15 @@
       do i=1,ntspecies
         print*,'Species',i,'with',ntrees(i),'trees'
         do j=1,ntrees(i)
-          if (MOD(j,100).eq.0) print*,'Placing tree',j,'of',ntrees(i)
+          if (MOD(j,1000).eq.0) print*,'Placing tree',j,'of',ntrees(i)
           
           !----- Place tree location
           if (itrees.eq.1.or.itrees.eq.3) then
             ! Randomly place a tree
             call random_number(xtest)
-            xtest = xtest*nx*dx
+            xtest = tdnx(1)+xtest*(tdnx(2)-tdnx(1))
             call random_number(ytest)
-            ytest = tdny(1)+ytest*(tdny(2)-tdny(1))*dy
+            ytest = tdny(1)+ytest*(tdny(2)-tdny(1))
           else
             ! Specific tree placement
             xtest = tlocation(i,j,1)
@@ -372,8 +372,8 @@
       !----- Tree fuel depth is equal to height of the first cell
       do i=1,ntspecies
         do j=1,ntreefueltypes
-          do ii=tdnx(1),tdnx(2)
-            do jj=tdny(1),tdny(2)
+          do ii=int(tdnx(1)/dx+1),int(tdnx(2)/dx+1)
+            do jj=int(tdny(1)/dy+1),int(tdny(2)/dy+1)
               tfueldepth((i-1)*ntreefueltypes+j,ii,jj) = zheight(ii,jj,2)
             enddo
           enddo
@@ -407,8 +407,8 @@
       print*,'Trees target fuel mass:',target_mass
       actual_mass = 0
       do ift=1,ntspecies*ntreefueltypes
-        do i=tdnx(1),tdnx(2)
-          do j=tdny(1),tdny(2)
+        do i=int(tdnx(1)/dx+1),int(tdnx(2)/dx+1)
+          do j=int(tdny(1)/dy+1),int(tdny(2)/dy+1)
             do k=1,zmax
               actual_mass = actual_mass+trhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
             enddo

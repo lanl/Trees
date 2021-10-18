@@ -27,10 +27,10 @@
      .   sdiameter,sheight,sprho,smoist,sdepth
       
       ! Area of interest arrays need to be allocated before calling namelist
-      allocate(tdnx(2)); tdnx(:)=0 ! Array of the cell range (x)  where the trees are applied
-      allocate(tdny(2)); tdny(:)=0 ! Array of the cell range (x)  where the trees are applied
-      allocate(sdnx(2)); sdnx(:)=0 ! Array of the cell range (x)  where the treatment is applied
-      allocate(sdny(2)); sdny(:)=0 ! Array of the cell range (x)  where the treatment is applied
+      allocate(tdnx(2)); tdnx(:)=-1 ! Array of the cell range (x)  where the trees are applied
+      allocate(tdny(2)); tdny(:)=-1 ! Array of the cell range (x)  where the trees are applied
+      allocate(sdnx(2)); sdnx(:)=-1 ! Array of the cell range (x)  where the treatment is applied
+      allocate(sdny(2)); sdny(:)=-1 ! Array of the cell range (x)  where the treatment is applied
       
       ! Set the default values that will be overwritten by the namelist if present
       aa1           =0.1
@@ -58,27 +58,19 @@
            read (15,nml=fuellist)
       close(15)
 
-      ! Corrections for if variables not specifiedi on namelist
-      if (tdnx(1).eq.0) then
-        tdnx(1) = 1
+      ! Corrections for if variables not specified in namelist
+      if (tdnx(1).eq.-1) then
+        tdnx(1) = 0
         tdnx(2) = dx*nx
-        tdny(1) = 1
+        tdny(1) = 0
         tdny(2) = dy*ny
       endif
-      if (sdnx(1).eq.0) then
-        sdnx(1) = 1
+      if (sdnx(1).eq.-1) then
+        sdnx(1) = 0
         sdnx(2) = dx*nx
-        sdny(1) = 1
+        sdny(1) = 0
         sdny(2) = dy*ny
       endif
-      tdnx(1)=floor(tdnx(1)/dx+1)
-      tdnx(2)=ceiling(tdnx(2)/dx)
-      tdny(1)=floor(tdny(1)/dy+1)
-      tdny(2)=ceiling(tdny(2)/dy)
-      sdnx(1)=floor(sdnx(1)/dx+1)
-      sdnx(2)=ceiling(sdnx(2)/dx)
-      sdny(1)=floor(sdny(1)/dy+1)
-      sdny(2)=ceiling(sdny(2)/dy)
       
       if (ndatax.eq.0) ndatax=nx
       if (ndatay.eq.0) ndatay=ny
