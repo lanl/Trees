@@ -119,7 +119,7 @@ If itrees is 2, the treefile should specific tree information the program will u
 
 If itrees is 3, you use the same file as for itrees equals 2, but the trees will randomly re-distributed instead of using the provided coordinates.
 
-If itrees is 7, use a FastFuels (FF) dataset. This code will take the FF data and calculate the 10 parameters listed in itrees equals 2. When using a FF dataset, do not alter the csv column order after downloading from FF website. Using this option you must specify ndatax, ndatay in the fuellist. This should be the size of your FF bounding box (or slightly smaller). In fuellist both ntspecies and tfuelbins will be overwritten to match the FF data. 
+If itrees is 7, use a FastFuels (FF) dataset. This code will take the FF data and calculate the 10 parameters listed in itrees equals 2. When using a FF dataset, do not alter the csv column order after downloading from FF website. In fuellist ndatax, ndatay, datalocx, datalocy, ntspecies and tfuelbins will be overwritten to match the FF data. 
 (JO - As of 10/19/2021) The FF bounding box is not completely filled by data you expect (ex: a 400 x 400 m box will actually return a 350 x 450 rectangle domain). The ndatax, ndatay, datalocx, datalocy values are computed to be the FF dataset bounds and (0,0) respectively. Currently no moisture specified in FF data, so set all trees to 100% moisture content. FF data has 19 columns currently: 
 1. sp - not used ; species number, Please see Jenkins et al. 2003 for a table of species codes with latin and common names. https://www.fs.fed.us/ne/newtown_square/publications/other_publishers/OCR/ne_2003jenkins01.pdf
 2. dia - not used ; Diameter at Breast Height. Diameter of the tree in inches measured at 4.5 feet.
