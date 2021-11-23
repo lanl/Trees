@@ -522,8 +522,8 @@
 
       !from min/max of x,y coords we need to transform them so they fit inside the bounding box, not 
       ! be referenced from center point of bounding box ; 
-      tlocation(:,:,1) = ndatax/2 - tlocation(:,:,1)
-      tlocation(:,:,2) = ndatay/2 - tlocation(:,:,2)
+      tlocation(:,:,1) =   tlocation(:,:,1) + ndatax/2
+      tlocation(:,:,2) =   tlocation(:,:,2) + ndatay/2
 
 
       !!!-------JSM More populate stuff-------!!!
