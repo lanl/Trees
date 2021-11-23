@@ -490,8 +490,8 @@
             tlocation(tspecies(i),numarray(tspecies(i)),1) = temp_array(18) !x loc
             tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(19) !y loc
             !height, HTLC, crown diameter
-            theight(numarray(tspecies(i)),tspecies(i)) = temp_array(3)
-            tcrownbotheight(numarray(tspecies(i)),tspecies(i)) = temp_array(10)
+            theight(numarray(tspecies(i)),tspecies(i)) = temp_array(3)/3.281 !convert ft to meters
+            tcrownbotheight(numarray(tspecies(i)),tspecies(i)) = temp_array(10)/3.281 !convert ft to meters
             tcrowndiameter(numarray(tspecies(i)),tspecies(i)) = temp_array(17)*2 !crown rad * 2
             !find crown max height
             beta_a = temp_array(11)
@@ -506,7 +506,7 @@
             end do
             max_ind = maxloc(z_rad, dim=2)
             norm_height = z_rad(1,max_ind(2))
-            tcrownmaxheight(numarray(tspecies(i)),tspecies(i)) = (norm_height*temp_array(9)) + temp_array(10) !need to put in a,b,c beta params
+            tcrownmaxheight(numarray(tspecies(i)),tspecies(i)) = ((norm_height*temp_array(9)) + temp_array(10))/3.281 !convert ft to meters
             ! bulk density, moisture, size scale
             do j=1,tfuelbins
                t2bulkdensity(numarray(tspecies(i)),j,tspecies(i)) = temp_array(15) / temp_array(16) !weight (kg) / volume (m^3)
