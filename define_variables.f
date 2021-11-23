@@ -190,6 +190,8 @@
         call treesGeneral_readin
       else if(itrees.eq.2.or.itrees.eq.3) then
         call treelist_readin
+      else if(itrees.eq.7) then
+        call treelist_fastfuels
       endif
 
       if (ilitter.eq.1) then
