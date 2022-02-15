@@ -373,17 +373,28 @@
       x_loc_min = 0
       y_loc_min = 0
 
+      !fast fuels list x/y locations as coordinates, find min/max of x/y_loc_max
+      !using x/y extremes, shift xpos and ypos
       allocate(tspecies(itree))
       read(2,*) !read 1st line and throw away, has column headers
       do i=1,itree
          read(2,*) temp_array(:)
          tspecies(i)=temp_array(5) !take from sp_grp, 5th pos
+         if (i.eq.1) then  
+            x_loc_max = temp_array(18) !initilize min/max
+            x_loc_min = temp_array(18) !initilize min/max
+            y_loc_max = temp_array(19) !initilize min/max
+            y_loc_min = temp_array(19) !initilize min/max
+         end if
          x_loc_max = max(temp_array(18), x_loc_max) !max x for transformation
          x_loc_min = min(temp_array(18), x_loc_min) !min x for transformation
          y_loc_max = max(temp_array(19), y_loc_max) !max y for transformation
          y_loc_min = min(temp_array(19), y_loc_min) !min y for transformation
       enddo
       rewind(2)
+      print*, 'x min: ',x_loc_min,' x max: ',x_loc_max
+      print*, 'y min: ',y_loc_min,' y max: ',y_loc_max
+      
 
       x_per = nint(sqrt( (x_loc_min - x_loc_max)**2 ))
       y_per = nint(sqrt( (y_loc_min - y_loc_max)**2 ))
@@ -487,8 +498,8 @@
             read(2,*) temp_array(:)
             numarray(tspecies(i)) = numarray(tspecies(i))+1
             !species locations
-            tlocation(tspecies(i),numarray(tspecies(i)),1) = temp_array(18) !x loc
-            tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(19) !y loc
+            tlocation(tspecies(i),numarray(tspecies(i)),1) = abs(temp_array(18)-x_loc_min) !x loc
+            tlocation(tspecies(i),numarray(tspecies(i)),2) = abs(temp_array(19)-y_loc_min) !y loc
             !height, HTLC, crown diameter
             theight(numarray(tspecies(i)),tspecies(i)) = temp_array(3)/3.281 !convert ft to meters
             tcrownbotheight(numarray(tspecies(i)),tspecies(i)) = temp_array(10)/3.281 !convert ft to meters
@@ -522,8 +533,8 @@
 
       !from min/max of x,y coords we need to transform them so they fit inside the bounding box, not 
       ! be referenced from center point of bounding box ; 
-      tlocation(:,:,1) =   tlocation(:,:,1) + ndatax/2
-      tlocation(:,:,2) =   tlocation(:,:,2) + ndatay/2
+      !tlocation(:,:,1) =   tlocation(:,:,1) + ndatax/2
+      !tlocation(:,:,2) =   tlocation(:,:,2) + ndatay/2
 
 
       !!!-------JSM More populate stuff-------!!!
