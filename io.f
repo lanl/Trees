@@ -78,8 +78,8 @@
       sdny(1)=floor(sdny(1)/dy+1)
       sdny(2)=ceiling(sdny(2)/dy)
       
-      if (ndatax.eq.0) ndatax=nx
-      if (ndatay.eq.0) ndatay=ny
+      if (ndatax.eq.0) ndatax=nx*dx
+      if (ndatay.eq.0) ndatay=ny*dy
 
       if (ifuelin.eq.1) then
         if(inx.eq.0) inx=nx
