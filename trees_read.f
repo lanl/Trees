@@ -402,9 +402,9 @@
       !cut dataset to negate edge effects, use ndatax, ndatay
       !if larger dataset specified that what exists, revert to 
       !the largest part of data
-      ndatax = x_per-20
+      ndatax = x_per
       print*,'New data x length: ', ndatax
-      ndatay = y_per-20
+      ndatay = y_per
       print*,'New data y length: ', ndatay
       datalocx = 0
       datalocy = 0
@@ -501,8 +501,8 @@
             tlocation(tspecies(i),numarray(tspecies(i)),1) = abs(temp_array(18)-x_loc_min) !x loc
             tlocation(tspecies(i),numarray(tspecies(i)),2) = abs(temp_array(19)-y_loc_min) !y loc
             !height, HTLC, crown diameter
-            theight(numarray(tspecies(i)),tspecies(i)) = temp_array(3)/3.281 !convert ft to meters
-            tcrownbotheight(numarray(tspecies(i)),tspecies(i)) = temp_array(10)/3.281 !convert ft to meters
+            theight(numarray(tspecies(i)),tspecies(i)) = temp_array(3)!/3.281 !convert ft to meters
+            tcrownbotheight(numarray(tspecies(i)),tspecies(i)) = temp_array(10)!/3.281 !convert ft to meters
             tcrowndiameter(numarray(tspecies(i)),tspecies(i)) = temp_array(17)*2 !crown rad * 2
             !find crown max height
             beta_a = temp_array(11)
@@ -517,7 +517,7 @@
             end do
             max_ind = maxloc(z_rad, dim=2)
             norm_height = z_rad(1,max_ind(2))
-            tcrownmaxheight(numarray(tspecies(i)),tspecies(i)) = ((norm_height*temp_array(9)) + temp_array(10))/3.281 !convert ft to meters
+            tcrownmaxheight(numarray(tspecies(i)),tspecies(i)) = ((norm_height*temp_array(9)) + temp_array(10))!/3.281 !convert ft to meters
             ! bulk density, moisture, size scale
             do j=1,tfuelbins
                t2bulkdensity(numarray(tspecies(i)),j,tspecies(i)) = temp_array(15) / temp_array(16) !weight (kg) / volume (m^3)
