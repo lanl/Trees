@@ -52,7 +52,7 @@ grassfile     -- Required if igrass=2 -- Name of grassfile with the additional i
 itrees        -- 0                    -- Flag for trees, 0 if no trees, 1 if generalized treefile, 2 if specific treefile w/ locations randomized to fill the domain, 3 if specific treefile w/ random locations using base area to fill the domain
 ntspecies     -- 1                    -- Number of tree species
 tfuelbins     -- 1                    -- Number of size bins to distribute canopy fuels (foliage, branches, etc)
-treefile      -- ‘ ‘                  -- Name of treefile with the additional information to be read
+treefile      -- Required if itrees>0 -- Name of treefile with the additional information to be read
 istem         -- 0                    -- Adds tree stems and bark to fuel arrays, DO NOT USE!!!!
 ndatax        -- nx*dx                -- Size of dataset domain in x direction (m)
 ndatay        -- ny*dx                -- Size of dataset domain in y direction (m)
@@ -61,9 +61,15 @@ datalocy      -- 0                    -- Bottom left corner y coordinate for whe
 tdnx          -- [0,nx*dx]            -- x range of the domain to be populated with trees (m)
 tdny          -- [0,ny*dy]            -- y range of the domain to be populated with trees (m)
 !-------------------------------------------------------------------------------------------------
-ilitter       -- 0                    -- Flag for litter, 0 if no litter, 1 if litter distributed by vertical fuel-load
+ilitter       -- 0                    -- Flag for litter, 0 if no litter, 1 if litter distributed by vertical fuel-load, 2 if litter is filled with DUET
 litterconstant-- 5                    -- Exponential constant to increase of litter mass under trees
-litterfile    -- ‘ ‘                  -- Name of litterfile with additional information to be read
+litterfile    -- Required if ilitter>0-- Name of litterfile with additional information to be read
+speciesfile   -- Required if ilitter=2-- Name of speciesfile needed for DUET
+windprofile   -- 0                    -- Flag for wind profile type used by DUET, 1 if yearly averaged, 2 if imported windfield
+winddatafile  -- Required if ilitter=2-- Name of wind datafile need for DUET
+grassstep     -- 1                    -- Step within a year in which grass grows
+YearsSinceBurn-- 4                    -- Years since last fire
+StepsPerYear  -- 1                    -- Number of DUET timesteps within a year
 !-------------------------------------------------------------------------------------------------
 itreatment    -- 0                    -- Flag for fuel treatments, 0 if no treatment, 1 if slashlayer, 2 if slashpiles, 3 if fuel removal
 sdnx          -- [0,nx*dx]            -- x range of the domain over which a treatment is applied (m)

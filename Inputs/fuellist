@@ -24,37 +24,38 @@
 ! ----------------------------------
 ! Input dataset info
 ! ----------------------------------
-      igrass=1                ! Grass flag (1 is generalized grass data, 2 is if already have a file with 2d arrays for groundfuels)
-      ngrass=1                ! Number of Grass Species
-      grassconstant=5         ! Exponential constant used to determine the decay of grass mass with tree shading
-      grassfile='grass.txt'   ! Grass text file with generalized-data
+      igrass=1                        ! Grass flag (1 is generalized grass data, 2 is if already have a file with 2d arrays for groundfuels)
+      ngrass=1                        ! Number of Grass Species
+      grassconstant=5                 ! Exponential constant used to determine the decay of grass mass with tree shading
+      grassfile='grass.txt'           ! Grass text file with generalized-data
 
-      itrees=2                ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
-      ntspecies=2             ! Number of Tree Species
-      tfuelbins=1             ! Number of size bins to distribute branches
-      treefile='AJOSEglinTrees.txt' ! Trees text file with data
-      ndatax=67               ! JSM: size of dataset domain in x direction [m]
-      ndatay=106              ! JSM: size of dataset domain in y direction [m]
-      datalocx=               ! JSM: x coordinate for bottom left corner where dataset should be placed (if unspecified, =0)
-      datalocy=               ! JSM: y coordinate for bottom left corner where dataset should be placed (if unspecified, =0)
-      tdnx=                   ! Range of x cells with trees (if unspecified then whole domain)
-      tdny=                   ! Range of y cells with trees (if unspecified then whole domain)
+      itrees=2                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
+      ntspecies=2                     ! Number of Tree Species
+      tfuelbins=1                     ! Number of size bins to distribute branches
+      treefile='AJOSEglinTrees.txt'   ! Trees text file with data
+      ndatax=67                       ! JSM: size of dataset domain in x direction [m]
+      ndatay=106                      ! JSM: size of dataset domain in y direction [m]
+      datalocx=                       ! JSM: x coordinate for bottom left corner where dataset should be placed (if unspecified, =0)
+      datalocy=                       ! JSM: y coordinate for bottom left corner where dataset should be placed (if unspecified, =0)
+      tdnx=                           ! Range of x cells with trees (if unspecified then whole domain)
+      tdny=                           ! Range of y cells with trees (if unspecified then whole domain)
 
-      ilitter=2               ! Litter flag
-      litterconstant=5        ! Exponential constant to determine increase of litter mass under trees
-      litterfile='litter.txt' ! Litter text file with generalized-data
-      speciesfile = 'Eglin_species.csv'    ! file that contains species information for treelist
-      winddatafile = 'Eglinwind.csv'       ! file that contains wind information for each year since last burn (ysb)
-      grassstep = 1                        ! StepPerYear in which the grass grows
-      YearsSinceBurn = 4                   ! number of years since the last burn
-      StepsPerYear = 1                     ! number of time steps during the year: 1 = yearly, 2 = semiyearly, 4 = seasonally, 6 = bimonthly, 12 = monthly
+      ilitter=2                       ! Litter flag
+      litterconstant=5                ! Exponential constant to determine increase of litter mass under trees
+      litterfile='litter.txt'         ! Litter text file with generalized-data
+      speciesfile='Eglin_species.csv' ! file that contains species information for treelist
+      windprofile=0                   ! type of windprofile used by DUET: 1 = averaged yearly, 2 = binary wind profile
+      winddatafile='Eglinwind.csv'    ! file that contains wind information for each year since last burn (ysb)
+      grassstep=1                     ! StepPerYear in which the grass grows
+      YearsSinceBurn=4                ! number of years since the last burn
+      StepsPerYear=1                  ! number of time steps during the year: 1 = yearly, 2 = semiyearly, 4 = seasonally, 6 = bimonthly, 12 = monthly
 
-      itreatment=0            ! Treatment flag (0 is no treatment, 1 slashlayer, 2 slashpile, 3 clearing)
-      sdnx=25,75              ! Range of x cells undergoing treatment
-      sdny=25,75              ! Range of y cells undergoing treatment
-      sdiameter=25            ! Diameter of slashpiles
-      sheight=15              ! Height of slashpiles
-      sprho=30                ! Bulk density of slashpiles
-      smoist=0.15             ! Moisture content of slash
-      sdepth=0.2              ! Depth of slash layer
+      itreatment=0                    ! Treatment flag (0 is no treatment, 1 slashlayer, 2 slashpile, 3 clearing)
+      sdnx=25,75                      ! Range of x cells undergoing treatment
+      sdny=25,75                      ! Range of y cells undergoing treatment
+      sdiameter=25                    ! Diameter of slashpiles
+      sheight=15                      ! Height of slashpiles
+      sprho=30                        ! Bulk density of slashpiles
+      smoist=0.15                     ! Moisture content of slash
+      sdepth=0.2                      ! Depth of slash layer
 /

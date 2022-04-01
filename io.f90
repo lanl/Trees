@@ -57,6 +57,10 @@ datalocx      =0  !JSM added for populate function
 datalocy      =0  !JSM added for populate function
 ilitter       =0
 litterconstant=5
+YearsSinceBurn=4
+grassstep     =1
+StepsPerYear  =1
+windprofile   =0
 itreatment    =0
 
 open(unit=15,file='fuellist',form='formatted',status='old')
