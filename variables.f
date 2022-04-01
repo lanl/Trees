@@ -90,3 +90,21 @@
       real sprho,smoist
 
       end module treatment_variables
+      
+      module duet_variables
+      !-----------------------------------------------------------------
+      ! Surface fuel variables
+      !-----------------------------------------------------------------
+      implicit none
+
+      character :: speciesfile*100,winddatafile*100
+      integer :: windprofile
+      integer :: grassstep
+      integer :: StepsPerYear,YearsSinceBurn
+      real,allocatable:: vterminal(:),fuelSA(:),Froude(:),droptime(:)
+      real,allocatable:: leafdropfreq(:),decay(:)
+      real,allocatable:: uavg(:),vavg(:),VAR(:,:)
+      real,allocatable:: Umean(:,:,:),Vmean(:,:,:),Uvar(:,:,:),Vvar(:,:,:)
+      real,allocatable:: lrhofT(:,:,:,:),grhofT(:,:,:,:)
+
+      end module duet_variables

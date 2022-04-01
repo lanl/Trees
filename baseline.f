@@ -12,12 +12,13 @@
       use grid_variables
       use infile_variables
       use baseline_variables
-
       implicit none
 
+      ! Local variables
       integer i,j,k,ift
       real,external:: zcart
 
+      ! Executable code
       call define_baseline_variables 
       
       ! Fill grass arrays
@@ -57,9 +58,14 @@
       endif
 
       ! Fill litter arrays
-      if (ilitter.ne.0.and.ilitter.ne.2) then
-        print*,'Filling Litter Baseline'
-        call litter_baseline
+      if (ilitter.ne.0) then
+        if (ilitter.eq.1) then
+          print*,'Filling Litter Baseline'
+          call litter_baseline
+        else if (ilitter.eq.2) then
+          print*,'Filling Litter Baseline with Duet'
+          call Duet
+        endif
         do ift=1,ntspecies
           if (sum(trhof(ift,:,:,1)).lt.sum(trhof(ift,:,:,:))*0.01) then
             print*,'Little to no fuel from tree type',ift,'in first cell combining with litter'
@@ -96,13 +102,14 @@
       !-----------------------------------------------------------------
       use grid_variables
       use baseline_variables
-      
       implicit none
 
+      ! Local variables
       integer i,j,k,ift
       real target_mass,actual_mass
       real x
 
+      ! Executable code
       do ift=1,ngrass
         do i=1,nx
           do j=1,ny
@@ -153,6 +160,7 @@
       
       implicit none
       
+      ! Local variables
       integer ift,i,j,k,ii,jj,kk,iii,jjj,kkk
       integer ii_real,jj_real
       integer ift_index
@@ -351,7 +359,6 @@
                        rhospecies(ii_real,jj_real,kk,ift) = trhof(ift_index,ii_real,jj_real,kk)  !JSM
                        if (rhospecies(ii_real,jj_real,kk,ift).ne.0) then
                            treeht(ii_real,jj_real,kk) = canopytop
-                           !print*,ii_real,jj_real,kk,ift,'canopytop = ',treeht(ii_real,jj_real,kk) !JSM
                        endif
                     endif
                   endif
@@ -471,13 +478,15 @@
       
       implicit none
 
+      ! Local variables
       integer i,j,k,ift,ift_grass
       real target_mass,actual_mass
       real rhoftemp,rhocolumn,coverfactor,shadefactor
       
+      ! Executable code
       !----- Place litter on ground and remove grass to account for shading
       print*,'Placing litter and removing grass to account for shading'
-      do ift = 1,ntspecies
+      do ift = 1,ntspecies*tfuelbins
         do i=1,nx
           do j=1,ny
             ! Determine factors for placing litter and removing grass

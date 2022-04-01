@@ -32,7 +32,7 @@
            
       ntreefueltypes = istem*2+tfuelbins
       nfuel = infuel+ngrass+ntspecies*ntreefueltypes
-      if(ilitter.eq.1) nfuel=nfuel+ntspecies
+      if(ilitter.gt.0) nfuel=nfuel+ntspecies*tfuelbins
       allocate(rhof(nfuel,nx,ny,nz)); rhof(:,:,:,:)=0.0
       allocate(sizescale(nfuel,nx,ny,nz)); sizescale(:,:,:,:)=0.0
       allocate(moist(nfuel,nx,ny,nz)); moist(:,:,:,:)=0.0
@@ -150,10 +150,10 @@
         allocate(tfueldepth(ntspecies*ntreefueltypes,nx,ny)); tfueldepth(:,:,:)=0.0
       endif
       if (ilitter.ne.0) then
-        allocate(lrhof(ntspecies,nx,ny,nz)); lrhof(:,:,:,:)=0.0
-        allocate(lsizescale(ntspecies,nx,ny,nz)); lsizescale(:,:,:,:)=0.0
-        allocate(lmoist(ntspecies,nx,ny,nz)); lmoist(:,:,:,:)=0.0
-        allocate(lfueldepth(ntspecies,nx,ny)); lfueldepth(:,:,:)=0.0
+        allocate(lrhof(ntspecies*tfuelbins,nx,ny,nz)); lrhof(:,:,:,:)=0.0
+        allocate(lsizescale(ntspecies*tfuelbins,nx,ny,nz)); lsizescale(:,:,:,:)=0.0
+        allocate(lmoist(ntspecies*tfuelbins,nx,ny,nz)); lmoist(:,:,:,:)=0.0
+        allocate(lfueldepth(ntspecies*tfuelbins,nx,ny)); lfueldepth(:,:,:)=0.0
       endif
 
       !-----------------------------------------------------------------
@@ -194,12 +194,12 @@
         call treelist_fastfuels
       endif
 
-      if (ilitter.eq.1) then
-        allocate(lrho(ntspecies))
-        allocate(lmoisture(ntspecies))
-        allocate(lss(ntspecies))
-        allocate(ldepth(ntspecies))
-      
+      if (ilitter.gt.0) then
+        allocate(lrho(ntspecies*tfuelbins))
+        allocate(lmoisture(ntspecies*tfuelbins))
+        allocate(lss(ntspecies*tfuelbins))
+        allocate(ldepth(ntspecies*tfuelbins))
+        
         open (3,file=litterfile)
         read (3,*) lrho       ! bulk density of litter [kg/m3]
         read (3,*) lmoisture  ! moisture content of litter [fraction]
@@ -209,3 +209,75 @@
       endif
 
       end subroutine define_baseline_variables
+      
+      subroutine define_duet_variables
+      !-----------------------------------------------------------------
+      ! Variables unique to the duet
+      !-----------------------------------------------------------------
+      use grid_variables, only : nx,ny,nz
+      use baseline_variables, only : ntspecies,tfuelbins
+      use duet_variables, only : windprofile,winddatafile,StepsPerYear,
+     .  YearsSinceBurn,uavg,vavg,VAR,Umean,Vmean,Uvar,Vvar,vterminal,
+     .  fuelSA,Froude,droptime,leafdropfreq,decay,speciesfile,lrhofT,
+     .  grhofT
+      implicit none
+
+      ! Local Variables
+      integer :: yt,ift
+      integer :: fuelTotal
+      real :: fuelMass
+      real,dimension(6) :: temp_array
+
+      ! Executable Code
+      if(windprofile.eq.0) then
+        allocate(uavg(YearsSinceBurn*StepsPerYear),vavg(YearsSinceBurn*StepsPerYear),
+     .    VAR(YearsSinceBurn*StepsPerYear,2))
+        open (100,file=winddatafile)  ! wind information for area per year
+        do yt=1,YearsSinceBurn*StepsPerYear
+          read(100,*) temp_array
+          uavg(yt)=temp_array(3)
+          vavg(yt)=temp_array(4)
+          VAR(yt,:)=temp_array(5:6)
+        enddo
+        close(100)
+      elseif(windprofile.eq.1)then
+        allocate(Umean(nx,ny,nz),Vmean(nx,ny,nz),Uvar(nx,ny,nz),VVar(nx,ny,nz))
+        open (105,file='Umean.dat', form='unformatted', status='old')
+        read (105) Umean
+        close(105)
+
+        open (106,file='Vmean.dat', form='unformatted', status='old')
+        read (106) Vmean
+        close(106)
+
+        open (107,file='Uvar.dat', form='unformatted', status='old')
+        read (107) Uvar
+        close(107)
+
+        open (108,file='Vvar.dat', form='unformatted', status='old')
+        read (108) Vvar
+        close(108)
+      endif
+
+      ! Species data
+      open (99,file=speciesfile)
+      fuelTotal=ntspecies*tfuelbins
+      allocate(fuelSA(fuelTotal),leafdropfreq(fuelTotal),decay(fuelTotal),
+     .  droptime(fuelTotal),vterminal(fuelTotal),Froude(fuelTotal))
+      do ift=1,ntspecies*tfuelbins
+        read(99,*) fuelMass,fuelSA(ift),leafdropfreq(ift),decay(ift),droptime(ift)
+        fuelMass=fuelMass/1000.
+        fuelSA(ift)=fuelSA(ift)/10000.
+        ! Terminal velocity
+        vterminal(ift)=sqrt((2.*fuelMass*9.81)/(0.6*1.225*fuelSA(ift)))
+        ! 9.81 is acceleration of gravity
+        ! 0.6 is drag coefficient
+        ! 1.225 is density of air at STP
+        Froude(ift) = 0.01/(sqrt(9.81*sqrt(fuelSA(ift))))
+      enddo
+      close(99)
+
+      allocate(lrhofT(ntspecies*tfuelbins,nx,ny,YearsSinceBurn*StepsPerYear)); lrhofT=0.
+      allocate(grhofT(ntspecies*tfuelbins,nx,ny,YearsSinceBurn*StepsPerYear)); grhofT=0.
+
+      end subroutine define_duet_variables

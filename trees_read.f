@@ -318,7 +318,6 @@
 
       print*,'Number of relocation due to crowding = ',num
       endif
-      
       !!!---------END OF JSM ADDITIONS FOR POPULATE----------!!!
 
       end subroutine treelist_readin
@@ -522,7 +521,7 @@
             do j=1,tfuelbins
                t2bulkdensity(numarray(tspecies(i)),j,tspecies(i)) = temp_array(15) / temp_array(16) !weight (kg) / volume (m^3)
                t2moisture(numarray(tspecies(i)),j,tspecies(i)) = 1.0 !setting canopy moisture to 100% ; not avalible in FF
-               t2ss(numarray(tspecies(i)),j,tspecies(i)) = 2 / temp_array(8) !suppose infinite cylinder, (2*pi*r*L)/(pi*r^2*L) = sav, solve for r
+               t2ss(numarray(tspecies(i)),j,tspecies(i)) = 2. / temp_array(8) !suppose infinite cylinder, (2*pi*r*L)/(pi*r^2*L) = sav, solve for r
                if(t2ss(numarray(tspecies(i)),j,tspecies(i)) .gt. 0.002) then
                   t2ss(numarray(tspecies(i)),j,tspecies(i)) = 0.002
                end if

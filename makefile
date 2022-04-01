@@ -1,10 +1,7 @@
 #--Top level trees makefile--
-JSONDIR:= ./jsonfortran
-VPATH   = ${JSONDIR}
-ODIR    = obj
 OBJS    = variables.o main.o define_variables.o \
 				  io.o metryc.o shapes.o distribution.o \
-			 		baseline.o treatments.o \
+			 		baseline.o duet.o treatments.o \
 			 		fuel_read.o trees_read.o \
 #OBJS    = $(patsubst %,$(ODIR)/%,$(OBJS_))
 

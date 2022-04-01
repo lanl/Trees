@@ -12,6 +12,8 @@
       use infile_variables
       use baseline_variables
       use treatment_variables
+      use duet_variables, only : speciesfile,winddatafile,windprofile,
+     .  grassstep,YearsSinceBurn,StepsPerYear
       implicit none
 
       namelist/fuellist/
@@ -22,6 +24,9 @@
      .   itrees,ntspecies,tfuelbins,tdnx,tdny,treefile,istem,
      .   ndatax,ndatay,datalocx,datalocy, !JSM added for populate function
      .   ilitter,litterconstant,litterfile,
+     .   speciesfile,
+     .   winddatafile,windprofile,grassstep,
+     .   YearsSinceBurn,StepsPerYear,
      .   itreatment,sdnx,sdny,
      .   sdiameter,sheight,sprho,smoist,sdepth
       
@@ -207,57 +212,55 @@
       end subroutine output_1fuel
 
 
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-! This subroutine will find the number of species in the fast fuels data
-! Added 10/18 JO
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine find_fastfuels_numspecies
-        !-----------------------------------------------------------------
-        !-----------------------------------------------------------------
-            use grid_variables
-            use baseline_variables      
-            implicit none
+      !-----------------------------------------------------------------
+      ! This subroutine will find the number of species in the fast 
+      ! fuels data
+      ! Added 10/21 JO
+      !-----------------------------------------------------------------
+      use grid_variables
+      use baseline_variables      
+      implicit none
 
-            !variables for finding # of fuel speies
-            integer i,j,ift,ff_len,min_val_sp, max_val_sp
-            integer,allocatable :: final_uni_sp(:), uni_sp(:)
-            real,dimension(19):: temp_array ! FF trees csv has at least 19 columns
+      !variables for finding # of fuel speies
+      integer i,j,ift,ff_len,min_val_sp, max_val_sp
+      integer,allocatable :: final_uni_sp(:), uni_sp(:)
+      real,dimension(19):: temp_array ! FF trees csv has at least 19 columns
 
-            ff_len = 0
-            open (2,file=treefile)
-            do
-               read (2,*,end=19) !length of FF columns
-               ff_len = ff_len+1
-            enddo
-19          rewind(2)
+      ff_len = 0
+      open (2,file=treefile)
+      do
+        read (2,*,end=19) !length of FF columns
+        ff_len = ff_len+1
+      enddo
+19    rewind(2)
 
-            allocate(tspecies(ff_len-1))
-            read(2,*) !read 1st line and throw away, has column headers
-            do i=1,ff_len-1
-               read(2,*) temp_array(:)
-               tspecies(i)=temp_array(5) !take from sp_grp, 5th pos
-               !print*,'species# = ',temp_array(5)
-            enddo
-            rewind(2)
+      allocate(tspecies(ff_len-1))
+      read(2,*) !read 1st line and throw away, has column headers
+      do i=1,ff_len-1
+        read(2,*) temp_array(:)
+        tspecies(i)=temp_array(5) !take from sp_grp, 5th pos
+        !print*,'species# = ',temp_array(5)
+      enddo
+      rewind(2)
       
-            !find unique number of tree species!
-            allocate(uni_sp(maxval(tspecies)))
-            min_val_sp = minval(tspecies)-1
-            max_val_sp = maxval(tspecies)
-            i=0
-            do while (min_val_sp<max_val_sp)
-                i = i+1
-                min_val_sp = minval(tspecies, mask=tspecies>min_val_sp)
-                uni_sp(i) = min_val_sp
-            enddo
-            allocate(final_uni_sp(i), source=uni_sp(1:i)) 
-            ntspecies = count(final_uni_sp==final_uni_sp)
-            print*,'New Set Species = ',ntspecies
+      !find unique number of tree species!
+      allocate(uni_sp(maxval(tspecies)))
+      min_val_sp = minval(tspecies)-1
+      max_val_sp = maxval(tspecies)
+      i=0
+      do while (min_val_sp<max_val_sp)
+        i = i+1
+        min_val_sp = minval(tspecies, mask=tspecies>min_val_sp)
+        uni_sp(i) = min_val_sp
+      enddo
+      allocate(final_uni_sp(i), source=uni_sp(1:i)) 
+      ntspecies = count(final_uni_sp==final_uni_sp)
+      print*,'New Set Species = ',ntspecies
 
-            deallocate(tspecies)
-            deallocate(uni_sp)
-            deallocate(final_uni_sp)
+      deallocate(tspecies)
+      deallocate(uni_sp)
+      deallocate(final_uni_sp)
 
-
-        end subroutine find_fastfuels_numspecies
+      end subroutine find_fastfuels_numspecies
       
