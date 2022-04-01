@@ -15,9 +15,9 @@ clean:
 	rm trees *.o *.mod *.dat
 
 # optimized suffix rules
-.SUFFIXES: .f .F90
+.SUFFIXES: .f .f90
 
 .f.o:
 	${FC} ${FFLAGS} -c $<
-.F90.o:
+.f90.o:
 	${FC} ${FFLAGS} -c $<
