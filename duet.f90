@@ -52,11 +52,13 @@ real,allocatable :: ellarea(:,:)
 ! Executable code
 call define_duet_variables
 
+print*,'Prep work for Duet done'
+
 ! For each cell in 3D array of densities, find fall time and x and y 
 ! displacement for translation of the circle 
 do ift=1,ntspecies*tfuelbins
   do i=1,nx
-    if (MOD(i,10).eq.0) print*,'Placing litter for row',i,'of',nx
+    if (MOD(i,int(nx/10)).eq.0) print*,'Placing litter for row',i,'of',nx
     do j=1,ny
       do k=1,nz 
         if(trhof(ift,i,j,k).gt.0) then

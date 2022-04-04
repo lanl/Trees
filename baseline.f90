@@ -190,7 +190,7 @@ allocate(rhoftemp(tfuelbins))
 do i=1,ntspecies
   print*,'Species',i,'with',ntrees(i),'trees'
   do j=1,ntrees(i)
-    if (MOD(j,100).eq.0) print*,'Placing tree',j,'of',ntrees(i)
+    if (MOD(j,int(ntrees(i)/10)).eq.0) print*,'Placing tree',j,'of',ntrees(i)
     
     !----- Place tree location
     if (itrees.eq.1.or.itrees.eq.3) then
