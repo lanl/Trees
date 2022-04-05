@@ -62,6 +62,7 @@ grassstep     =1
 StepsPerYear  =1
 windprofile   =0
 itreatment    =0
+infuel        =0
 
 open(unit=15,file='fuellist',form='formatted',status='old')
      read (15,nml=fuellist)

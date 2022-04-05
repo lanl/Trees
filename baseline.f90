@@ -81,11 +81,11 @@ if (ilitter.ne.0) then
       do i=1,nx
         do j=1,ny
           do k=1,nz
-            rhof(ift+infuel+ngrass+ntreefueltypes,i,j,k)      = lrhof(ift,i,j,k)
-            sizescale(ift+infuel+ngrass+ntreefueltypes,i,j,k) = lsizescale(ift,i,j,k)
-            moist(ift+infuel+ngrass+ntreefueltypes,i,j,k)     = lmoist(ift,i,j,k)
+            rhof(ift+infuel+ngrass+ntspecies*ntreefueltypes,i,j,k)      = lrhof(ift,i,j,k)
+            sizescale(ift+infuel+ngrass+ntspecies*ntreefueltypes,i,j,k) = lsizescale(ift,i,j,k)
+            moist(ift+infuel+ngrass+ntspecies*ntreefueltypes,i,j,k)     = lmoist(ift,i,j,k)
           enddo
-          fueldepth(ift+infuel+ngrass+ntreefueltypes,i,j,1) = lfueldepth(ift,i,j)
+          fueldepth(ift+infuel+ngrass+ntspecies*ntreefueltypes,i,j,1) = lfueldepth(ift,i,j)
         enddo
       enddo
     endif

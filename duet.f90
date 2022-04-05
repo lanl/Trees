@@ -57,6 +57,7 @@ print*,'Prep work for Duet done'
 ! For each cell in 3D array of densities, find fall time and x and y 
 ! displacement for translation of the circle 
 do ift=1,ntspecies*tfuelbins
+  print*,'Dispersing litter for species',ift
   do i=1,nx
     if (MOD(i,int(nx/10)).eq.0) print*,'Placing litter for row',i,'of',nx
     do j=1,ny
@@ -178,9 +179,9 @@ do ift=1,ntspecies*tfuelbins
         do spy=1,StepsPerYear
           lrhofT(ift,i,j,yt) = lrhofT(ift,i,j,yt)*exp(-decay(ift)*(yt-1))
 !           lafdT(i,j,n,yt)=lrhoT(i,j,n,yt)/(dx*dy)*exp(compact(ift)*(yt-1))
+        yt=yt+1
         enddo
       enddo
-      yt=yt+1
     enddo
   enddo
 enddo
@@ -229,5 +230,17 @@ do i=1,nx
     enddo
   enddo
 enddo
-        
+
+print*,"Finished DUET litter"
+print*,'Litter'
+print*,'rhof min/max',minval(lrhof(:,:,:,1)),maxval(lrhof(:,:,:,1))
+print*,'afd min/max',minval(lfueldepth(:,:,:)),maxval(lfueldepth(:,:,:))
+print*,'mc min/max',minval(lmoist(:,:,:,1)),maxval(lmoist(:,:,:,1))
+print*,'ss min/mac',minval(lsizescale(:,:,:,1)),maxval(lsizescale(:,:,:,1))
+print*,'Grass'
+print*,'rhof min/max',minval(rhof(1:ngrass,:,:,1)),maxval(rhof(ngrass:,:,:,1))
+print*,'afd min/max',minval(fueldepth(1:ngrass,:,:,1)),maxval(fueldepth(ngrass:,:,:,1))
+print*,'mc min/max',minval(moist(1:ngrass,:,:,1)),maxval(moist(ngrass:,:,:,1))
+print*,'ss min/max',minval(sizescale(1:ngrass,:,:,1)),maxval(sizescale(ngrass:,:,:,1))
+
 end subroutine Duet
