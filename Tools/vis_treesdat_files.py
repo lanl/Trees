@@ -12,7 +12,7 @@ of = '/Users/joliveto/Desktop/Projects/CreepyFire/Blodgett/blodgett1/'
 
 #trees/viewing parameters------------------
 datfile = 'treesrhof.dat' #which .dat to make png
-nfuel = 5 #see bottom of trees output, number of output fuels
+nfuel = 6 #see bottom of trees output, number of output fuels
 plane = 0 #z-index slice of plotting (0=ground/bottom layer)
 
 #grid parameters------------------
@@ -65,29 +65,19 @@ X,Y = createGrid(Nx, Ny, dx, dy)
 #Visualilize the X/Y plane of the .dat file
 name = datfile[:-4] #remove ".dat" from string
 
-#find correct number of subplots for nfuel
-rows = int(np.floor(np.sqrt(nfuel+1)))
-cols = int(rows + np.ceil(np.sqrt(nfuel+1) - rows))
-print(rows, cols)
-print(np.max(Y))
-
-n = 0 #loop through fuels, rows, columns
-fig,axs = plt.subplots(rows,cols, figsize=(15,10))
-for r in range(rows):
-    for c in range(cols):
-        if (r+c==0):
-            arr = np.sum(rhof, axis=0)
-            t = 'Sum Species'
-        else:
-            arr = rhof[n,:,:,:]
-            t = 'Species '+str(n+1)
-            n+=1
-        print(r+c)
-        plotTopdown(fig,axs[r,c],arr,t,X,Y,plane)  
-fig.suptitle(name)
-plt.tight_layout()
-plt.savefig(of+name+'_topdown_view.png')
-plt.close()    
+for n in range(nfuel+1):
+    fig,axs = plt.subplots(figsize=(10,8))
+    if (n==0):
+        arr = np.sum(rhof, axis=0)
+        t = 'Sum.Species'
+    else:
+        arr = rhof[n-1,:,:,:]
+        t = 'Species.'+str(n)
+    plotTopdown(fig,axs,arr,t,X,Y,plane)
+    fig.suptitle(name)
+    plt.tight_layout()
+    plt.savefig(of+name+'_'+t+'_topdown_view.png')
+    plt.close()    
          
              
  
