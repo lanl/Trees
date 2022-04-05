@@ -143,7 +143,7 @@ do ift=1,ntspecies*tfuelbins
                     ii_real=ii
                   endif
                   do jj=elliy-yground,elliy+yground
-                    if(jj.gt.nx)then
+                    if(jj.gt.ny)then
                       jj_real=jj-nx
                     elseif(jj.lt.1)then
                       jj_real=jj+nx
