@@ -103,6 +103,7 @@ if (ifuelin.eq.1) then
   if(iaa1.eq.-1) iaa1=aa1
   if(infuel.eq.0) infuel=1
 endif
+if (ifuelin.eq.0) infuel=0
 
 !Find number species if using FastFuels dataset
 if (itrees.eq.7) then
