@@ -224,13 +224,13 @@ use baseline_variables, only : ntspecies,tfuelbins
 use duet_variables, only : windprofile,winddatafile,StepsPerYear, &
   YearsSinceBurn,uavg,vavg,VAR,Umean,Vmean,Uvar,Vvar,vterminal, &
   fuelSA,Froude,droptime,leafdropfreq,decay,speciesfile,lrhofT, &
-  grhofT
+  grhofT,dragco
 implicit none
 
 ! Local Variables
 integer :: yt,ift
 integer :: fuelTotal,periodTotal
-real :: fuelMass
+real :: fuelMass,dragslope,dragb
 real,dimension(6) :: temp_array
 
 ! Executable Code
@@ -268,13 +268,16 @@ endif
 open (99,file=speciesfile)
 fuelTotal=ntspecies*tfuelbins
 allocate(fuelSA(fuelTotal),leafdropfreq(fuelTotal),decay(fuelTotal), &
-  droptime(fuelTotal),vterminal(fuelTotal),Froude(fuelTotal))
+  droptime(fuelTotal),vterminal(fuelTotal),Froude(fuelTotal),dragco(fuelTotal))
+  dragslope = 1.4/(sqrt(70.0) - 1.0)
+  dragb = 0.6 - dragslope
 do ift=1,ntspecies*tfuelbins
   read(99,*) fuelMass,fuelSA(ift),leafdropfreq(ift),decay(ift),droptime(ift)
   fuelMass=fuelMass/1000.
   fuelSA(ift)=fuelSA(ift)/10000.
+  dragco(ift)=dragslope*fuelSA(ift) + dragb !JSM
   ! Terminal velocity
-  vterminal(ift)=sqrt((2.*fuelMass*9.81)/(0.6*1.225*fuelSA(ift)))
+  vterminal(ift)=sqrt((2.*fuelMass*9.81)/(dragco(ift)*1.225*fuelSA(ift)))
   ! 9.81 is acceleration of gravity
   ! 0.6 is drag coefficient
   ! 1.225 is density of air at STP

@@ -102,7 +102,7 @@ integer :: windprofile
 integer :: grassstep
 integer :: StepsPerYear,YearsSinceBurn
 real,allocatable:: vterminal(:),fuelSA(:),Froude(:),droptime(:)
-real,allocatable:: leafdropfreq(:),decay(:)
+real,allocatable:: leafdropfreq(:),decay(:),dragco(:)
 real,allocatable:: uavg(:),vavg(:),VAR(:,:)
 real,allocatable:: Umean(:,:,:),Vmean(:,:,:),Uvar(:,:,:),Vvar(:,:,:)
 real,allocatable:: lrhofT(:,:,:,:),grhofT(:,:,:,:)
