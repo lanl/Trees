@@ -7,6 +7,7 @@
 program fuel_maps
 
 use grid_variables
+use io_variables
 use infile_variables
 use treatment_variables
 

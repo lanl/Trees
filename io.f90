@@ -9,6 +9,7 @@ subroutine namelist_input
 ! trees softeware.
 !-----------------------------------------------------------------
 use grid_variables
+use io_variables
 use infile_variables
 use baseline_variables
 use treatment_variables
@@ -119,6 +120,7 @@ subroutine output_nfuel
 ! FIRETEC or QUIC-Fire
 !-----------------------------------------------------------------
 use grid_variables
+use io_variables
 
 implicit none
 
@@ -140,29 +142,42 @@ do ift=1,nfuel
 enddo
 
 print*,'Exporting data to .dat files'
-open (1,file='treesrhof.dat',form='unformatted',status='unknown')
-do ift=1,nfuel
-  if (nonzero(ift).ne.0)  write (1) rhof(ift,:,:,:)
-enddo
-close (1)
-
-open (1,file='treesfueldepth.dat',form='unformatted',status='unknown')
-do ift=1,nfuel
-  if (nonzero(ift).ne.0)  write (1) fueldepth(ift,:,:,:)
-enddo
-close (1)
-
-open (1,file='treesss.dat',form='unformatted',status='unknown')
-do ift=1,nfuel
-  if (nonzero(ift).ne.0)  write (1) sizescale(ift,:,:,:)
-enddo
-close (1)
-
-open (1,file='treesmoist.dat',form='unformatted',status='unknown')
-do ift=1,nfuel
-  if (nonzero(ift).ne.0)  write (1) moist(ift,:,:,:)
-enddo
-close (1)
+if (ifiretecshock.eq.1)then
+  open(1,file='fuelArrays.dat',form='unformatted',status='unknown')
+  do ift=1,nfuel
+    if (nonzero(ift).ne.0) then
+      write (1) rhof(ift,:,:,1:lfuel)
+      write (1) moist(ift,:,:,1:lfuel)*rhof(ift,:,:,1:lfuel)
+      write (1) sizescale(ift,:,:,1:lfuel)
+      write (1) fueldepth(ift,:,:,1)
+    endif
+  enddo
+  close (1)
+else
+  open (1,file='treesrhof.dat',form='unformatted',status='unknown')
+  do ift=1,nfuel
+    if (nonzero(ift).ne.0)  write (1) rhof(ift,:,:,:)
+  enddo
+  close (1)
+  
+  open (1,file='treesmoist.dat',form='unformatted',status='unknown')
+  do ift=1,nfuel
+    if (nonzero(ift).ne.0)  write (1) moist(ift,:,:,:)
+  enddo
+  close (1)
+  
+  open (1,file='treesss.dat',form='unformatted',status='unknown')
+  do ift=1,nfuel
+    if (nonzero(ift).ne.0)  write (1) sizescale(ift,:,:,:)
+  enddo
+  close (1)
+  
+  open (1,file='treesfueldepth.dat',form='unformatted',status='unknown')
+  do ift=1,nfuel
+    if (nonzero(ift).ne.0)  write (1) fueldepth(ift,:,:,:)
+  enddo
+  close (1)
+endif
 
 print*,'Your nfuel is',int(sum(nonzero(:)))
 print*,'Your lfuel is',lfuel
@@ -176,6 +191,7 @@ subroutine output_1fuel
 ! type.
 !-----------------------------------------------------------------
 use grid_variables
+use io_variables
 
 implicit none
 
@@ -206,24 +222,39 @@ do i=1,nx
   enddo
 enddo
 
+lfuel = 1
+do k=1,nz
+  if (sum(srhof(:,:,k)).gt.0) lfuel = max(lfuel,k)
+enddo
+
 print*,'Exporting data to .dat files'
-open (1,file='treesrhof.dat',form='unformatted',status='unknown')
-write (1) srhof
-close (1)
+if (ifiretecshock.eq.1)then
+  open(1,file='fuelArrays.dat',form='unformatted',status='unknown')
+  write (1) srhof(:,:,1:lfuel)
+  write (1) smoist(:,:,1:lfuel)*srhof(:,:,1:lfuel)
+  write (1) sss(:,:,1:lfuel)
+  write (1) safd(:,:,1)
+  close (1)
+else
+  open (1,file='treesrhof.dat',form='unformatted',status='unknown')
+  write (1) srhof
+  close (1)
 
-open (1,file='treesfueldepth.dat',form='unformatted',status='unknown')
-write (1) safd
-close (1)
+  open (1,file='treesfueldepth.dat',form='unformatted',status='unknown')
+  write (1) safd
+  close (1)
 
-open (1,file='treesss.dat',form='unformatted',status='unknown')
-write (1) sss
-close (1)
+  open (1,file='treesss.dat',form='unformatted',status='unknown')
+  write (1) sss
+  close (1)
 
-open (1,file='treesmoist.dat',form='unformatted',status='unknown')
-write (1) smoist
-close (1)
+  open (1,file='treesmoist.dat',form='unformatted',status='unknown')
+  write (1) smoist
+  close (1)
+endif
 
 print*,'Your nfuel is 1'
+print*,'Your lfuel is',lfuel
 
 end subroutine output_1fuel
 

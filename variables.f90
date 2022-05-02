@@ -21,12 +21,22 @@ implicit none
 integer nx,ny,nz
 real    dx,dy,dz
 real    aa1,ndatax,ndatay,datalocx,datalocy !JSM added ndatax, etc.
-integer nfuel,zmax,singlefuel,ifiretecshock
+integer nfuel,zmax
 real,allocatable:: rhof(:,:,:,:),sizescale(:,:,:,:),moist(:,:,:,:),fueldepth(:,:,:,:)
 real,allocatable:: zs(:,:),zheight(:,:,:)
 character:: topofile*50
 
 end module grid_variables
+
+module io_variables
+!-----------------------------------------------------------------
+! IO variables and arrays
+!-----------------------------------------------------------------
+implicit none
+      
+integer singlefuel,ifiretecshock
+
+end module io_variables
 
 module infile_variables
 !-----------------------------------------------------------------
