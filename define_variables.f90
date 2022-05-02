@@ -130,6 +130,8 @@ if (iintpr.eq.1) then ! Topo with existing fuels
       enddo
     enddo
   enddo
+else
+  izheight(:,:,:)=zheight(:,:,:)
 endif
 
 end subroutine define_grid_variables
