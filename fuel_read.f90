@@ -27,21 +27,27 @@ allocate(iafd(infuel,inx,iny,inz))
 ! Read in fuel files
 print*,"Reading existing fuel files"
 open(unit=1,file=rhoffile,form='unformatted',status='unknown')
-  read(1) irhof
+do ift=1,infuel
+  read(1) irhof(ift,:,:,:)
+enddo
 close(1)
 where (irhof<0)
   irhof = 0
 endwhere
 print*,'irhof','min=',minval(irhof),'max=',maxval(irhof),'avg=',sum(irhof)/(inx*iny*inz)
 open(unit=2,file=moistfile,form='unformatted',status='unknown')
+do ift=1,infuel
   read(2) imoist
+enddo
 close(2)
 where (imoist<0)
   imoist = 0
 endwhere
 print*,'imoist','min=',minval(imoist),'max=',maxval(imoist),'avg=',sum(imoist)/(inx*iny*inz)
 open(unit=3,file=ssfile,form='unformatted',status='unknown')
+do ift=1,infuel
   read(3) iss
+enddo
 close(3)
 if (ssfile.eq."sav.dat.orig")then ! Special case if ss file was sav
   do i=1,inx
@@ -59,7 +65,9 @@ where (iss<0)
 endwhere
 print*,'iss','min=',minval(iss),'max=',maxval(iss),'avg=',sum(iss)/(inx*iny*inz)
 open(unit=4,file=afdfile,form='unformatted',status='unknown')
+do ift=1,infuel
   read(4) iafd
+enddo
 close(4)
 where (iafd<0)
   iafd = 0
@@ -114,6 +122,13 @@ if (iintpr.eq.1) then
         enddo
       enddo
     enddo
+  enddo
+else
+  do ift=1,infuel
+    rhof(ift,:,:,:)=irhof(ift,:,:,:)
+    sizescale(ift,:,:,:)=iss(ift,:,:,:)
+    moist(ift,:,:,:)=imoist(ift,:,:,:)
+    fueldepth(ift,:,:,:)=iafd(ift,:,:,:)
   enddo
 endif
 

@@ -52,7 +52,11 @@ allocate(izheight(inx,iny,inz))
 
 if(ifuelin.eq.1.and.(inx.ne.nx.or.idx.ne.dx.or. &
   iny.ne.ny.or.idy.ne.dy.or.inz.ne.nz.or.idz.ne.dz &
-  .or.aa1.ne.iaa1)) iintpr=1
+  .or.aa1.ne.iaa1)) then
+  iintpr=1
+else
+  iintpr=0
+endif
 
 if (topofile.eq.'flat'.or.topofile.eq.'') then ! No topo
   zs(:,:)=0.0
@@ -90,6 +94,7 @@ else ! Normal topo
   open (1,file=topofile,form='unformatted',status='old')
   read (1) zs
   close (1)
+  izs(:,:)=zs(:,:)
 endif
 if(minval(zs).gt.0)then ! Reduce topo values to least common value
   izs = izs-minval(zs)
