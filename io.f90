@@ -19,7 +19,8 @@ implicit none
 
 !Local Variables
 namelist/fuellist/ &
-   nx,ny,nz,dx,dy,dz,aa1,singlefuel,topofile, &
+   nx,ny,nz,dx,dy,dz,aa1,topofile, &
+   singlefuel,firetecshock, &
    ifuelin,rhoffile,moistfile,ssfile,afdfile, &
    inx,iny,inz,idx,idy,idz,iaa1,infuel, &
    igrass,ngrass,grassconstant,grassfile, &
@@ -38,32 +39,6 @@ allocate(tdnx(2)); tdnx(:)=0 ! Array of the cell range (x)  where the trees are 
 allocate(tdny(2)); tdny(:)=0 ! Array of the cell range (x)  where the trees are applied
 allocate(sdnx(2)); sdnx(:)=0 ! Array of the cell range (x)  where the treatment is applied
 allocate(sdny(2)); sdny(:)=0 ! Array of the cell range (x)  where the treatment is applied
-
-! Set the default values that will be overwritten by the namelist if present
-aa1           =0.1
-singlefuel    =0.0
-topofile      ='flat'
-ifuelin       =0
-iaa1          =-1
-igrass        =0
-ngrass        =1
-grassconstant =5
-itrees        =0
-ntspecies     =1
-tfuelbins     =1
-istem         =0
-ndatax        =0
-ndatay        =0
-datalocx      =0  !JSM added for populate function
-datalocy      =0  !JSM added for populate function
-ilitter       =0
-litterconstant=5
-YearsSinceBurn=4
-grassstep     =1
-StepsPerYear  =1
-windprofile   =0
-itreatment    =0
-infuel        =0
 
 open(unit=15,file='fuellist',form='formatted',status='old')
      read (15,nml=fuellist)
@@ -142,7 +117,7 @@ do ift=1,nfuel
 enddo
 
 print*,'Exporting data to .dat files'
-if (ifiretecshock.eq.1)then
+if (firetecshock.eq.1)then
   open(1,file='fuelArrays.dat',form='unformatted',status='unknown')
   do ift=1,nfuel
     if (nonzero(ift).ne.0) then
@@ -228,7 +203,7 @@ do k=1,nz
 enddo
 
 print*,'Exporting data to .dat files'
-if (ifiretecshock.eq.1)then
+if (firetecshock.eq.1)then
   open(1,file='fuelArrays.dat',form='unformatted',status='unknown')
   write (1) srhof(:,:,1:lfuel)
   write (1) smoist(:,:,1:lfuel)*srhof(:,:,1:lfuel)

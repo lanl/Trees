@@ -20,11 +20,12 @@ implicit none
       
 integer nx,ny,nz
 real    dx,dy,dz
-real    aa1,ndatax,ndatay,datalocx,datalocy !JSM added ndatax, etc.
+real :: aa1=0.1
+real :: ndatax=0.,ndatay=0.,datalocx=0.,datalocy=0. !JSM added ndatax, etc.
 integer nfuel,zmax
 real,allocatable:: rhof(:,:,:,:),sizescale(:,:,:,:),moist(:,:,:,:),fueldepth(:,:,:,:)
 real,allocatable:: zs(:,:),zheight(:,:,:)
-character:: topofile*50
+character:: topofile*50='flat'
 
 end module grid_variables
 
@@ -34,7 +35,7 @@ module io_variables
 !-----------------------------------------------------------------
 implicit none
       
-integer singlefuel,ifiretecshock
+integer :: singlefuel=0,firetecshock=0
 
 end module io_variables
 
@@ -44,12 +45,12 @@ module infile_variables
 !-----------------------------------------------------------------
 implicit none
       
-integer ifuelin
-integer inx,iny,inz
-real    idx,idy,idz
-real    iaa1
-integer iintpr
-integer infuel
+integer :: ifuelin=0
+integer :: inx=0,iny=0,inz=0
+real    :: idx=0.,idy=0.,idz=0.
+real    :: iaa1=-1.
+integer :: iintpr=0
+integer :: infuel=0
 real,allocatable:: irhof(:,:,:,:),iss(:,:,:,:),imoist(:,:,:,:),iafd(:,:,:,:)
 real,allocatable:: izs(:,:),izheight(:,:,:)
 character:: rhoffile*50,moistfile*50,ssfile*50,afdfile*50
@@ -62,15 +63,15 @@ module baseline_variables
 !-----------------------------------------------------------------
 implicit none
 
-integer:: igrass,itrees,ilitter 
-integer:: ngrass
-real:: grassconstant,litterconstant
+integer:: igrass=0,itrees=0,ilitter=0
+integer:: ngrass=1
+real:: grassconstant=5.,litterconstant=5.
 real,allocatable:: grhof(:,:,:,:),gsizescale(:,:,:,:),gmoist(:,:,:,:),gfueldepth(:,:,:)
 real,allocatable:: trhof(:,:,:,:),tsizescale(:,:,:,:),tmoist(:,:,:,:),tfueldepth(:,:,:)
 real,allocatable:: lrhof(:,:,:,:),lsizescale(:,:,:,:),lmoist(:,:,:,:),lfueldepth(:,:,:)
 character:: grassfile*50,treefile*50,litterfile*50
 
-integer:: istem,ntspecies,tfuelbins,ntreefueltypes
+integer:: istem=0,ntspecies=1,tfuelbins=1,ntreefueltypes
 real,allocatable:: tstemdensity(:),tlocation(:,:,:)
 real,allocatable:: t1moisture(:,:),t1ss(:,:),t1bulkdensity(:,:)
 real,allocatable:: t2moisture(:,:,:),t2ss(:,:,:),t2bulkdensity(:,:,:)
@@ -88,7 +89,7 @@ module treatment_variables
 ! Types of treatments which can occur
 !-----------------------------------------------------------------
 implicit none
-integer:: itreatment
+integer:: itreatment=0
 
 !-----------------------------------------------------------------
 ! Slash Treatment variables
@@ -108,9 +109,9 @@ module duet_variables
 implicit none
 
 character :: speciesfile*100,winddatafile*100
-integer :: windprofile
-integer :: grassstep
-integer :: StepsPerYear,YearsSinceBurn
+integer :: windprofile=0
+integer :: grassstep=1
+integer :: StepsPerYear=1,YearsSinceBurn=4
 real,allocatable:: vterminal(:),fuelSA(:),Froude(:),droptime(:)
 real,allocatable:: leafdropfreq(:),decay(:),dragco(:)
 real,allocatable:: uavg(:),vavg(:),VAR(:,:)

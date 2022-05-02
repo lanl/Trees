@@ -52,11 +52,8 @@ allocate(izheight(inx,iny,inz))
 
 if(ifuelin.eq.1.and.(inx.ne.nx.or.idx.ne.dx.or. &
   iny.ne.ny.or.idy.ne.dy.or.inz.ne.nz.or.idz.ne.dz &
-  .or.aa1.ne.iaa1)) then
+  .or.aa1.ne.iaa1)) &
   iintpr=1
-else
-  iintpr=0
-endif
 
 if (topofile.eq.'flat'.or.topofile.eq.'') then ! No topo
   zs(:,:)=0.0
