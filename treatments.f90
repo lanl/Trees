@@ -309,16 +309,12 @@ implicit none
 integer i,j,k,ift
 
 ! Executable Code
-do ift=1,nfuel
-  do i=int(sdnx(1)/dx+1),int(sdnx(2)/dx+1)
-    do j=int(sdny(1)/dy+1),int(sdny(2)/dy+1)
-      fueldepth(ift,i,j,1) = zheight(i,j,k+1)
-      do k=1,zmax
-        sizescale(ift,i,j,k) = 0
-        rhof(ift,i,j,k) = 0
-        moist(ift,i,j,k)= 0
-      enddo
-    enddo
+do i=int(sdnx(1)/dx+1),int(sdnx(2)/dx+1)
+  do j=int(sdny(1)/dy+1),int(sdny(2)/dy+1)
+    fueldepth(:,i,j,1) = zheight(i,j,k+1)
+    sizescale(:,i,j,:) = 0
+    rhof(:,i,j,:) = 0
+    moist(:,i,j,:)= 0
   enddo
 enddo
 
