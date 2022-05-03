@@ -44,7 +44,7 @@ open(unit=15,file='fuellist',form='formatted',status='old')
      read (15,nml=fuellist)
 close(15)
 
-! Corrections for if variables not specifiedi on namelist
+! Corrections for if variables not specified on namelist
 if (tdnx(1).eq.0) then
   tdnx(1) = 1
   tdnx(2) = dx*nx
