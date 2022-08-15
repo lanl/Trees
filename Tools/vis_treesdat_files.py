@@ -1,3 +1,12 @@
+#============================================================================
+#   This script generates two figures of .dat files obtained from trees program.
+#   Figure 1 is an X/Y plot of fuels sliced on z=plane
+#   Figure 2 is an X/Y plot of fuels where species are summed along z
+#   Input:  .dat output from trees, number of fuel types
+#   Output: X/Y figures of .dat output from trees    
+#   Original file:       Julia Oliveto, joliveto@lanl.gov, April 5th, 2022
+#============================================================================
+
 import numpy as np
 import matplotlib
 matplotlib.use('agg')
@@ -6,23 +15,23 @@ import os.path
 
 #patfiles------------------
 #pf = pathfile where .dat file lives
-pf = '/Users/joliveto/Desktop/Projects/CreepyFire/Blodgett/blodgett1/' 
+pf = '/Users/joliveto/Desktop/Projects/Rod_Projects/JG_fuel_hetero/Flagstaff_newtrees_fuels/Inputs_Flagstaff/'
 #of = outfile where you save image (as .png)
-of = '/Users/joliveto/Desktop/Projects/CreepyFire/Blodgett/blodgett1/'
+of = '/Users/joliveto/Desktop/Projects/Rod_Projects/JG_fuel_hetero/fuels_pngs/'
+#b = the name of the fuels case you are visualizing
+b = 'test_fuels'
 
 #trees/viewing parameters------------------
 datfile = 'treesrhof.dat' #which .dat to make png
-nfuel = 6 #see bottom of trees output, number of output fuels
+nfuel = 3 #see bottom of trees output, number of output fuels
 plane = 0 #z-index slice of plotting (0=ground/bottom layer)
 
 #grid parameters------------------
-Nx    = 250 
-Ny    = 250 
-Nz    = 41  
+Nx    = 300 
+Ny    = 300 
+Nz    = 41 
 dx    = 2.0
 dy    = 2.0
-dz    = 15.0
-aa1   = 0.1
 
 
 #======================= DEFINE FUNCTIONS =========================                                                                                            
@@ -41,10 +50,20 @@ def createGrid(Nx, Ny, dx, dy):
     return X,Y
 
 def plotTopdown(fig,axs,arr,title,X,Y,plane):
-    sp1 = axs.pcolormesh(X,Y,np.transpose(arr[:,:,plane]),cmap='Greens',shading='auto')
+    if plane!=9999:
+        sp1 = axs.pcolormesh(X,Y,np.transpose(arr[:,:,plane]),cmap='viridis',shading='auto', vmin=0)
+    else:  
+        sp1 = axs.pcolormesh(X,Y,np.transpose(arr[:,:]),cmap='viridis',shading='auto', vmin=0)
     cbar = fig.colorbar(sp1, ax=axs)
     #cbar.ax.set_ylabel(ylabel, rotation=270)
     axs.set_title(title)
+
+def plotTopdownSum(fig,axs,arr,title,X,Y):
+    sp1 = axs.pcolormesh(X,Y,np.transpose(np.sum(arr, axis=2)),cmap='viridis',shading='auto', vmin=0)
+    cbar = fig.colorbar(sp1, ax=axs)
+    #cbar.ax.set_ylabel(ylabel, rotation=270)
+    axs.set_title(title)
+
 
     
 #STEP 1======================
@@ -56,6 +75,7 @@ for ift in range(nfuel):
     print('Reading fuel type:',ift)
     rhof[ift,:,:,:] = readfield(rhoffile,Nx,Ny,Nz)
 rhoffile.close()
+print(rhof.shape)
 
 #STEP 2======================
 #Create X,Y grid based on Nx,Ny,dx,dy
@@ -65,21 +85,60 @@ X,Y = createGrid(Nx, Ny, dx, dy)
 #Visualilize the X/Y plane of the .dat file
 name = datfile[:-4] #remove ".dat" from string
 
+#find correct number of subplots for nfuel
+rows = int(np.floor(np.sqrt(nfuel+1)))
+cols = int(rows + np.ceil(np.sqrt(nfuel+1) - rows))
+if (rows<(nfuel+1)/cols):
+    rows += 1
+print(rows, cols)
+
+#fig 1: single zplane .dat file=========================== 
+fig,axs = plt.subplots(rows,cols, figsize=(15,10))
+print('FIG1')
 for n in range(nfuel+1):
-    fig,axs = plt.subplots(figsize=(10,8))
     if (n==0):
         arr = np.sum(rhof, axis=0)
-        t = 'Sum.Species'
+        t = 'Sum Species'
     else:
         arr = rhof[n-1,:,:,:]
-        t = 'Species.'+str(n)
-    plotTopdown(fig,axs,arr,t,X,Y,plane)
-    fig.suptitle(name)
-    plt.tight_layout()
-    plt.savefig(of+name+'_'+t+'_topdown_view.png')
-    plt.close()    
-         
-             
- 
-    
+        t = 'Species '+str(n)
+    if (rows!=1):
+        inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
+    else:
+        inpaxs = axs[n]
+    plotTopdown(fig,inpaxs,arr,t,X,Y,plane)  
+#Hide unused subplots
+for nn in range(nfuel+1,rows*cols):
+    axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
+#figure title    
+fig.suptitle(name)
+plt.tight_layout()
+plt.savefig(of+name+'_'+b+'_topdown_view_zplane_'+str(plane)+'.png')
+plt.close()   
+#=================================== 
 
+#fig 2: sum .dat file===========================
+fig,axs = plt.subplots(rows,cols, figsize=(15,10))
+print('FIG2')
+
+for n in range(nfuel+1):
+    if (n==0):
+        arr = np.sum(rhof, axis=0)
+        t = 'Sum Species'
+    else:
+        arr = rhof[n-1,:,:,:]
+        t = 'Species '+str(n)
+    if (rows!=1):
+        inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
+    else:
+        inpaxs = axs[n]
+    plotTopdownSum(fig,inpaxs,arr,t,X,Y)  
+#Hide unused subplots
+for nn in range(nfuel+1,rows*cols):
+    axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
+#figure title    
+fig.suptitle(name)
+plt.tight_layout()
+plt.savefig(of+name+'_'+b+'_topdown_view_sumZ.png')
+plt.close()    
+#=================================
