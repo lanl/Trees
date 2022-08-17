@@ -102,6 +102,8 @@ implicit none
 ! Local Variables
 integer ift,i,j,k,lfuel
 real,dimension(nfuel):: nonzero
+real*8,allocatable :: frhof(:,:,:,:),frhow(:,:,:,:)
+real*8,allocatable :: fss(:,:,:,:),fafd(:,:,:)
 
 ! Executable Code
 nonzero(:) = 1
@@ -118,16 +120,23 @@ enddo
 
 print*,'Exporting data to .dat files'
 if (firetecshock.eq.1)then
+  allocate(frhof(nfuel,nx,ny,lfuel),frhow(nfuel,nx,ny,lfuel), &
+    fss(nfuel,nx,ny,lfuel),fafd(nfuel,nx,ny))
+  frhof=rhof(:,:,:,1:lfuel)
+  frhow=moist(:,:,:,1:lfuel)*rhof(:,:,:,1:lfuel)
+  fss=sizescale(:,:,:,1:lfuel)
+  fafd=fueldepth(:,:,:,1)
   open(1,file='fuelArrays.dat',form='unformatted',status='unknown')
   do ift=1,nfuel
     if (nonzero(ift).ne.0) then
-      write (1) rhof(ift,:,:,1:lfuel)
-      write (1) moist(ift,:,:,1:lfuel)*rhof(ift,:,:,1:lfuel)
-      write (1) sizescale(ift,:,:,1:lfuel)
-      write (1) fueldepth(ift,:,:,1)
+      write (1) frhof(ift,:,:,:)
+      write (1) frhow(ift,:,:,:)
+      write (1) fss(ift,:,:,:)
+      write (1) fafd(ift,:,:)
     endif
   enddo
   close (1)
+  deallocate(frhof,frhow,fss,fafd)
 else
   open (1,file='treesrhof.dat',form='unformatted',status='unknown')
   do ift=1,nfuel
@@ -173,6 +182,8 @@ implicit none
 ! Local Variables
 integer ift,i,j,k,lfuel
 real,allocatable :: srhof(:,:,:),sss(:,:,:),smoist(:,:,:),safd(:,:,:)
+real*8,allocatable :: frhof(:,:,:),frhow(:,:,:)
+real*8,allocatable :: fss(:,:,:),fafd(:,:)
 
 ! Executable Code
 allocate(srhof(nx,ny,nz))
@@ -204,12 +215,19 @@ enddo
 
 print*,'Exporting data to .dat files'
 if (firetecshock.eq.1)then
+  allocate(frhof(nx,ny,lfuel),frhow(nx,ny,lfuel), &
+    fss(nx,ny,lfuel),fafd(nx,ny))
+  frhof=srhof(:,:,1:lfuel)
+  frhow=smoist(:,:,1:lfuel)*srhof(:,:,1:lfuel)
+  fss=sss(:,:,1:lfuel)
+  fafd=safd(:,:,1)
   open(1,file='fuelArrays.dat',form='unformatted',status='unknown')
-  write (1) srhof(:,:,1:lfuel)
-  write (1) smoist(:,:,1:lfuel)*srhof(:,:,1:lfuel)
-  write (1) sss(:,:,1:lfuel)
-  write (1) safd(:,:,1)
+  write (1) frhof(:,:,:)
+  write (1) frhow(:,:,:)
+  write (1) fss(:,:,:)
+  write (1) fafd(:,:)
   close (1)
+  deallocate(frhof,frhow,fss,fafd)
 else
   open (1,file='treesrhof.dat',form='unformatted',status='unknown')
   write (1) srhof
