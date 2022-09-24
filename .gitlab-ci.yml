@@ -1,0 +1,8 @@
+update:references:
+  trigger:
+    branch: '${CI_DEFAULT_BRANCH}'
+    project: ees-fire-modeling/higrad-firetec/higrad-firetec
+    strategy: depend
+  stage: deploy
+  variables:
+    UPDATE_SUBMODULE: 'true'
