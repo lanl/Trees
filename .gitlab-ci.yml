@@ -1,3 +1,26 @@
+<<<<<<< HEAD
+trigger:
+  image: curlimages/curl:7.76.1
+  script:
+    # Put the private-token with a colon into a variable to escape the 
+"Linefeed-Limbo" (https://stackoverflow.com/a/51187502)
+    - PRIVATE_TOKEN="PRIVATE-TOKEN:"
+
+    # Use the Repository submodules API to update the submodule reference 
+in other repositories
+    - curl
+      --data 
+"branch=${BRANCH}&commit_sha=${CI_COMMIT_SHA}&commit_message=${CI_COMMIT_MESSAGE}"
+      --header "${PRIVATE_TOKEN} ${GITLAB_TOKEN}"
+      --request PUT
+      
+"${CI_SERVER_URL}/api/v4/projects/${PROJECT_ID}/repository/submodules/${SUBMODULE_PATH}"
+  stage: trigger
+  variables:
+    PROJECT_ID: '6604' # HIGRAD/FIRETEC
+    BRANCH: 'develop'
+    SUBMODULE_PATH: 'trees'
+=======
 update:references:
   trigger:
     branch: 'develop'
@@ -6,3 +29,4 @@ update:references:
   stage: deploy
   variables:
     UPDATE_SUBMODULE: 'true'
+>>>>>>> c5952dc175a2c57789579540e93ab272570207f4
