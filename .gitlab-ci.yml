@@ -6,7 +6,7 @@ trigger:
 
     # Use the Repository submodules API to update the submodule reference in other repositories
     - curl
-      --data "branch=${BRANCH}&commit_sha=${CI_COMMIT_SHA}&commit_message=${CI_COMMIT_MESSAGE}"
+      --data "branch=${BRANCH}&commit_sha=${CI_COMMIT_SHA}&commit_message=Trees:${CI_COMMIT_MESSAGE}"
       --header "${PRIVATE_TOKEN} ${GITLAB_TOKEN}"
       --request PUT "${CI_SERVER_URL}/api/v4/projects/${PROJECT_ID}/repository/submodules/${SUBMODULE_PATH}"
   stage: deploy
