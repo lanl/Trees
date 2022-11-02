@@ -641,3 +641,37 @@ if (nsub.gt.1) then
   print*,'Number of relocation due to crowding = ',num
 endif
 end subroutine treelist_fastfuels
+
+subroutine read_homogeneousTrees
+!-----------------------------------------------------------------
+!-----------------------------------------------------------------
+use grid_variables
+use baseline_variables
+
+implicit none
+
+! Local Variables 
+integer :: i,j,k,ift
+real :: treerhof
+real :: treemoist
+real :: treesizescale
+real :: treebase
+real :: treetop
+
+! Executable Code
+
+  allocate(grho(ngrass))
+  allocate(gmoisture(ngrass))
+  allocate(gss(ngrass))
+  allocate(gdepth(ngrass))
+
+  print*,'Reading HomogeneousTrees.txt file, ntspecies = ',ntspecies
+  open (1001,file=treefile,form='formatted',status='old')
+  read (1001,*) treerhof      ! bulk density of grass [kg/m3]
+  read (1001,*) treemoist     ! moisture content of grass
+  read (1001,*) treesizescale ! size scale of grass [m]
+  read (1001,*) treebase      ! tree base height [m]
+  read (1001,*) treetop       ! tree top height [m]
+  close (1001)
+
+end subroutine read_homogeneousTrees

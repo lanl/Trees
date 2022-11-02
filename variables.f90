@@ -63,6 +63,7 @@ module baseline_variables
 !-----------------------------------------------------------------
 implicit none
 
+integer:: ihomogeneous=0   ! = 1 for homogeneous grass and/or canopy, same as ivegread=0 in rinitfire.f
 integer:: igrass=0,itrees=0,ilitter=0
 integer:: ngrass=1
 real:: grassconstant=5.,litterconstant=5.

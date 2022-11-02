@@ -24,6 +24,7 @@
 ! ----------------------------------
 ! Input dataset info
 ! ----------------------------------
+      ihomogeneous=1                  ! For simple, homogeneous grass and/or canopy fuels, like ivegread=0 in rinitfire.f
       igrass=1                        ! Grass flag (1 is generalized grass data, 2 is if already have a file with 2d arrays for groundfuels)
       ngrass=1                        ! Number of Grass Species
       grassconstant=5                 ! Exponential constant used to determine the decay of grass mass with tree shading
@@ -32,7 +33,7 @@
       itrees=2                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
       ntspecies=2                     ! Number of Tree Species
       tfuelbins=1                     ! Number of size bins to distribute branches
-      treefile='AJOSEglinTrees.txt'   ! Trees text file with data
+      treefile='treesHomogeneous.txt'   ! Trees text file with data
       ndatax=67                       ! JSM: size of dataset domain in x direction [m]
       ndatay=106                      ! JSM: size of dataset domain in y direction [m]
       datalocx=                       ! JSM: x coordinate for bottom left corner where dataset should be placed (if unspecified, =0)

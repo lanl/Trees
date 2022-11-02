@@ -23,7 +23,7 @@ namelist/fuellist/ &
    singlefuel,firetecshock, &
    ifuelin,rhoffile,moistfile,ssfile,afdfile, &
    inx,iny,inz,idx,idy,idz,iaa1,infuel, &
-   igrass,ngrass,grassconstant,grassfile, &
+   ihomogeneous,igrass,ngrass,grassconstant,grassfile, &
    itrees,ntspecies,tfuelbins,tdnx,tdny,treefile,istem, &
    ndatax,ndatay,datalocx,datalocy, & !JSM added for populate function
    ilitter,litterconstant,litterfile, &
@@ -86,6 +86,20 @@ if (itrees.eq.7) then
   call find_fastfuels_numspecies
   tfuelbins = 1
 endif
+
+!Set igrass and itrees for homogeneous case
+if (ihomogeneous.eq.1) then
+  !ihomogeneous = 1 and igrass = 3 makes grass fuels only (no canopy)
+  if(igrass.eq.3)then
+    itrees = 0
+    ilitter = 0
+  !ihomogeneous = 1 forces grass fuels and canopy fuels)
+  else
+    igrass = 4
+    itrees = 4
+    ilitter = 0
+  endif !(igrass.eq.3)
+endif !(ihomogeneous.eq.1)
 
 end subroutine namelist_input
 
