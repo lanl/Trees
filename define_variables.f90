@@ -168,7 +168,7 @@ endif
 !-----------------------------------------------------------------
 ! Groundfuel variables unique to the ground fuels baseline
 !-----------------------------------------------------------------
-if (igrass.eq.1) then
+if ((igrass.eq.1).or.(igrass.eq.3).or.(igrass.eq.4)) then
   allocate(grho(ngrass))
   allocate(gmoisture(ngrass))
   allocate(gss(ngrass))

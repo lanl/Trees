@@ -652,18 +652,7 @@ implicit none
 
 ! Local Variables 
 integer :: i,j,k,ift
-real :: treerhof
-real :: treemoist
-real :: treesizescale
-real :: treebase
-real :: treetop
-
 ! Executable Code
-
-  allocate(grho(ngrass))
-  allocate(gmoisture(ngrass))
-  allocate(gss(ngrass))
-  allocate(gdepth(ngrass))
 
   print*,'Reading HomogeneousTrees.txt file, ntspecies = ',ntspecies
   open (1001,file=treefile,form='formatted',status='old')

@@ -42,7 +42,12 @@ endif
 ! Fill tree arrays
 if (itrees.ne.0) then
   print*,'Filling Trees Baseline'
-  call tree_baseline
+  if(itrees.eq.4)then
+    call tree_homogeneous_baseline
+  else
+    call tree_baseline
+  endif !(itrees.eq.4)then
+
   do ift=1,ntspecies*ntreefueltypes
     do i=1,nx
       do j=1,ny
@@ -183,8 +188,8 @@ if(itrees.eq.1) then
     ntrees(i) = ceiling(totarea*tstemdensity(i)/100.**2.)
   enddo
 endif
-print*,'Number of trees of each species:',ntrees
 
+print*,'Number of trees of each species:',ntrees
 !----- Begin loop which fills arrays with information for each tree
 allocate(rhoftemp(tfuelbins))
 do i=1,ntspecies
@@ -399,6 +404,41 @@ print*,'Trees actual fuel mass:',actual_mass
 print*,'Trees error:',actual_mass/target_mass*100,'%'
 
 end subroutine tree_baseline 
+
+subroutine tree_homogeneous_baseline 
+!-----------------------------------------------------------------
+! tree_baseline is a function which computes the characteristics  
+! of a forest from the variables designated in 
+! define_variables.f. It then fills trhof, tsizescale, tmoisture, 
+! and tfueldepth arrays.
+!-----------------------------------------------------------------
+use constant_variables
+use grid_variables
+use baseline_variables
+
+implicit none
+
+! Local variables
+integer ift,i,j,k
+
+! Executable code
+
+  do ift=1,ntspecies*ntreefueltypes
+    do i=1,nx
+      do j=1,ny
+        do k=1,nz-1
+          if((treebase.lt.zheight(i,j,k+1)).and.(treetop.gt.zheight(i,j,k)))then
+            trhof(ift,i,j,k) = treerhof*min((zheight(i,j,k+1)-treebase)/(zheight(i,j,k+1)-zheight(i,j,k)),1.0)
+            tsizescale(ift,i,j,k) = treesizescale
+            tmoist(ift,i,j,k) = treemoist
+          endif !((treebase.lt.zheight(i,j,k+1)).and.(treetop.gt.zheight(i,j,k)))then
+        enddo
+        tfueldepth(ift,i,j) = treetop-treebase
+      enddo
+    enddo
+  enddo
+
+end subroutine tree_homogeneous_baseline 
 
 subroutine litter_baseline
 !-----------------------------------------------------------------

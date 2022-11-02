@@ -67,6 +67,8 @@ integer:: ihomogeneous=0   ! = 1 for homogeneous grass and/or canopy, same as iv
 integer:: igrass=0,itrees=0,ilitter=0
 integer:: ngrass=1
 real:: grassconstant=5.,litterconstant=5.
+real:: treerhof, treemoist, treesizescale, treebase, treetop
+
 real,allocatable:: grhof(:,:,:,:),gsizescale(:,:,:,:),gmoist(:,:,:,:),gfueldepth(:,:,:)
 real,allocatable:: trhof(:,:,:,:),tsizescale(:,:,:,:),tmoist(:,:,:,:),tfueldepth(:,:,:)
 real,allocatable:: lrhof(:,:,:,:),lsizescale(:,:,:,:),lmoist(:,:,:,:),lfueldepth(:,:,:)
