@@ -25,13 +25,17 @@
 ! Input dataset info
 ! ----------------------------------
       ihomogeneous=1                  ! For simple, homogeneous grass and/or canopy fuels, like ivegread=0 in rinitfire.f
+      iswcorner = 51                  ! i location of SW corner of rectangular canopy in x-y plane
+      jswcorner = 51                  ! j location of SW corner of rectangular canopy in x-y plane
+      inecorner = 150                 ! i location of NE corner of rectangular canopy in x-y plane
+      jnecorner = 150                 ! j location of NE corner of rectangular canopy in x-y plane
       igrass=1                        ! Grass flag (1 is generalized grass data, 2 is if already have a file with 2d arrays for groundfuels)
       ngrass=1                        ! Number of Grass Species
       grassconstant=5                 ! Exponential constant used to determine the decay of grass mass with tree shading
       grassfile='grass.txt'           ! Grass text file with generalized-data
 
       itrees=2                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
-      ntspecies=2                     ! Number of Tree Species
+      ntspecies=1                     ! Number of Tree Species
       tfuelbins=1                     ! Number of size bins to distribute branches
       treefile='treesHomogeneous.txt'   ! Trees text file with data
       ndatax=67                       ! JSM: size of dataset domain in x direction [m]

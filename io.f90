@@ -23,7 +23,8 @@ namelist/fuellist/ &
    singlefuel,firetecshock, &
    ifuelin,rhoffile,moistfile,ssfile,afdfile, &
    inx,iny,inz,idx,idy,idz,iaa1,infuel, &
-   ihomogeneous,igrass,ngrass,grassconstant,grassfile, &
+   ihomogeneous,iswcorner,jswcorner,inecorner,jnecorner, &
+   igrass,ngrass,grassconstant,grassfile, &
    itrees,ntspecies,tfuelbins,tdnx,tdny,treefile,istem, &
    ndatax,ndatay,datalocx,datalocy, & !JSM added for populate function
    ilitter,litterconstant,litterfile, &
@@ -152,7 +153,9 @@ if (firetecshock.eq.1)then
   close (1)
   deallocate(frhof,frhow,fss,fafd)
 else
+
   open (1,file='treesrhof.dat',form='unformatted',status='unknown')
+
   do ift=1,nfuel
     if (nonzero(ift).ne.0)  write (1) rhof(ift,:,:,:)
   enddo

@@ -425,7 +425,9 @@ integer ift,i,j,k
 
   do ift=1,ntspecies*ntreefueltypes
     do i=1,nx
+      if((i.ge.iswcorner).and.(i.le.inecorner))then
       do j=1,ny
+        if((j.ge.jswcorner).and.(j.le.jnecorner))then
         do k=1,nz-1
           if((treebase.lt.zheight(i,j,k+1)).and.(treetop.gt.zheight(i,j,k)))then
             trhof(ift,i,j,k) = treerhof*min((zheight(i,j,k+1)-treebase)/(zheight(i,j,k+1)-zheight(i,j,k)),1.0)
@@ -434,7 +436,9 @@ integer ift,i,j,k
           endif !((treebase.lt.zheight(i,j,k+1)).and.(treetop.gt.zheight(i,j,k)))then
         enddo
         tfueldepth(ift,i,j) = treetop-treebase
+        endif !((j.ge.jswcorner).and.(j.le.jnecorner))then
       enddo
+      endif !((i.ge.iswcorner).and.(i.le.inecorner))then
     enddo
   enddo
 

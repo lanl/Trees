@@ -64,6 +64,7 @@ module baseline_variables
 implicit none
 
 integer:: ihomogeneous=0   ! = 1 for homogeneous grass and/or canopy, same as ivegread=0 in rinitfire.f
+integer:: iswcorner,jswcorner,inecorner,jnecorner !rectangular canopy specified by SW corner and NE corner in x and y.
 integer:: igrass=0,itrees=0,ilitter=0
 integer:: ngrass=1
 real:: grassconstant=5.,litterconstant=5.
