@@ -123,10 +123,10 @@ def metrics(topofile, Nx, Ny, Nz, dx, dy, dz, a1, f0, Stretch):
 def plotTopdown(fig,axs,arr,title,X,Y,sum_flag,plane):
     if sum_flag == 1:
         arr = np.sum(arr,axis=2)
-        sp1 = axs.pcolormesh(X[:,:,0],Y[:,:,0],np.transpose(arr),cmap='Greens',shading='auto')
+        sp1 = axs.pcolormesh(X[:,:,0],Y[:,:,0],arr,cmap='Greens',shading='auto')
     else:
         arr = arr[:,:,plane]
-        sp1 = axs.pcolormesh(X[:,:,0],Y[:,:,0],np.transpose(arr),cmap='Greens',shading='auto')
+        sp1 = axs.pcolormesh(X[:,:,0],Y[:,:,0],arr,cmap='Greens',shading='auto')
     cbar = fig.colorbar(sp1, ax=axs)
     #cbar.ax.set_ylabel(ylabel, rotation=270)
     axs.set_title(title)
