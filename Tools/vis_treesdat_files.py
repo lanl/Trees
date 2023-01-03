@@ -5,7 +5,7 @@
 #   Input:  .dat output from trees, number of fuel types
 #   Output: X/Y figures of .dat output from trees    
 #   Original file:       Julia Oliveto, joliveto@lanl.gov, April 5th, 2022
-#============================================================================
+#=======#============================================================================
 # © 2022. Triad National Security, LLC. All rights reserved.  This
 # program was produced under U.S. Government contract 89233218CNA000001
 # for Los Alamos National Laboratory (LANL), which is operated by Triad
@@ -27,30 +27,32 @@ import os.path
 import sys
 import struct
 
-#patfiles------------------
+#====================INPUTS====================
+#pathfiles------------------
 #pf = pathfile where .dat file lives
 pf = './'
 #of = out pathfile where you save image (as .png)
 of = './'
 #b = the name of the fuels case you are visualizing
-b = 'Original_Fuels'
+b = 'test_case'
 #topofile = pathfile and name of topography (if used), if no topography input: ''
 topofile = ''#'/Users/joliveto/Desktop/trees_fix_topo/Inputs/rampHill.dat'
 
 #trees/viewing parameters------------------
-datfile = 'treesrhof.dat' #which .dat to make png
-nfuel = 4 #see bottom of trees output, number of output fuels
+datfile  = 'treesrhof.dat' #which .dat to make png
+nfuel    = 5 #see bottom of trees output, number of output fuels
 sum_flag = 1 #if = 0, the topdown figures will be z-slices specified by "plane" ; if = 1 plots topdown figures as a sum in z
-plane = 1 #z-index slice of plotting (0=ground/bottom layer), will *not* be used if sum_flag = 1
+plane    = 0 #z-index slice of plotting (0=ground/bottom layer), will *not* be used if sum_flag = 1
 
 #grid parameters------------------
-Nx      = 200 
-Ny      = 200 
+Nx      = 350 
+Ny      = 250 
 Nz      = 41 
 dx      = 2.0
 dy      = 2.0
 dz      = 15.0
 aa1     = 0.1
+f1      = 0.0
 stretch = 2 
 
 #======================= DEFINE FUNCTIONS =========================                                                                                            
@@ -135,13 +137,17 @@ def metrics(topofile, Nx, Ny, Nz, dx, dy, dz, a1, f0, Stretch):
 def plotTopdown(fig,axs,arr,title,X,Y,sum_flag,plane):
     if sum_flag == 1:
         arr = np.sum(arr,axis=2)
-        sp1 = axs.pcolormesh(X[:,:,0],Y[:,:,0],arr,cmap='Greens',shading='auto')
+        sp1 = axs.pcolormesh(X[:,:,0],Y[:,:,0],arr,cmap='Greens',shading='auto', )
+        #sp1 = axs.imshow(arr,cmap='Greens')
     else:
         arr = arr[:,:,plane]
         sp1 = axs.pcolormesh(X[:,:,0],Y[:,:,0],arr,cmap='Greens',shading='auto')
+        #sp1 = axs.imshow(arr,cmap='Greens')
     cbar = fig.colorbar(sp1, ax=axs)
     #cbar.ax.set_ylabel(ylabel, rotation=270)
     axs.set_title(title)
+    axs.set_xlabel('X [m]')
+    axs.set_ylabel('Y [m]')
     return 0
 
 def plotVertical(fig,axs,arr,title,X,Z):
@@ -149,6 +155,8 @@ def plotVertical(fig,axs,arr,title,X,Z):
     cbar = fig.colorbar(sp1, ax=axs)
     #cbar.ax.set_ylabel(ylabel, rotation=270)
     axs.set_title(title)
+    axs.set_xlabel('X [m]')
+    axs.set_ylabel('Z [m]')
     return 0
 
 
@@ -168,7 +176,7 @@ print(rhof.shape)
 
 #STEP 2======================
 #Create X,Y grid based on Nx,Ny,dx,dy
-XI, YI, ZI, vol = metrics(topofile, Nx, Ny, Nz, dx, dy, dz, aa1, 0.0, stretch)
+XI, YI, ZI, vol = metrics(topofile, Nx, Ny, Nz, dx, dy, dz, aa1, f1, stretch)
 X = XI[:,0,0]
 Y = YI[0,:,0]
 Z = ZI[0,0,:]
@@ -187,17 +195,15 @@ fig,axs = plt.subplots(rows,cols, figsize=(15,10))
 for n in range(nfuel+1):
     if (n==0):
         arr = np.sum(rhof, axis=0)
-        #arr = arr[:,:,plane]
         t = 'Sum Species'
     else:
-        #arr = rhof[n-1,:,:,plane]
         arr = rhof[n-1,:,:,:]
         t = 'Species '+str(n)
     if (rows!=1):
         inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
     else:
         inpaxs = axs[n]
-    plotTopdown(fig,inpaxs,arr,t,XI,YI,sum_flag,plane)  
+    plotTopdown(fig,inpaxs,arr,t,XI+Nx,YI+Ny,sum_flag,plane)  
 #Hide unused subplots
 for nn in range(nfuel+1,rows*cols):
     axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
@@ -221,7 +227,7 @@ for n in range(nfuel+1):
         inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
     else:
         inpaxs = axs[n]
-    plotVertical(fig,inpaxs,arr,t,XI,ZI)  
+    plotVertical(fig,inpaxs,arr,t,XI+Nx,ZI)  
 #Hide unused subplots
 for nn in range(nfuel+1,rows*cols):
     axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
