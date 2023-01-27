@@ -27,9 +27,9 @@ dx            -- Required             -- Spacing of cells in the x-dimension (m)
 dy            -- Required             -- Spacing of cells in the y-dimension (m)
 dz            -- Required             -- Spacing of cells in the z-dimension before stretching (m)
 aa1           -- 0.1                  -- Vertical stretching component defined in zcart function of metryc.f, 0 if no stretching or no topo to vertical size
+singlefuel    -- 0                    -- Flag for averaging cells' fuels into a single fuel type
 topofile      -- ‘flat’               -- Name of topo file to be read in if using  topography
 !-------------------------------------------------------------------------------------------------
-singlefuel    -- 0                    -- Flag for averaging cells' fuels into a single fuel type
 ifiretecshock -- 0                    -- Flag to trigger io for firetecshock
 !-------------------------------------------------------------------------------------------------
 ifuelin       -- 0                    -- Flag for reading existing fuel data files
@@ -41,23 +41,21 @@ idy           -- dy                   -- Spacing of cells in the existing fuel d
 idz           -- dz                   -- Spacing of cells in the existing fuel data z-dimension before stretching (m)
 iaa1          -- aa1                  -- Vertical stretching component in existing fuel data
 infuel        -- 1                    -- Number of fuel types in existing fuel data
+intopofile    -- ‘flat’               -- Name of existing topo file to be read in if using topography
 rhoffile      -- Required if ifuelin=1-- Existing rhof file for read-in fuel data
 ssfile        -- Required if ifuelin=1-- Existing sizescale file for read-in fuel data
 moistfile     -- Required if ifuelin=1-- Existing moisture file for read-in fuel data
 afdfile       -- Required if ifuelin=1-- Existing fueldepth file for read-in fuel data
 !-------------------------------------------------------------------------------------------------
-igrass        -- 0                    -- Flag for grass, 0 if no grass, 1 if generalizd grassfile, 2 if ground fuel levels read directly
-grassconstant -- 5                    -- Exponential constant used to determine the decay of grass mass with tree shading
-ngrass        -- Required if igrass=1 -- Number of grass species (for multiple fuels)
-grassfile     -- Required if igrass=2 -- Name of grassfile with the additional information to be read
-!-------------------------------------------------------------------------------------------------
-itrees        -- 0                    -- Flag for trees, 0 if no trees, 1 if generalized treefile, 2 if specific treefile w/ locations randomized to fill the domain, 3 if specific treefile w/ random locations using base area to fill the domain
-ntspecies     -- 1                    -- Number of tree species
+itrees        -- 0                    -- Flag for trees, 0 if no trees, 1 if generalized treefile, 2 if specific treefile w/ locations randomized to fill the domain, 3 if specific treefile w/ random locations using base area to fill the domain, 7 if using FastFuels csv file
+ntspecies     -- 1                    -- Number of tree species (correct number not required if itrees=7)
+iFIA          -- 0                    -- Turn on FIA code reference to database
+iFIA species  -- 0                    -- Flag to choose specific species instead of species groups (FIA codes below should be group numbers if this = 0)
 tfuelbins     -- 1                    -- Number of size bins to distribute canopy fuels (foliage, branches, etc)
 treefile      -- Required if itrees>0 -- Name of treefile with the additional information to be read
 istem         -- 0                    -- Adds tree stems and bark to fuel arrays, DO NOT USE!!!!
-ndatax        -- nx*dx                -- Size of dataset domain in x direction (m)
-ndatay        -- ny*dx                -- Size of dataset domain in y direction (m)
+ndatax        -- nx*dx                -- Size of dataset domain in x direction (m); recalculated if itrees=7
+ndatay        -- ny*dx                -- Size of dataset domain in y direction (m); recalculated if itrees=7
 datalocx      -- 0                    -- Bottom left corner x coordinate for where dataset should be placed
 datalocy      -- 0                    -- Bottom left corner y coordinate for where dataset should be placed
 tdnx          -- [0,nx*dx]            -- x range of the domain to be populated with trees (m)
@@ -65,13 +63,20 @@ tdny          -- [0,ny*dy]            -- y range of the domain to be populated w
 !-------------------------------------------------------------------------------------------------
 ilitter       -- 0                    -- Flag for litter, 0 if no litter, 1 if litter distributed by vertical fuel-load, 2 if litter is filled with DUET
 litterconstant-- 5                    -- Exponential constant to increase of litter mass under trees
-litterfile    -- Required if ilitter>0-- Name of litterfile with additional information to be read
-speciesfile   -- Required if ilitter=2-- Name of speciesfile needed for DUET
 windprofile   -- 0                    -- Flag for wind profile type used by DUET, 1 if yearly averaged, 2 if imported windfield
-winddatafile  -- Required if ilitter=2-- Name of wind datafile need for DUET
+randomwinds   -- 3                    -- if windprofile=2, choose 1 for up to 3m/s, 2 for up to 6m/s, 3 for up to 9m/s, etc.
 grassstep     -- 1                    -- Step within a year in which grass grows
 YearsSinceBurn-- 4                    -- Years since last fire
 StepsPerYear  -- 1                    -- Number of DUET timesteps within a year
+relhum        -- 0.1                  -- relative humidity of the area
+
+igrass        -- 0                    -- Flag for grass, 0 if no grass, 1 if generalizd grassfile, 2 if ground fuel levels read directly
+ngrass        -- Required if igrass=1 -- Number of grass species (for multiple fuels)
+grassconstant -- 5                    -- Exponential constant used to determine the decay of grass mass with tree shading
+!-------------------------------------------------------------------------------------------------
+litout        -- 0                    -- flag to turn on extra output files for visualizations of DUET functionality
+controlseed   -- 1                    -- flag to control random seed to recreate the same tree plot multiple times 
+seedchange    -- 100                  -- if controlseed=1, choose a seed 
 !-------------------------------------------------------------------------------------------------
 itreatment    -- 0                    -- Flag for fuel treatments, 0 if no treatment, 1 if slashlayer, 2 if slashpiles, 3 if fuel removal
 sdnx          -- [0,nx*dx]            -- x range of the domain over which a treatment is applied (m)
@@ -81,16 +86,58 @@ smoist        -- 0                    -- Moisture content of slashlayers or slas
 sdiameter     -- 0                    -- Diameter of slashpiles
 sheight       -- 0                    -- Height of slashpiles
 sprho         -- 0                    -- Bulk density of slashpiles
+!-------------------------------------------------------------------------------------------------
+&speciesdata
+!-------------------------------------------------------------------------------------------------
+! ONLY NECESSARY TO FILL THIS IN IF NOT USING FASTFUELS AND ITREES NOT EQUAL TO 1
+! NUMBER OF ENTRIES MUST MATCH NTSPECIES*TFUELBINS ABOVE
+! VALUES SHOULD BE GROUP NUMBERS IF IFIASPECIES=0
 
-!---Grasses---
-If igrass is 1, then the program will look for the grassfile with a name specified in the main input file. The first four rows of this file will be read by the program and should contain the following:
-1. Fuel bulk density within the fuel layer (kg/m3)
-2. Fuel moisture fraction
-3. Radius of fuel cylinders (m)
-4. Depth of the fuel layer (m)
-Each line should contain ngrass columns with the above values for each grass species tracked in the simulation.
+      FIA = 1,2                   ! FIA codes for each species in the treelist
 
-If igrass is 2, then the program will read in an existing data array to populate the ground fuels.
+! LONGLEAF PINE = 121, GROUP 4
+! TURKEY OAK = 819, GROUP 9
+!-------------------------------------------------------------------------------------------------
+&litterdata
+!-------------------------------------------------------------------------------------------------
+!LIST ALL VALUES FOR LITTER HERE IF NOT USING DUET (ILITTER NOT EQUAL TO 2);
+!NUMBER MUST MATCH NTSPECIES*TFUELBINS ABOVE
+
+      lrho      = 4.667,4.667      ! litter bulk densities for each fuel type [kg/m3]
+      lmoisture = 0.06, 0.06       ! litter moisture content [fraction]
+      lss       = 0.0005,0.0005    ! size scale of litter [m]
+      ldepth    = 0.06,0.06        ! depth of litter [m]
+!-------------------------------------------------------------------------------------------------
+&grassdata
+!-------------------------------------------------------------------------------------------------
+!If igrass is 1, then the program will take parameters definied below to create grass. The first four rows of this file will be read by the program and should contain the following:
+
+      grho = 1.1766             ! grass bulk densities [kg/m3]
+      gmoisture = 0.06          ! grass moisture content [fraction]
+      gss = 0.0005              ! size scale of grass [m]
+      gdepth = 0.27             ! depth of grass [m]
+      gmoistoverride=0        ! value for moisture if override is desired; SET TO 0 TO TURN OFF
+
+!LIST ALL VALUES FOR GRASSES HERE; SPECIES SEPARATED BY COMMAS; NUMBER OF SPECIES MUST MATCH NGRASS ABOVE
+!gmoistoverride will retain spatial heterogeneity but override maximum moisture level
+!and use that to adjust all moisture levels for all species
+!If igrass is 2, then the program will read in an existing data array to populate the ground fuels and disregaurd these values
+!-------------------------------------------------------------------------------------------------
+&winddata
+!-------------------------------------------------------------------------------------------------
+!LIST ALL VALUES FOR YOUR WIND PROFILE HERE IF WINDPROFILE=0
+!THIS WILL NOT BE READ UNLESS WINDPROFILE=0!!!
+
+!INCLUDE A LISTING FOR EACH YEAR
+
+      uavg = 0,0,15,15
+      vavg = 0,0,15,15
+      ustd = 0,8,0,8
+      vstd = 0,8,0,8
+!-------------------------------------------------------------------------------------------------
+!---------------------  END  OF  FUELLIST  INPUTS  -----------------------------------------------
+!-------------------------------------------------------------------------------------------------
+
 
 !---Trees---
 If itrees is not 0, then the program will look for the treefile with a name specified in the main input file. However, different itrees values will read the file in different ways.
