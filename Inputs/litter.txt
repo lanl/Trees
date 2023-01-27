@@ -1,0 +1,16 @@
+  4.667   4.667
+  0.06    0.06
+  0.0005  0.0005
+  0.06    0.06
+
+! -----------------------------------------------------------------------------------
+! Litterfile should contain 4 lines of data, starting on line 1.
+! 1-bulk density [kg/m3]
+! 2-moisture [fraction]
+! 3-sizescale [m]
+! 4-depth [m])
+! Data for different species should be contained on the same line separated by tabs.
+! If data contains multiple fuel bins then include information for each fuel bin in
+! a sequential order each for each species:
+! Ex: species1 fuelbin1, species1 fuelbin2, species2 fuelbin1, species2 fuelbin2, etc
+! -----------------------------------------------------------------------------------

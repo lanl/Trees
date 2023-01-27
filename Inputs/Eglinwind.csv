@@ -1,0 +1,63 @@
+1,1,0,0,0,0
+2,1,0,0,10,10
+3,1,20,20,0,0
+4,1,20,20,10,10
+
+!--For 10 year simulations
+!1,1,5,10,3,4
+!2,1,10,5,4,3
+!3,1,2,6,3,5
+!4,1,6,2,5,3
+!5,1,4,3,5,8
+!6,1,3,4,8,5
+!7,1,-1,6,5,3
+!8,1,6,-1,3,5
+!9,1,2,8,5,1
+!10,1,8,2,1,5
+
+
+!1,1,0,0,0,0
+!2,1,0,0,10,10
+!3,1,20,20,0,0
+!4,1,20,20,10,10
+
+! FOR SINGLE CELL DROP WITH ELLIPSE.PY:
+!1,1,-9,9,12,5
+
+!1,1,0,0,0,0
+!2,1,20,20,0,0
+!3,1,0,0,10,10
+!4,1,20,20,10,10
+
+
+!1,1,0,0,0,0
+!2,1,0,0,10,10
+!3,1,25,25,0,0
+!4,1,25,25,10,10
+!5,1,0,0,0,0
+!6,1,0,0,0,0
+
+
+!-5,-20,3
+!25,20,2
+!-10,-15,3
+!0,15,1.5
+
+
+!-------------------------------
+! List of information about wind in the area since the last burn per timestep in each year
+!
+! Each row contains:
+!
+! year number
+!
+! step number (StepsPerYear is a surfgridlist item)
+!
+! uavg = average wind in u direction in m/s
+!
+! vavg = average wind in v direction in m/s
+!
+! uvar = average wind variance in u direction in m/s
+!
+! vvar = average wind variance in v direction in m/s
+

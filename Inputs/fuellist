@@ -2,11 +2,11 @@
 ! ----------------------------------
 ! FIRETEC domain info
 ! ----------------------------------
-      nx=150 ny=100 nz=41     ! Size of HIGRAD/FIRETEC grid [cells]
+      nx=200 ny=200 nz=41     ! Size of HIGRAD/FIRETEC grid [cells]
       dx=2.0 dy=2.0 dz=15.0   ! Grid Resolution [m]
-      aa1=0.1                ! Vertical stretching component [default=0.1]
+      aa1=0.1                 ! Vertical stretching component [default=0.1]
       singlefuel=0            ! Flag forcing single fuel type instead of multiple fuels
-      topofile='topotest.dat'  	      ! 'flat' -> no topo, 'name.dat' of topo file for topo
+      topofile='flat'  	      ! 'flat' -> no topo, 'name.dat' of topo file for topo
 
 ! ----------------------------------
 ! Data import from existing files

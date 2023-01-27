@@ -3,6 +3,18 @@
 ! based off the forest and ground fuel dimensions defined in
 ! define_variables
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! © 2022. Triad National Security, LLC. All rights reserved.  This
+! program was produced under U.S. Government contract 89233218CNA000001
+! for Los Alamos National Laboratory (LANL), which is operated by Triad
+! National Security, LLC for the U.S.  Department of Energy/National
+! Nuclear Security Administration. All rights in the program are
+! reserved by Triad National Security, LLC, and the U.S. Department of
+! Energy/National Nuclear Security Administration. The Government is
+! granted for itself and others acting on its behalf a nonexclusive,
+! paid-up, irrevocable worldwide license in this material to reproduce,
+! prepare derivative works, distribute copies to the public, perform
+! publicly and display publicly, and to permit others to do so.
+!-----------------------------------------------------------------
 subroutine baseline
 !-----------------------------------------------------------------
 ! baseline is a function which calls the grass and tree baselines
@@ -314,7 +326,6 @@ do i=1,ntspecies
                         (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-xtest)**2.+ &
                         (yloc-ytest)**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density
                     else 
-                      !print*,'here2'
                       rhoftemp(ift) = rhoftemp(ift)+3./2000.*t2bulkdensity(j,ift,i)* &
                         (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-xtest)**2.+ &
                         (yloc-ytest)**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density; 
@@ -339,7 +350,6 @@ do i=1,ntspecies
                   tmoist(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)*t1moisture(ift,i))/ &
                   (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
               else
-                !print*,'here3',ift,ntreefueltypes,ift_index,ift_index,ii_real,jj_real,kk
                 tsizescale(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)* &
                   tsizescale(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)*t2ss(j,ift,i))/ &
                   (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
@@ -347,8 +357,7 @@ do i=1,ntspecies
                   tmoist(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)*t2moisture(j,ift,i))/ &
                   (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
               endif
-              !print*,'here4'
-              trhof(ift_index,ii_real,jj_real,kk) = trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)
+            trhof(ift_index,ii_real,jj_real,kk) = trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)
             endif
           enddo
         enddo
@@ -439,13 +448,11 @@ do ift = 1,ntspecies*tfuelbins
       do k=1,zmax
         rhocolumn = rhocolumn+sum(trhof((ift-1)*tfuelbins+1:ift*tfuelbins,i,j,k))* &
           (zheight(i,j,k+1)-zheight(i,j,k))/theight(ift,1)
-          !print*,'rhocol',rhocolumn
       enddo
       if (rhocolumn.gt.0) then
         shadefactor = exp(-grassconstant*rhocolumn/0.6)
         coverfactor = 1.-exp(-litterconstant*rhocolumn/0.6)
-        !print*,'shadefactor',shadefactor
-        !print*,'coverfactor',coverfactor
+
         ! Remove grass due to shadefactor
         if (igrass.eq.1) then
           do ift_grass=1,ngrass
@@ -461,7 +468,6 @@ do ift = 1,ntspecies*tfuelbins
 
         ! Add litter with dependence to coverfactor
         lfueldepth(ift,i,j) = coverfactor*ldepth(ift)
-        !print*,'ldepth',ldepth(ift)
         do k=1,nz
           if (zheight(i,j,k).gt.lfueldepth(ift,i,j)+zs(i,j)) exit
           if (zheight(i,j,k+1).lt.lfueldepth(ift,i,j)+zs(i,j)) then
@@ -477,7 +483,6 @@ do ift = 1,ntspecies*tfuelbins
   enddo
   print*,'Finished litter for species',ift
 enddo
-print*,'lrhof',sum(lrhof)
 
 ! Print out the target and actual fuel masses for comparisons sake
 target_mass = 0

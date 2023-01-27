@@ -1,0 +1,20 @@
+# Modified from https://www.benjaminrancourt.ca/how-to-push-to-a-git-repository-from-a-gitlab-ci-pipeline/
+trigger:
+  image: curlimages/curl:7.76.1
+  script:
+    # Put the private-token with a colon into a variable to escape the "Linefeed-Limbo" (https://stackoverflow.com/a/51187502)
+    - PRIVATE_TOKEN="PRIVATE-TOKEN:"
+
+    # Use the Repository submodules API to update the submodule reference in other repositories
+    # GITLAB_TOKEN is a personal access token (tied to dmcdougall) with all scopes and no expiration date
+    # To create a new token tied to your user, go to User Settings > Access Tokens (this shouldn't be needed)
+    # To change GITLAB_TOKEN, go to Trees gitlab repo settings > CI/CD > Variables
+    - curl
+      --data "branch=${BRANCH}&commit_sha=${CI_COMMIT_SHA}&commit_message=Trees, ${CI_COMMIT_AUTHOR} ${CI_COMMIT_MESSAGE}"
+      --header "${PRIVATE_TOKEN} ${GITLAB_TOKEN}" 
+      --request PUT "${CI_SERVER_URL}/api/v4/projects/${PROJECT_ID}/repository/submodules/${SUBMODULE_PATH}"
+  stage: deploy
+  variables:
+    PROJECT_ID: '6604' # HIGRAD/FIRETEC
+    BRANCH: 'develop'
+    SUBMODULE_PATH: 'trees'
