@@ -12,7 +12,7 @@ trees: ${OBJS}
 	${FC} -o $@ ${FFLAGS} ${OBJS}
 
 clean: 
-	rm trees *.o *.mod *.dat
+	rm trees *.o *.mod trees*.dat
 
 # optimized suffix rules
 .SUFFIXES: .f .f90

@@ -26,24 +26,41 @@ use infile_variables
 use baseline_variables
 use treatment_variables
 use duet_variables, only : speciesfile,winddatafile,windprofile, &
-  grassstep,YearsSinceBurn,StepsPerYear
+  grassstep,YearsSinceBurn,StepsPerYear,randomwinds,relhum, &
+  ustd,vstd,uavg,vavg,periodTotal,litout
+use species_variables
 implicit none
 
 !Local Variables
 namelist/fuellist/ &
    nx,ny,nz,dx,dy,dz,aa1,topofile, &
-   singlefuel,firetecshock, &
+   singlefuel,firetecshock,intopofile, &
    ifuelin,rhoffile,moistfile,ssfile,afdfile, &
    inx,iny,inz,idx,idy,idz,iaa1,infuel, &
    igrass,ngrass,grassconstant,grassfile, &
-   itrees,ntspecies,tfuelbins,tdnx,tdny,treefile,istem, &
+   itrees,ntspecies,iFIA,iFIAspecies, &
+   tfuelbins,tdnx,tdny,treefile,istem, &
    ndatax,ndatay,datalocx,datalocy, & !JSM added for populate function
    ilitter,litterconstant,litterfile, &
-   speciesfile, &
+   speciesfile,randomwinds,relhum,litout, &
+   controlseed,seedchange, &
    winddatafile,windprofile,grassstep, &
    YearsSinceBurn,StepsPerYear, &
    itreatment,sdnx,sdny, &
    sdiameter,sheight,sprho,smoist,sdepth
+
+ namelist/speciesdata/ &
+   FIA
+
+ namelist/litterdata/ &
+   lrho,lmoisture,lss,ldepth
+
+ namelist/grassdata/ &
+   grho,gmoisture,gss,gdepth,gmoistoverride
+
+ namelist/winddata/ &
+   uavg,vavg,ustd,vstd
+
 
 ! Executable Code
 ! Area of interest arrays need to be allocated before calling namelist
@@ -52,9 +69,59 @@ allocate(tdny(2)); tdny(:)=0 ! Array of the cell range (x)  where the trees are 
 allocate(sdnx(2)); sdnx(:)=0 ! Array of the cell range (x)  where the treatment is applied
 allocate(sdny(2)); sdny(:)=0 ! Array of the cell range (x)  where the treatment is applied
 
+!if(iFIA.eq.1.and.itrees.ne.7) call find_numspecies
+!allocate(FIA(ntspecies))
+
 open(unit=15,file='fuellist',form='formatted',status='old')
      read (15,nml=fuellist)
+     if (ntspecies.eq.0) then
+        iFIA = 0
+        allocate(FIA(1*tfuelbins))        
+     else
+      allocate(FIA(ntspecies*tfuelbins))
+      read (15,nml=speciesdata)
+    endif
+    
+     if (ilitter.gt.0.and.ilitter.ne.2) then
+       allocate(lrho(ntspecies*tfuelbins))
+       allocate(lmoisture(ntspecies*tfuelbins))
+       allocate(lss(ntspecies*tfuelbins))
+       allocate(ldepth(ntspecies*tfuelbins))
+
+       read (15,nml=litterdata)
+     endif
+
+     if (igrass.eq.1) then
+       allocate(grho(ngrass))
+       allocate(gmoisture(ngrass))
+       allocate(gss(ngrass))
+       allocate(gdepth(ngrass))
+
+       read (15,nml=grassdata)
+
+     endif
+
+     if (windprofile.eq.0) then
+       periodTotal=YearsSinceBurn*StepsPerYear
+       allocate(uavg(periodTotal))
+       allocate(vavg(periodTotal))
+       allocate(ustd(periodTotal))
+       allocate(vstd(periodTotal))
+
+       read (15,nml=winddata)
+     
+     endif
+
 close(15)
+
+
+if (controlseed.eq.1) then
+  call random_seed(size=n)
+  allocate(seed(n))
+  seed=seedchange
+  call random_seed(put=seed)
+  deallocate(seed)
+endif
 
 ! Corrections for if variables not specified on namelist
 if (tdnx(1).eq.0) then
@@ -78,6 +145,13 @@ sdnx(2)=ceiling(sdnx(2)/dx)
 sdny(1)=floor(sdny(1)/dy+1)
 sdny(2)=ceiling(sdny(2)/dy)
 
+!JO
+
+if (iFIA.eq.1) then
+  call define_species_variables
+endif
+
+
 if (ndatax.eq.0) ndatax=nx*dx
 if (ndatay.eq.0) ndatay=ny*dy
 
@@ -91,7 +165,16 @@ if (ifuelin.eq.1) then
   if(iaa1.eq.-1) iaa1=aa1
   if(infuel.eq.0) infuel=1
 endif
-if (ifuelin.eq.0) infuel=0
+if (ifuelin.eq.0) then
+  infuel=0
+  inx=nx
+  iny=ny
+  inz=nz
+  idx=dx
+  idy=dy
+  idz=dz
+  iaa1=aa1
+endif
 
 !Find number species if using FastFuels dataset
 if (itrees.eq.7) then
@@ -270,7 +353,8 @@ subroutine find_fastfuels_numspecies
 ! Added 10/21 JO
 !-----------------------------------------------------------------
 use grid_variables
-use baseline_variables      
+use baseline_variables
+use species_variables
 
 implicit none
 
@@ -292,8 +376,12 @@ allocate(tspecies(ff_len-1))
 read(2,*) !read 1st line and throw away, has column headers
 do i=1,ff_len-1
   read(2,*) temp_array(:)
-  tspecies(i)=temp_array(5) !take from sp_grp, 5th pos
+  if (iFIAspecies.eq.1) then
+    tspecies(i)=temp_array(1)
+  else
+    tspecies(i)=temp_array(5) !take from sp_grp, 5th pos
   !print*,'species# = ',temp_array(5)
+  endif
 enddo
 rewind(2)
 
@@ -316,3 +404,59 @@ deallocate(uni_sp)
 deallocate(final_uni_sp)
 
 end subroutine find_fastfuels_numspecies
+
+
+subroutine find_numspecies
+!-----------------------------------------------------------------
+! This subroutine will find the number of species in any treelist
+! Added 10/22 JSM
+!-----------------------------------------------------------------
+use grid_variables
+use baseline_variables
+use species_variables
+
+implicit none
+
+!Local Variables
+integer i,numtrees,numspec,min_val_sp, max_val_sp
+integer,allocatable :: final_uni_sp(:), uni_sp(:)
+integer,allocatable :: temp_array(:)
+
+! Executable Code
+numtrees = 0
+open (2,file=treefile)
+do
+  read (2,*,end=5) !length of treelist columns
+  numtrees = numtrees+1
+enddo
+5  rewind(2)
+
+allocate(temp_array(numtrees))
+do i=1,numtrees
+   read(2,*) temp_array(i)
+enddo
+
+allocate(uni_sp(maxval(temp_array)))
+min_val_sp = minval(temp_array)-1
+max_val_sp = maxval(temp_array)
+
+i=0
+
+do while (min_val_sp<max_val_sp)
+   i=i+1
+   min_val_sp = minval(temp_array, mask=temp_array>min_val_sp)
+   uni_sp(i) = min_val_sp
+enddo
+allocate(final_uni_sp(i), source=uni_sp(1:i))
+numspec = count(final_uni_sp==final_uni_sp)
+
+ntspecies = numspec
+
+print*,'New Set Species Number = ',ntspecies
+
+deallocate(temp_array)
+deallocate(uni_sp)
+deallocate(final_uni_sp)
+
+end subroutine find_numspecies
+

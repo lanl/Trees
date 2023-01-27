@@ -90,7 +90,7 @@ real,dimension(7+3*tfuelbins):: temp_array
 real:: nsub,nsubdecimal,rnumx,rnumy,newx,newy
 integer:: q,t,r,s,tindex,dataleft,dataright,databottom,datatop,treecount,num
 integer,allocatable:: rounddown(:),ntreesold(:)
-  
+
 ! Executable Code
 itree = 0
 open (2,file=treefile)
@@ -99,7 +99,6 @@ do
   itree = itree+1
 enddo
 10  rewind(2)
-
 allocate(tspecies(itree))
 do i=1,itree
   read(2,*) temp_array(:)
@@ -112,7 +111,6 @@ ntrees=0
 do i=1,itree
   ntrees(tspecies(i)) = ntrees(tspecies(i))+1
 enddo
-
 !---Determine how many dataset subdomains fit within your main domain
 !if(ndatax.lt.nx*dx.or.ndatay.lt.ny*dy) then
 nsub = (nx*dx*ny*dy)/(ndatax*ndatay)
@@ -129,25 +127,25 @@ ntreesold = ntrees
 !need to multiply by the integer below the decimal...
 if(nsub.eq.nint(nsub)) then
    ntrees = ntrees*(nsub)
-   print*,'ntrees = ',ntrees
+   print*,'ntrees from file = ',ntrees
 else
    allocate(rounddown(ntspecies)) 
-   print*,'Not an integer number of subdomains...'
+   !print*,'Not an integer number of subdomains...'
    nsubdecimal = (nint(nsub)-nsub)
    if(nsubdecimal.lt.0) then
        rounddown = nint((1-abs(nsubdecimal))*ntrees)
    else
        rounddown = nint(nsubdecimal*ntrees)
    endif
-   print*,'Number of trees to replicate rounded down for each species',rounddown
+   !print*,'Number of trees to replicate rounded down for each species',rounddown
 
-   print*,'old ntrees = ',ntrees
-   print*,'rounddown integer = ',floor(nsub)
-   print*,'roundup integer = ',ceiling(nsub)
+   !print*,'old ntrees = ',ntrees
+   !print*,'rounddown integer = ',floor(nsub)
+   !print*,'roundup integer = ',ceiling(nsub)
    do i=1,ntspecies
        ntrees(i) = rounddown(i)*(floor(nsub)) + (ntreesold(i)-rounddown(i))*(ceiling(nsub))
    enddo
-   print*,'new ntrees = ',ntrees
+   print*,'new ntrees to fill in domain = ',ntrees
 endif
 
 allocate(tlocation(ntspecies,maxval(ntrees),2)); tlocation(:,:,:)=0.0 ! Tree cartesian coordinates [m,m]
@@ -279,7 +277,7 @@ if (nsub.gt.1) then
   endif
   treecount = 0
   treecount = sum(ntrees)
-  print*,'Treecount = ',treecount
+  !print*,'Treecount = ',treecount
 
   num=0
   do q=1,ntspecies
@@ -445,25 +443,25 @@ ntreesold = ntrees
 !need to multiply by the integer below the decimal...
 if(nsub.eq.nint(nsub)) then
    ntrees = ntrees*(nsub)
-   print*,'ntrees = ',ntrees
+   print*,'Original ntrees = ',ntrees
 else if (nsub.lt.1) then 
    nsub = 1
    ntrees = ntrees*(nsub)
-   print*,'ntrees = ',ntrees
+   print*,'Original ntrees = ',ntrees
 else
    allocate(rounddown(ntspecies)) 
-   print*,'Not an integer number of subdomains...'
+   !print*,'Not an integer number of subdomains...'
    nsubdecimal = (nint(nsub)-nsub)
    if(nsubdecimal.lt.0) then
        rounddown = nint((1-abs(nsubdecimal))*ntrees)
    else
        rounddown = nint(nsubdecimal*ntrees)
    endif
-   print*,'Number of trees to replicate rounded down for each species',rounddown
+   !print*,'Number of trees to replicate rounded down for each species',rounddown
 
-   print*,'old ntrees = ',ntrees
-   print*,'rounddown integer = ',floor(nsub)
-   print*,'roundup integer = ',ceiling(nsub)
+   !print*,'old ntrees = ',ntrees
+   !print*,'rounddown integer = ',floor(nsub)
+   !print*,'roundup integer = ',ceiling(nsub)
    do i=1,ntspecies
        ntrees(i) = rounddown(i)*(floor(nsub)) + (ntreesold(i)-rounddown(i))*(ceiling(nsub))
    enddo
@@ -621,7 +619,7 @@ if (nsub.gt.1) then
   endif
   treecount = 0
   treecount = sum(ntrees)
-  print*,'Treecount = ',treecount
+  !print*,'Treecount = ',treecount
 
   num=0
   do q=1,ntspecies

@@ -72,8 +72,12 @@ endif
 ! Fill litter arrays
 if (ilitter.ne.0) then
   if (ilitter.eq.1) then
-    print*,'Filling Litter Baseline'
-    call litter_baseline
+    if (itrees.gt.0) then
+      print*,'Filling Litter Baseline'
+      call litter_baseline
+    else if (itrees.eq.0) then
+      print*,'Warning: itrees=0, no litter placed'
+    end if
   else if (ilitter.eq.2) then
     print*,'Filling Litter Baseline with Duet'
     call Duet
@@ -155,7 +159,7 @@ do ift=1,ngrass
 enddo
 print*,'Grass target fuel mass:',target_mass
 print*,'Grass actual fuel mass:',actual_mass
-print*,'Grass error:',actual_mass/target_mass*100,'%'
+print*,'Grass error:',100-actual_mass/target_mass*100,'%'
              
 end subroutine grass_baseline
 
@@ -202,8 +206,9 @@ allocate(rhoftemp(tfuelbins))
 do i=1,ntspecies
   print*,'Species',i,'with',ntrees(i),'trees'
   do j=1,ntrees(i)
-    if (MOD(j,int(ntrees(i)/10)).eq.0) print*,'Placing tree',j,'of',ntrees(i)
-    
+    if (ntrees(i).gt.9) then
+      if (MOD(j,int(ntrees(i)/10)).eq.0) print*,'Placing tree',j,'of',ntrees(i)
+    endif
     !----- Place tree location
     if (itrees.eq.1.or.itrees.eq.3) then
       ! Randomly place a tree
@@ -304,6 +309,7 @@ do i=1,ntspecies
         do kk=zbot,ztop
           ! Determine how many of subcells of a cell are within the paraboloid, the fraction of the subcells is equal to the fraction of the cell within the paraboloid
           rhoftemp(:) = 0 ! Density of fuels to be added to current cell of interest
+          !print*,'here1'
           do iii=1,10
             do jjj=1,10
               do kkk=1,10
@@ -408,7 +414,7 @@ do ift=1,ntspecies*ntreefueltypes
   enddo
 enddo
 print*,'Trees actual fuel mass:',actual_mass
-print*,'Trees error:',actual_mass/target_mass*100,'%'
+print*,'Trees error:',100-actual_mass/target_mass*100,'%'
 
 end subroutine tree_baseline 
 
@@ -422,6 +428,7 @@ subroutine litter_baseline
 use constant_variables
 use grid_variables
 use baseline_variables
+use infile_variables
 
 implicit none
 
@@ -453,7 +460,7 @@ do ift = 1,ntspecies*tfuelbins
               if (zheight(i,j,k).gt.gdepth(ift_grass)+zs(i,j)) then
                 exit
               else
-                rhof(ift_grass,i,j,k) = rhof(ift_grass,i,j,k)*shadefactor
+                rhof(ift_grass+infuel,i,j,k) = rhof(ift_grass+infuel,i,j,k)*shadefactor
               endif
             enddo
           enddo
@@ -494,6 +501,6 @@ do ift=1,ntspecies
   enddo
 enddo
 print*,'Litter actual fuel mass:',actual_mass
-print*,'Litter error:',actual_mass/target_mass*100,'%'
+print*,'Litter error:',100-actual_mass/target_mass*100,'%'
 
 end subroutine litter_baseline 

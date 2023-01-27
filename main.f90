@@ -22,6 +22,7 @@ use grid_variables
 use io_variables
 use infile_variables
 use treatment_variables
+use species_variables
 
 implicit none
 
@@ -35,6 +36,7 @@ print *,'===================================='
 call namelist_input
 call define_constant_variables
 call define_grid_variables
+call define_species_variables
 
 !-----Fuel Read-in
 if(ifuelin.eq.1) call grid_readin
