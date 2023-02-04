@@ -45,8 +45,8 @@ variables:
     git config --global user.name "Dylan McDougall"
     git config --global user.email "dmcdougall@lanl.gov"
     git commit -m "${CI_COMMIT_AUTHOR} ${CI_COMMIT_MESSAGE}"
-    echo "git push -o ci.skip 'https://whatever:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git' ${BRANCH_NAME}"
-    git push -o ci.skip "https://whatever:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" $BRANCH_NAME
+    echo "git push -o ci.skip 'https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git' ${BRANCH_NAME}"
+    git push -o ci.skip "https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" $BRANCH_NAME
   else
     echo "changed files are not in ${BRANCH_NAME}, nothing to commit"
   fi
