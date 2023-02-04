@@ -18,3 +18,46 @@ trigger:
     PROJECT_ID: '6604' # HIGRAD/FIRETEC
     BRANCH: 'develop'
     SUBMODULE_PATH: 'trees'
+
+# Modified from https://parsiya.net/blog/2021-10-11-modify-gitlab-repositories-from-the-ci-pipeline/
+variables:
+  BRANCH_NAME: "treesOpen"                   # Name of the branch to modify
+
+# overwrite duet.f90
+.modify: &modify |
+  git pull --rebase
+  git checkout $BRANCH_NAME # checkout the test branch
+  git fetch origin
+  git reset --hard origin/$BRANCH_NAME
+  git checkout master .
+  echo -e "! © 2022. Triad National Security, LLC. All rights reserved.  This\n! program was produced under U.S. Government contract 89233218CNA000001\n! for Los Alamos National Laboratory (LANL), which is operated by Triad\n! National Security, LLC for the U.S.  Department of Energy/National\n! Nuclear Security Administration. All rights in the program are\n! reserved by Triad National Security, LLC, and the U.S. Department of\n! Energy/National Nuclear Security Administration. The Government is\n! granted for itself and others acting on its behalf a nonexclusive,\n! paid-up, irrevocable worldwide license in this material to reproduce,\n! prepare derivative works, distribute copies to the public, perform\n! publicly and display publicly, and to permit others to do so.\n\nsubroutine Duet\n\nprint*,'DUET is NOT included in the open source release of Trees on Github! Please use ilitter=1 or 0. See README'\n\nend subroutine Duet" > duet.f90
+  rm .gitlab-ci.yml
+
+# push the repository
+# based on https://gitlab.com/taleodor/sample-helm-cd/-/blob/master/.gitlab-ci.yml
+.push: &push |
+  git add .
+  git log -1
+  lines=$(git status -s | { grep -v duet || true; } | { grep -v 'gitlab-ci' || true; } | wc -l)
+  echo $lines' new files: '$(git status -s | { grep -v duet || true; } | { grep -v 'gitlab-ci' || true; })
+  if [ $lines -gt 0 ];then
+    echo "committing"
+    git config --global user.name "Dylan McDougall"
+    git config --global user.email "dmcdougall@lanl.gov"
+    git commit -m "${CI_COMMIT_AUTHOR} ${CI_COMMIT_MESSAGE}"
+    echo "git push -o ci.skip 'https://whatever:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git' ${BRANCH_NAME}"
+    git push -o ci.skip "https://whatever:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" $BRANCH_NAME
+  else
+    echo "changed files are not in ${BRANCH_NAME}, nothing to commit"
+  fi
+
+modify-repo:
+  image: alpine:latest
+  before_script:
+    - apk add bash git grep     # add bash and git (probably not needed)
+    - git fetch
+    - git checkout master
+    - cd $CI_PROJECT_DIR        # go into the repo
+  script:
+    - *modify                   # run the modify script and create the file
+    - *push                     # run the push script and push the changes
