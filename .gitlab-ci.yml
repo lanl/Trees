@@ -31,7 +31,9 @@ variables:
   git reset --hard origin/$BRANCH_NAME
   rm -r ./*
   git checkout master .
-  echo -e "! © 2022. Triad National Security, LLC. All rights reserved.  This\n! program was produced under U.S. Government contract 89233218CNA000001\n! for Los Alamos National Laboratory (LANL), which is operated by Triad\n! National Security, LLC for the U.S.  Department of Energy/National\n! Nuclear Security Administration. All rights in the program are\n! reserved by Triad National Security, LLC, and the U.S. Department of\n! Energy/National Nuclear Security Administration. The Government is\n! granted for itself and others acting on its behalf a nonexclusive,\n! paid-up, irrevocable worldwide license in this material to reproduce,\n! prepare derivative works, distribute copies to the public, perform\n! publicly and display publicly, and to permit others to do so.\n\nsubroutine Duet\n\nprint*,'DUET is NOT included in the open source release of Trees on Github! Please use ilitter=1 or 0. See README'\n\nend subroutine Duet" > duet.f90
+  if [ -f "duet.f90" ]; then
+    echo -e "! © 2022. Triad National Security, LLC. All rights reserved.  This\n! program was produced under U.S. Government contract 89233218CNA000001\n! for Los Alamos National Laboratory (LANL), which is operated by Triad\n! National Security, LLC for the U.S.  Department of Energy/National\n! Nuclear Security Administration. All rights in the program are\n! reserved by Triad National Security, LLC, and the U.S. Department of\n! Energy/National Nuclear Security Administration. The Government is\n! granted for itself and others acting on its behalf a nonexclusive,\n! paid-up, irrevocable worldwide license in this material to reproduce,\n! prepare derivative works, distribute copies to the public, perform\n! publicly and display publicly, and to permit others to do so.\n\nsubroutine Duet\n\nprint*,'DUET is NOT included in the open source release of Trees on Github! Please use ilitter=1 or 0. See README'\n\nend subroutine Duet" > duet.f90
+  fi
   rm .gitlab-ci.yml
 
 # push the repository
