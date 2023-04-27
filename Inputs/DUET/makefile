@@ -1,5 +1,5 @@
 #--Top level trees makefile--
-OBJS    = MakeFFInputs.o variables_DUET.o main_DUET.o define_variables_DUET.o \
+OBJS    = MakeFFInputs_DUET.o variables_DUET.o main_DUET.o define_variables_DUET.o \
 				  io_DUET.o full_DUET.o \
 #OBJS    = $(patsubst %,$(ODIR)/%,$(OBJS_))
 
