@@ -80,7 +80,7 @@ if (ilitter.ne.0) then
     end if
   else if (ilitter.eq.2) then
     print*,'Filling Litter Baseline with Duet'
-    call Duet
+    call Duet_Inputs
   endif
   do ift=1,ntspecies
     if (sum(trhof(ift,:,:,1)).lt.sum(trhof(ift,:,:,:))*0.01) then
@@ -321,7 +321,7 @@ do i=1,ntspecies
                 top_height = paraboloid(atop,xloc,xtest,yloc,ytest,canopytop)
                 if (test_height.ge.bot_height.and.test_height.le.top_height) then 
                   do ift=1,tfuelbins
-                    if (itrees.eq.1)then
+                    if (itrees.eq.1)then 
                       rhoftemp(ift) = rhoftemp(ift)+3./2000.*t1bulkdensity(ift,i)* &
                         (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-xtest)**2.+ &
                         (yloc-ytest)**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density

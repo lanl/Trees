@@ -14,7 +14,7 @@
 ! prepare derivative works, distribute copies to the public, perform
 ! publicly and display publicly, and to permit others to do so.
 !-----------------------------------------------------------------
-subroutine define_constant_variables
+subroutine define_constant_variables 
 !-----------------------------------------------------------------
 ! Constant variables
 !-----------------------------------------------------------------
@@ -31,142 +31,57 @@ subroutine define_grid_variables
 ! Grid variables
 !-----------------------------------------------------------------
 use grid_variables
-use infile_variables
 use baseline_variables
+use duet_variables, only : inputprogram
 
 implicit none
+     
+integer :: i,j,k
 
-! Local Variables
-integer i,j,k
-integer ii,jj
-integer xbot,xtop,ybot,ytop
-real    cells,xfrac,yfrac
-real,external:: zcart
-real,dimension(2):: xcor,ycor
-      
-if(ifuelin.eq.1.and.itrees.gt.0.and.ilitter.eq.2.and.igrass.gt.0) then
-  print*,'WARNING: Reading in fuels only and using DUET - setting grass = 0!!!'
-  igrass = 0
-endif
 
-! Executable Code
-ntreefueltypes = istem*2+tfuelbins
-nfuel = infuel+ngrass+ntspecies*ntreefueltypes
-if(ilitter.gt.0) nfuel=nfuel+ntspecies*tfuelbins
-allocate(rhof(nfuel,nx,ny,nz)); rhof(:,:,:,:)=0.0
-allocate(sizescale(nfuel,nx,ny,nz)); sizescale(:,:,:,:)=0.0
-allocate(moist(nfuel,nx,ny,nz)); moist(:,:,:,:)=0.0
-allocate(fueldepth(nfuel,nx,ny,nz)); fueldepth(:,:,:,:)=0.0
+! Executable Code 
 
-!-----------------------------------------------------------------
-! Create topo layer (Should be adjusted for non-flat topo)
-!-----------------------------------------------------------------
+  ntreefueltypes = istem*2+tfuelbins
+  !fueltotal = fueltotal !infuel+ntspecies*tfuelbins
+  allocate(rhof(2*fueltotal+ngrass,nx,ny,nz)); rhof(:,:,:,:)=0.0
+  allocate(sizescale(2*fueltotal+ngrass,nx,ny,nz)); sizescale(:,:,:,:)=0.0
+  allocate(moist(2*fueltotal+ngrass,nx,ny,nz)); moist(:,:,:,:)=0.0
+  allocate(zheight(nx,ny,nz)); zheight(:,:,:)=0.0
 
-allocate(zs(nx,ny))
-allocate(izs(inx,iny))
-allocate(zheight(nx,ny,nz))
-allocate(izheight(inx,iny,inz))
+  allocate(trhof(fueltotal,nx,ny,nz)); trhof(:,:,:,:)=0.0
+  allocate(tsizescale(fueltotal,nx,ny,nz)); tsizescale(:,:,:,:)=0.0
+  allocate(tmoist(fueltotal,nx,ny,nz)); tmoist(:,:,:,:)=0.0
+  allocate(tfueldepth(fueltotal,nx,ny,nz)); tfueldepth(:,:,:,:)=0.0
 
-if(ifuelin.eq.1.and.(inx.ne.nx.or.idx.ne.dx.or. &
-    iny.ne.ny.or.idy.ne.dy.or.inz.ne.nz.or.idz.ne.dz &
-      .or.aa1.ne.iaa1.or.topofile.ne.intopofile)) &
-      iintpr=1
 
-if (iintpr.eq.0) then
-  if (topofile.eq.'flat'.or.topofile.eq.'') then ! No topo
-    zs(:,:)=0.0
-    izs(:,:)=0.0
-    print *,'Not using target topo'
-  else ! Normal topo
-    print *,'Reading target topo file = ',topofile
-    open (1,file=topofile,form='unformatted',status='old')
-    read (1) zs
-    close (1)
-    izs(:,:)=zs(:,:)
-  endif
-endif
-
-if (iintpr.eq.1) then ! Topo with existing fuels
-  if (topofile.eq.'flat'.or.topofile.eq.'')then ! No target topo JO
-    zs(:,:)=0.0
-    print *,'Not using target topo'
-  else  ! Normal target topo
-    print *,'Define Varibles: Reading target topo file = ',topofile
-    open (1,file=topofile,form='unformatted',status='old')
-    read (1) zs(:,:)
-    close (1)
-    !izs(:,:)=zs(:,:)
-  endif
-  if (intopofile.eq.'flat'.or.intopofile.eq.'')then ! No previous topo
-    izs(:,:)=0.0
-    print *,'Not using previous topo'
-  else  ! Normal previous topo
-    print *,'Reading previous fuel topo file = ',intopofile    !JO
-    open (2,file=intopofile,form='unformatted',status='old') !JO
-    read (2) izs
-    close (2)
-  endif
-  do i=1,nx
+if(inputprogram.eq.1) then
+  open(unit=100,file='fuelfiles_RMSZ.dat',form='unformatted',status='unknown')
+    read(100) trhof(1:fueltotal,:,:,:),tmoist(1:fueltotal,:,:,:),&
+    tsizescale(1:fueltotal,:,:,:),zheight(:,:,:)
+  close(100)
+  print*,'Input Program is Trees'
+  print*,'minval, maxval of rhof = ',minval(trhof),maxval(trhof)
+  print*,'minval, maxval of moist = ',minval(tmoist),maxval(tmoist)
+  print*,'minval, maxval of sizescale = ',minval(tsizescale),maxval(tsizescale)
+  print*,'minval, maxval of zheight = ',minval(zheight),maxval(zheight)
+elseif(inputprogram.eq.2) then
+  print*,'Input Program is FastFuels 3D'  
+  do k=1,nz
     do j=1,ny
-      xcor(1) = (i-1)*dx ! Real x lower edge
-      xcor(2) = i*dx     ! Real x upper edge
-      xbot    = floor(xcor(1)/idx+1) ! Fuel readin grid x lower edge
-      xtop    = floor(xcor(2)/idx+1) ! Fuel readin grid x upper edge
-      ycor(1) = (j-1)*dy ! Real y lower edge
-      ycor(2) = j*dy     ! Real y upper edge
-      ybot    = floor(ycor(1)/idy+1) ! Fuel readin grid y lower edge
-      ytop    = floor(ycor(2)/idy+1) ! Fuel readin grid y upper edge
-      cells   = 0.
-      do ii=xbot,xtop
-        do jj=ybot,ytop
-          xfrac  = (min(ii*idx,xcor(2))-max((ii-1)*idx,xcor(1)))/idx
-          yfrac  = (min(jj*idy,ycor(2))-max((jj-1)*idy,ycor(1)))/idy
-          cells  = cells+xfrac*yfrac
-          zs(i,j)= zs(i,j)+xfrac*yfrac*izs(ii,jj)
-        enddo
-      enddo
-      zs(i,j) = zs(i,j)/cells
-    enddo
-  enddo
-endif
-
-if(minval(zs).gt.0)then ! Reduce topo values to least common value
-  izs = izs-minval(zs)
-  zs  = zs-minval(zs)
-  open (2,file='toporeduced.dat',form='unformatted',status='unknown')
-  write(2) zs
-  close(2)
-endif
-
-do i=1,nx
-  do j=1,ny
-    do k=1,nz
-      if (aa1.eq.0) then
-        zheight(i,j,k) = zs(i,j)+(k-1)*dz
-      else
-        zheight(i,j,k) = zcart(aa1,(k-1)*dz,nz,dz,zs(i,j))
-      endif
-      if(i.eq.1.and.j.eq.1) print*,'cell',k,'bottom height',zheight(i,j,k)
-    enddo
-  enddo
-enddo
-if (iintpr.eq.1) then ! Topo with existing fuels
-  print*,'Readin fuel grid heights'
-  do i=1,inx
-    do j=1,iny
-      do k=1,inz
-        if (iaa1.eq.0) then
-          izheight(i,j,k) = izs(i,j)+(k-1)*idz
-        else
-          izheight(i,j,k) = zcart(iaa1,(k-1)*idz,inz,idz,izs(i,j))
-        endif
-        if(i.eq.1.and.j.eq.1) print*,'cell',k,'bottom height',izheight(i,j,k)
+      do i=1,nx
+        zheight(i,j,k) = (k-1)*dz
       enddo
     enddo
   enddo
-else
-  izheight(:,:,:)=zheight(:,:,:)
+  print*,'Max and Min of zheight = ',maxval(zheight),minval(zheight)
+  if(any(isNaN(zheight))) print*,'zheight is NaN'
 endif
+
+!print*,'minval, maxval of rhof = ',minval(rhof),maxval(rhof)
+!print*,'minval, maxval of moist = ',minval(moist),maxval(moist)
+!print*,'minval, maxval of sizescale = ',minval(sizescale),maxval(sizescale)
+!print*,'minval, maxval of zheight = ',minval(zheight),maxval(zheight)
+
 
 end subroutine define_grid_variables
 
@@ -174,61 +89,17 @@ subroutine define_baseline_variables
 !-----------------------------------------------------------------
 ! Variables unique to the baseline
 !-----------------------------------------------------------------
-use grid_variables
-use baseline_variables
+use grid_variables, only : nx,ny,nz
+use baseline_variables, only : fueltotal,lrhof,lsizescale,lmoist,lfueldepth
 
 implicit none
-
-! Local Variables
-integer ift
 ! Executable Code
-if (igrass.ne.0) then
-  allocate(grhof(ngrass,nx,ny,nz))
-  grhof(:,:,:,:)=0.0
-  allocate(gsizescale(ngrass,nx,ny,nz)); gsizescale(:,:,:,:)=0.0
-  allocate(gmoist(ngrass,nx,ny,nz)); gmoist(:,:,:,:)=0.0
-  allocate(gfueldepth(ngrass,nx,ny)); gfueldepth(:,:,:)=0.0
-endif
-if (ilitter.ne.0) then
-  allocate(lrhof(ntspecies*tfuelbins,nx,ny,nz)); lrhof(:,:,:,:)=0.0
-  allocate(lsizescale(ntspecies*tfuelbins,nx,ny,nz)); lsizescale(:,:,:,:)=0.0
-  allocate(lmoist(ntspecies*tfuelbins,nx,ny,nz)); lmoist(:,:,:,:)=0.0
-  allocate(lfueldepth(ntspecies*tfuelbins,nx,ny)); lfueldepth(:,:,:)=0.0
-endif
-allocate(trhof(ntspecies*ntreefueltypes,nx,ny,nz)); trhof(:,:,:,:)=0.0
-allocate(tsizescale(ntspecies*ntreefueltypes,nx,ny,nz)); tsizescale(:,:,:,:)=0.0
-allocate(tmoist(ntspecies*ntreefueltypes,nx,ny,nz)); tmoist(:,:,:,:)=0.0
-allocate(tfueldepth(ntspecies*ntreefueltypes,nx,ny)); tfueldepth(:,:,:)=0.0
 
-command = 'make;./duet'
+allocate(lrhof(fueltotal,nx,ny,nz)); lrhof(:,:,:,:)=0.0
+allocate(lsizescale(fueltotal,nx,ny,nz)); lsizescale(:,:,:,:)=0.0
+allocate(lmoist(fueltotal,nx,ny,nz)); lmoist(:,:,:,:)=0.0
+allocate(lfueldepth(fueltotal,nx,ny)); lfueldepth(:,:,:)=0.0
 
-!-----------------------------------------------------------------
-! Groundfuel variables unique to the ground fuels baseline
-!-----------------------------------------------------------------
-
-! Grass and litter inputs defined in io.f90 from fuellist
-
-if (igrass.eq.2) then
-  print*,'Reading 2D ground fuel file'
-  open (1,file=grassfile,form='unformatted',status='old')
-  do ift=1,ngrass
-    read (1) grhof(ift,:,:,1)      ! bulk density of grass [kg/m3]
-    read (1) gmoist(ift,:,:,1)     ! moisture content of grass
-    read (1) gsizescale(ift,:,:,1) ! size scale of grass [m]
-    read (1) gfueldepth(ift,:,:) ! depth of grass [m]
-  enddo
-  close (1)
-endif
-!-----------------------------------------------------------------
-! Tree variables unique to the tree baseline
-!-----------------------------------------------------------------
-if (itrees.eq.1) then
-  call treesGeneral_readin
-else if(itrees.eq.2.or.itrees.eq.3) then
-  call treelist_readin
-else if(itrees.eq.7) then
-  call treelist_fastfuels
-endif
 end subroutine define_baseline_variables
 
 subroutine define_species_variables
@@ -237,12 +108,11 @@ subroutine define_species_variables
 !-----------------------------------------------------------------
 
 use species_variables
-use baseline_variables, only:ntspecies
-
 
 integer :: i,j,ct,fdrop=0,fstep=0
 real :: fsa=0,fdecay=0,fmoist=0,fss=0
 real :: fdrag=0,fvterm=0,ffrou=0,fcomp=0
+
 open(unit=5, file='FIA_FastFuels_fin_fulllist_populated.txt', &
   status='old', access='sequential', form='formatted')
   do i=1,290
@@ -292,14 +162,26 @@ endif
 
 end subroutine define_species_variables
 
+subroutine define_3Dspecies_variables
+
+use species_variables
+
+open(unit=5, file='FIA_FastFuels_fin_fulllist_populated.txt', &
+  status='old', access='sequential', form='formatted')
+  do i=1,290
+    read(5,*) SPECINFO(i)
+  enddo
+close(5)
+
+end subroutine define_3Dspecies_variables
+
 subroutine define_duet_variables
 !-----------------------------------------------------------------
 ! Variables unique to the duet
 !-----------------------------------------------------------------
 use grid_variables, only : nx,ny,nz
-use infile_variables, only : infuel
-use baseline_variables, only : ntspecies,tfuelbins
-use duet_variables, only : windprofile,winddatafile,StepsPerYear, &
+use baseline_variables, only : fueltotal,ngrass
+use duet_variables, only : windprofile,StepsPerYear, &
   YearsSinceBurn,uavg,vavg,VAR,ustd,vstd,Umean,Vmean,Uvar,Vvar,vterminal, &
   fuelSA,Froude,droptime,leafdropfreq,decay,speciesfile,lrhofT, &
   grhofT,dragco,lafdT,gafdT,lmoistT,gmoistT,lssT,gssT,randomwinds, &
@@ -308,26 +190,23 @@ use species_variables
 implicit none
 
 ! Local Variables
-integer :: yt,ift,s,low,high,loc
-integer :: specTotal
-real :: fuelMass,dragslope,dragb,a,monstep
-real,dimension(6) :: temp_array 
+integer :: i,yt,ift,s,low,high,loc
+real :: fuelMass,dragslope,dragb,a
 
 ! Executable Code
 periodTotal=YearsSinceBurn*StepsPerYear
+allocate(uavg(periodTotal),vavg(periodTotal))
+allocate(ustd(periodTotal),vstd(periodTotal),VAR(periodTotal,2))
 if(windprofile.eq.0) then
   print*,'!----!----!----!----!----!----!----!----!----!----!----!'
   print*,'Windprofile is taken from a user provided in fuellist'
-  allocate(VAR(periodTotal,2))
-  !open (100,file=winddatafile)  ! wind information for area per year
+  open(3,file='windprofile.dat',form='unformatted',status='old')
+  read(3) uavg,vavg,ustd,vstd
+  close(3)
   do yt=1,periodTotal
-    !read(100,*) temp_array
-    !uavg(yt)=temp_array(3)
-    !vavg(yt)=temp_array(4)
     VAR(yt,1)=ustd(yt)
     VAR(yt,2)=vstd(yt)
   enddo
-  close(100)
 elseif(windprofile.eq.1)then
   print*,'!----!----!----!----!----!----!----!----!----!----!----!'
   print*,'Windprofile is generated from higrad and averaged within each cell'
@@ -354,9 +233,6 @@ elseif(windprofile.eq.2) then
   print*,'multiplication factor for winds = ',randomwinds
   low=1*randomwinds
   high=3*randomwinds
-
-  allocate(uavg(periodTotal),vavg(periodTotal),VAR(periodTotal,2))
-
   do yt=1,periodTotal
     a = rand()
     a = 2.0*a - 1.0
@@ -396,20 +272,33 @@ print*,'vvar = ',VAR(:,2)
 print*,'Each column is a year'
 print*,'!----!----!----!----!----!----!----!----!----!----!----!' 
 
-specTotal=infuel+ntspecies*tfuelbins
-allocate(fuelSA(specTotal),leafdropfreq(specTotal),decay(specTotal), &
-droptime(specTotal),vterminal(specTotal),Froude(specTotal), &
-moistspec(specTotal),dragco(specTotal),ssspec(specTotal),compact(specTotal))
+allocate(fuelSA(fueltotal),leafdropfreq(fueltotal),decay(fueltotal), &
+droptime(fueltotal),vterminal(fueltotal),Froude(fueltotal), &
+moistspec(fueltotal),dragco(fueltotal),ssspec(fueltotal),compact(fueltotal))
 
+!print*,'Works up to point 1'
 ! Species data
 if (iFIA.eq.1) then
+  allocate(FIA(fueltotal)); FIA(:) = 0
+  !allocate(FIAtemp(fueltotal)); FIAtemp(:) = 0
+  !print*,'Works up to point 2, FIA = ',FIA
+  open (79,file='FIA.dat',form='unformatted',status='old',action='read',access='stream')
+  !print*,'Works to open the file'
+    do i=1,fueltotal
+      read (79) FIA(i)
+      !print*,'Works to read the file'
+    enddo
+  close(79)
+  !print*,'Works up to point 3, FIAtemp = ',FIAtemp
+  !FIA = int(FIAtemp)
+  !print*,'Works up to point 3, FIA = ',FIA
   ift=1
   if(iFIAspecies.eq.0) then
     print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
     print*,'USING SPECIES GROUPS... check below to make sure you have inputted groups'
     print*,'FIA = ',FIA
     print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
-    do ift=1,specTotal
+    do ift=1,fueltotal
       do s=1,10
         if(s.eq.FIA(ift)) then
           fuelSA(ift)=SPECgroups(s)%surfarea
@@ -432,7 +321,7 @@ if (iFIA.eq.1) then
     print*,'USING SPECIFIC SPECIES CODES... check below to make sure you have inputted species'
     print*,'FIA = ',FIA
     print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
-    do ift=1,specTotal
+    do ift=1,fueltotal
       do s=1,290
         loc=0
         if(SPECINFO(s)%FIA_code.eq.FIA(ift)) then
@@ -464,7 +353,7 @@ elseif (iFIA.eq.0) then
     dragslope = 1.4/(sqrt(70.0) - 1.0)
     dragb = 0.6 - dragslope
   open (99,file=speciesfile)
-  do ift=1,specTotal
+  do ift=1,fueltotal
     read(99,*) fuelMass,fuelSA(ift),leafdropfreq(ift),decay(ift),droptime(ift)
     fuelMass=fuelMass/1000.
     fuelSA(ift)=fuelSA(ift)/10000.
@@ -493,13 +382,150 @@ droptime = ceiling(droptime/(12/StepsPerYear))
 !print*,'moistspec = ',moistspec
 !print*,'ssspec = ',ssspec
 
-allocate(lrhofT(specTotal,nx,ny,periodTotal)); lrhofT(:,:,:,:)=0.0
-allocate(grhofT(specTotal,nx,ny,periodTotal)); grhofT(:,:,:,:)=0.0
-allocate(lafdT(specTotal,nx,ny,periodTotal)); lafdT(:,:,:,:)=0.0
-allocate(gafdT(specTotal,nx,ny,periodTotal)); gafdT(:,:,:,:)=0.0
-allocate(lmoistT(specTotal,nx,ny,periodTotal)); lmoistT(:,:,:,:)=0.0
-allocate(gmoistT(specTotal,nx,ny,periodTotal)); gmoistT(:,:,:,:)=0.0
-allocate(lssT(specTotal,nx,ny,periodTotal)); lssT(:,:,:,:)=0.0
-allocate(gssT(specTotal,nx,ny,periodTotal)); gssT(:,:,:,:)=0.0
+allocate(lrhofT(fueltotal,nx,ny,periodTotal)); lrhofT(:,:,:,:)=0.0
+allocate(grhofT(ngrass,nx,ny,periodTotal)); grhofT(:,:,:,:)=0.0
+allocate(lafdT(fueltotal,nx,ny,periodTotal)); lafdT(:,:,:,:)=0.0
+allocate(gafdT(ngrass,nx,ny,periodTotal)); gafdT(:,:,:,:)=0.0
+allocate(lmoistT(fueltotal,nx,ny,periodTotal)); lmoistT(:,:,:,:)=0.0
+allocate(gmoistT(ngrass,nx,ny,periodTotal)); gmoistT(:,:,:,:)=0.0
+allocate(lssT(fueltotal,nx,ny,periodTotal)); lssT(:,:,:,:)=0.0
+allocate(gssT(ngrass,nx,ny,periodTotal)); gssT(:,:,:,:)=0.0
 
 end subroutine define_duet_variables
+
+subroutine define_3Dduet_variables
+!-----------------------------------------------------------------
+! Variables unique to the duet
+!-----------------------------------------------------------------
+use constant_variables
+use grid_variables, only : nx,ny
+use baseline_variables, only : fueltotal,ngrass
+use duet_variables, only : StepsPerYear, &
+  YearsSinceBurn,uavg,vavg,VAR,vterminal, &
+  fuelSA,Froude,droptime,leafdropfreq,decay,lrhofT, &
+  grhofT,dragco,lafdT,gafdT,lmoistT,gmoistT,lssT,gssT,randomwinds, &
+  moistspec,ssspec,compact,periodTotal
+use species_variables
+use FF_variables, only : windvary,winddirection
+implicit none
+
+real :: a
+integer :: low,high,yt
+
+periodTotal=YearsSinceBurn*StepsPerYear
+allocate(uavg(periodTotal),vavg(periodTotal))
+allocate(VAR(periodTotal,2))
+
+print*,'!----!----!----!----!----!----!----!----!----!----!----!' 
+print*,'Windprofile is randomly generated averages over whole domain' 
+print*,'multiplication factor for winds = ',randomwinds
+low=1*randomwinds
+high=3*randomwinds
+do yt=1,periodTotal
+  a = rand()
+  a = 2.0*a - 1.0
+  if(winddirection.ge.180) then
+    a = abs(a)
+  else
+    a = -abs(a)
+  endif
+
+  if (a.gt.0) then
+    uavg(yt) = ((a*real(low+high))-real(low))*cos(-(winddirection+90)*PI/180)
+    vavg(yt) = ((a*real(low+high))-real(low))*sin(-(winddirection+90)*PI/180)
+  else 
+    uavg(yt) = ((a*real(low+high))+real(low))*cos(-(winddirection+90)*PI/180)
+    vavg(yt) = ((a*real(low+high))+real(low))*sin(-(winddirection+90)*PI/180)
+  endif
+  if(windvary.eq.0) then
+    a = rand()    
+    a = (-(winddirection+windvary/2+90)*PI/180)*a
+    if (a.gt.0) then
+      VAR(yt,1) = 0.25*((a*real(low+high))-real(low))
+    else
+      VAR(yt,1) = 0.25*((a*real(low+high))+real(low))
+    endif
+    a = rand()     
+    a = (-(winddirection-windvary/2+90)*PI/180)*a
+    if (a.gt.0) then
+      VAR(yt,2) = 0.25*((a*real(low+high))-real(low))
+    else
+      VAR(yt,2) = 0.25*((a*real(low+high))+real(low))
+    endif
+  else
+    a = rand()    
+    a = 2.0*a - 1.0
+    if (a.gt.0) then
+      VAR(yt,1) = 0.25*((a*real(low+high))-real(low))
+    else
+      VAR(yt,1) = 0.25*((a*real(low+high))+real(low))
+    endif
+    a = rand()     
+    a = 2.0*a - 1.0
+    if (a.gt.0) then
+      VAR(yt,2) = 0.25*((a*real(low+high))-real(low))
+    else
+      VAR(yt,2) = 0.25*((a*real(low+high))+real(low))
+    endif
+  endif
+enddo
+
+print*,'uavg = ',uavg
+print*,'vavg = ',vavg
+print*,'uvar = ',VAR(:,1)
+print*,'vvar = ',VAR(:,2)
+print*,'Each column is a year'
+print*,'!----!----!----!----!----!----!----!----!----!----!----!' 
+
+allocate(fuelSA(fueltotal),leafdropfreq(fueltotal),decay(fueltotal), &
+droptime(fueltotal),vterminal(fueltotal),Froude(fueltotal), &
+moistspec(fueltotal),dragco(fueltotal),ssspec(fueltotal),compact(fueltotal))
+
+allocate(lrhofT(fueltotal,nx,ny,periodTotal)); lrhofT(:,:,:,:)=0.0
+allocate(grhofT(ngrass,nx,ny,periodTotal)); grhofT(:,:,:,:)=0.0
+allocate(lafdT(fueltotal,nx,ny,periodTotal)); lafdT(:,:,:,:)=0.0
+allocate(gafdT(ngrass,nx,ny,periodTotal)); gafdT(:,:,:,:)=0.0
+allocate(lmoistT(fueltotal,nx,ny,periodTotal)); lmoistT(:,:,:,:)=0.0
+allocate(gmoistT(ngrass,nx,ny,periodTotal)); gmoistT(:,:,:,:)=0.0
+allocate(lssT(fueltotal,nx,ny,periodTotal)); lssT(:,:,:,:)=0.0
+allocate(gssT(ngrass,nx,ny,periodTotal)); gssT(:,:,:,:)=0.0
+
+
+end subroutine define_3Dduet_variables
+
+subroutine define_ff_variables
+
+use grid_variables
+use FF_variables
+
+allocate(FFrhof(nx,ny,nz),FFmoist(nx,ny,nz))
+allocate(FFspec(nx,ny,nz))
+allocate(surfrhof(nx,ny),surfdepth(nx,ny))
+
+surfrhof = 0.0
+surfdepth = 0.0
+
+open(1,file='treesrhof.dat',form='unformatted',status='old')
+read(1) FFrhof
+close(1)
+
+open(2,file='treesmoist.dat',form='unformatted',status='old')
+read(2) FFmoist
+close(2)
+
+open(unit=1,file='treesspcd.dat',form='unformatted',status='unknown')
+read(1) FFSpec
+close(1)
+
+!if(any(isNaN(FFSpec))) print*,'Reading in NaNs for FF Data species'
+
+print*,'Shape of FFrhof = ',shape(FFrhof)
+print*,'Max,Min of FFrhof = ',maxval(FFrhof),minval(FFrhof)
+if(any(isNaN(FFrhof))) print*,'Reading in NaNs for FF Data rhof'
+print*,'Shape of FFmoist = ',shape(FFmoist)
+print*,'Max,Min of FFmoist = ',maxval(FFmoist),minval(FFmoist)
+if(any(isNaN(FFmoist))) print*,'Reading in NaNs for FF Data moisture'
+print*,'Shape of FFspec = ',shape(FFspec)
+print*,'Max,Min of FFspec = ',maxval(FFspec),minval(FFspec)
+
+end subroutine define_ff_variables

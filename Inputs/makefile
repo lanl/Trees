@@ -1,18 +1,16 @@
 #--Top level trees makefile--
-OBJS    = variables.o main.o define_variables.o \
-				  io.o metryc.o shapes.o distribution.o \
-			 		baseline.o duet_inputs.o treatments.o \
-			 		fuel_read.o trees_read.o \
+OBJS    = MakeFFInputs.o variables_DUET.o main_DUET.o define_variables_DUET.o \
+				  io_DUET.o full_DUET.o \
 #OBJS    = $(patsubst %,$(ODIR)/%,$(OBJS_))
 
 FC = gfortran   ## compiler
 FFLAGS = -O2 -ffixed-line-length-none
 
-trees: ${OBJS}
+duet: ${OBJS}
 	${FC} -o $@ ${FFLAGS} ${OBJS}
 
 clean: 
-	rm trees *.o *.mod trees*.dat
+	rm duet *.o *.mod duet*.dat
 
 # optimized suffix rules
 .SUFFIXES: .f .f90

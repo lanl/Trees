@@ -74,12 +74,58 @@ allocate(sdny(2)); sdny(:)=0 ! Array of the cell range (x)  where the treatment 
 
 open(unit=15,file='fuellist',form='formatted',status='old')
      read (15,nml=fuellist)
-     if (ntspecies.eq.0) then
+     
+     if (ndatax.eq.0) ndatax=nx*dx
+     if (ndatay.eq.0) ndatay=ny*dy
+     
+     if (ifuelin.eq.1) then
+       if(inx.eq.0) inx=nx
+       if(iny.eq.0) iny=ny
+       if(inz.eq.0) inz=nz
+       if(idx.eq.0) idx=dx
+       if(idy.eq.0) idy=dy
+       if(idz.eq.0) idz=dz
+       if(iaa1.eq.-1) iaa1=aa1
+       if(infuel.eq.0) infuel=1
+     endif
+     if (ifuelin.eq.0) then
+       infuel=0
+       inx=nx
+       iny=ny
+       inz=nz
+       idx=dx
+       idy=dy
+       idz=dz
+       iaa1=aa1
+     endif
+     
+     if (itrees.eq.0) then
+       ntspecies=0
+     endif
+     
+     if (igrass.eq.0) then
+       duet_ngrass = ngrass
+       ngrass=0
+     endif
+
+     if (itrees.eq.7) then
+      if (iFIA.eq.1) then
+        iFIAspecies=0
+      end if
+      call find_fastfuels_numspecies
+      tfuelbins = 1
+    endif
+    
+     if (infuel+ntspecies.eq.0) then
         iFIA = 0
         allocate(FIA(1*tfuelbins))        
      else
-      allocate(FIA(ntspecies*tfuelbins))
-      read (15,nml=speciesdata)
+      allocate(FIA(infuel+ntspecies*tfuelbins))
+      if (itrees.eq.7) then
+        FIA = final_uni_sp
+      else
+        read (15,nml=speciesdata)
+      end if
     endif
     
      if (ilitter.gt.0.and.ilitter.ne.2) then
@@ -91,14 +137,13 @@ open(unit=15,file='fuellist',form='formatted',status='old')
        read (15,nml=litterdata)
      endif
 
-     if (igrass.eq.1) then
+     if (igrass.eq.1.or.ilitter.eq.2) then
        allocate(grho(ngrass))
        allocate(gmoisture(ngrass))
        allocate(gss(ngrass))
        allocate(gdepth(ngrass))
 
        read (15,nml=grassdata)
-
      endif
 
      if (windprofile.eq.0) then
@@ -147,40 +192,19 @@ sdny(2)=ceiling(sdny(2)/dy)
 
 !JO
 
+!Find number species if using FastFuels dataset
+if (itrees.eq.7) then
+  
+  
+endif
+
+
 if (iFIA.eq.1) then
   call define_species_variables
 endif
 
 
-if (ndatax.eq.0) ndatax=nx*dx
-if (ndatay.eq.0) ndatay=ny*dy
 
-if (ifuelin.eq.1) then
-  if(inx.eq.0) inx=nx
-  if(iny.eq.0) iny=ny
-  if(inz.eq.0) inz=nz
-  if(idx.eq.0) idx=dx
-  if(idy.eq.0) idy=dy
-  if(idz.eq.0) idz=dz
-  if(iaa1.eq.-1) iaa1=aa1
-  if(infuel.eq.0) infuel=1
-endif
-if (ifuelin.eq.0) then
-  infuel=0
-  inx=nx
-  iny=ny
-  inz=nz
-  idx=dx
-  idy=dy
-  idz=dz
-  iaa1=aa1
-endif
-
-!Find number species if using FastFuels dataset
-if (itrees.eq.7) then
-  call find_fastfuels_numspecies
-  tfuelbins = 1
-endif
 
 end subroutine namelist_input
 
@@ -360,7 +384,7 @@ implicit none
 
 !Local Variables
 integer i,j,ift,ff_len,min_val_sp, max_val_sp
-integer,allocatable :: final_uni_sp(:), uni_sp(:)
+integer,allocatable :: uni_sp(:)
 real,dimension(19):: temp_array ! FF trees csv has at least 19 columns
 
 ! Executable Code
@@ -398,10 +422,10 @@ enddo
 allocate(final_uni_sp(i), source=uni_sp(1:i)) 
 ntspecies = count(final_uni_sp==final_uni_sp)
 print*,'New Set Species = ',ntspecies
+print*,'Groups = ',final_uni_sp
 
 deallocate(tspecies)
 deallocate(uni_sp)
-deallocate(final_uni_sp)
 
 end subroutine find_fastfuels_numspecies
 
@@ -419,7 +443,7 @@ implicit none
 
 !Local Variables
 integer i,numtrees,numspec,min_val_sp, max_val_sp
-integer,allocatable :: final_uni_sp(:), uni_sp(:)
+integer,allocatable :: uni_sp(:)
 integer,allocatable :: temp_array(:)
 
 ! Executable Code
@@ -456,7 +480,6 @@ print*,'New Set Species Number = ',ntspecies
 
 deallocate(temp_array)
 deallocate(uni_sp)
-deallocate(final_uni_sp)
 
 end subroutine find_numspecies
 
