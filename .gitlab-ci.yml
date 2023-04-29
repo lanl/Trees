@@ -52,7 +52,8 @@ variables:
     echo "git push -o ci.skip 'https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git' ${BRANCH_NAME}"
     # Push to treesOpen
     git push -o ci.skip "https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" $BRANCH_NAME
-
+    # Push to GitLab mirror of Github repo. Configured under "Mirroring repositories" at https://gitlab.lanl.gov/ees-fire-modeling/TreesGitHub/-/settings/repository
+    git push -o ci.skip "https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/ees-fire-modeling/TreesGitHub.git" $BRANCH_NAME
   else
     echo "changed files are not in ${BRANCH_NAME}, nothing to commit"
   fi
