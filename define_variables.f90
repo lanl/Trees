@@ -200,7 +200,7 @@ allocate(tsizescale(ntspecies*ntreefueltypes,nx,ny,nz)); tsizescale(:,:,:,:)=0.0
 allocate(tmoist(ntspecies*ntreefueltypes,nx,ny,nz)); tmoist(:,:,:,:)=0.0
 allocate(tfueldepth(ntspecies*ntreefueltypes,nx,ny)); tfueldepth(:,:,:)=0.0
 
-command = 'cd DUET; make; cd ..; ./duet'
+command = 'cd DUET; make;  cd ..; ./duet.exe'
 
 !-----------------------------------------------------------------
 ! Groundfuel variables unique to the ground fuels baseline

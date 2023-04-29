@@ -8,11 +8,11 @@ OBJS    = variables.o main.o define_variables.o \
 FC = gfortran   ## compiler
 FFLAGS = -O2 -ffixed-line-length-none
 
-trees: ${OBJS}
+Inputs/trees: ${OBJS}
 	${FC} -o $@ ${FFLAGS} ${OBJS}
 
 clean: 
-	rm trees *.o *.mod trees*.dat
+	rm Inputs/trees *.o *.mod Inputs/trees*.dat
 
 # optimized suffix rules
 .SUFFIXES: .f .f90

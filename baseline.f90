@@ -79,7 +79,7 @@ if (ilitter.ne.0) then
       print*,'Warning: itrees=0, no litter placed'
     end if
   else if (ilitter.eq.2) then
-    print*,'Filling Litter Baseline with Duet'
+    print*,'Filling Litter Baseline for Duet'
     call Duet_Inputs
   endif
   do ift=1,ntspecies
