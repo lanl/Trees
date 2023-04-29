@@ -1,0 +1,69 @@
+# Update trees submodule in HIGRAD-FIRETEC
+# Modified from https://www.benjaminrancourt.ca/how-to-push-to-a-git-repository-from-a-gitlab-ci-pipeline/
+trigger:
+  image: curlimages/curl:7.76.1
+  script:
+    # Use the Repository submodules API to update the submodule reference in other repositories (see https://docs.gitlab.com/ee/api/repository_submodules.html)
+    
+    # Put the string "PRIVATE-TOKEN:" into a variable to escape the "Linefeed-Limbo" (https://stackoverflow.com/a/51187502)
+    - PRIVATE_TOKEN="PRIVATE-TOKEN:"
+
+    # PUSHER_TOKEN is a group variable containing a group access token tied to EES Fire Modeling
+    # Go to Settings > CI/CD > Variables or Access Tokens to inspect/ change them    
+    - curl
+      --data "branch=${BRANCH}&commit_sha=${CI_COMMIT_SHA}&commit_message=Trees, ${CI_COMMIT_AUTHOR} ${CI_COMMIT_MESSAGE}"
+      --header "${PRIVATE_TOKEN} ${PUSHER_TOKEN}" 
+      --request PUT "${CI_SERVER_URL}/api/v4/projects/${PROJECT_ID}/repository/submodules/${SUBMODULE_PATH}"
+  stage: deploy
+  variables:
+    PROJECT_ID: '6604' # HIGRAD/FIRETEC
+    BRANCH: 'develop'
+    SUBMODULE_PATH: 'trees'
+
+# Remove copyrighted code in treesOpen branch and push to TreesGitHub)
+# Modified from https://parsiya.net/blog/2021-10-11-modify-gitlab-repositories-from-the-ci-pipeline/
+variables:
+  BRANCH_NAME: "treesOpen" # Name of the branch to modify to stage for GitHub
+
+# delete DUET folder
+.modify: &modify |
+  git pull --rebase
+  git checkout $BRANCH_NAME # checkout the test branch
+  git fetch origin
+  git reset --hard origin/$BRANCH_NAME
+  rm -r ./*
+  git checkout master . # checkout the master files 
+  rm -r Inputs/DUET
+  rm .gitlab-ci.yml
+
+# push the repository
+# based on https://gitlab.com/taleodor/sample-helm-cd/-/blob/master/.gitlab-ci.yml
+.push: &push |
+  git add .
+  git log -1
+  lines=$(git status -s | { grep -v DUET || true; } | { grep -v 'gitlab-ci' || true; } | wc -l)
+  echo $lines' new files: '$(git status -s | { grep -v DUET || true; } | { grep -v 'gitlab-ci' || true; })
+  if [ $lines -gt 0 ];then
+    echo "committing"
+    git config --global user.name "Dylan McDougall"
+    git config --global user.email "dmcdougall@lanl.gov"
+    git commit -m "${CI_COMMIT_AUTHOR} ${CI_COMMIT_MESSAGE}"
+    # Echo to log what you're doing next
+    echo "git push -o ci.skip 'https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git' ${BRANCH_NAME}"
+    # Push to treesOpen
+    git push -o ci.skip "https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" $BRANCH_NAME
+
+  else
+    echo "changed files are not in ${BRANCH_NAME}, nothing to commit"
+  fi
+
+modify-repo:
+  image: alpine:latest
+  before_script:
+    - apk add bash git grep     # add bash and git (probably not needed)
+    - git fetch
+    - git checkout master
+    - cd $CI_PROJECT_DIR        # go into the repo
+  script:
+    - *modify                   # run the modify script and create the file
+    - *push                     # run the push script and push the changes
