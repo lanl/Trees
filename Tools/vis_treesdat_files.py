@@ -220,6 +220,7 @@ for n in range(nfuel+1):
     if (n==0):
         arr = np.sum(rhof, axis=0)
         t = 'Sum Species'
+        max_z = int(np.max(np.nonzero(np.sum(arr,axis=(0,1)))))+2
     else:
         arr = rhof[n-1,:,:,:]
         t = 'Species '+str(n)
@@ -227,7 +228,7 @@ for n in range(nfuel+1):
         inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
     else:
         inpaxs = axs[n]
-    plotVertical(fig,inpaxs,arr,t,XI+Nx,ZI)  
+    plotVertical(fig,inpaxs,arr[:,:,:max_z],t,XI[:,:,:max_z]+Nx,ZI[:,:,:max_z])  
 #Hide unused subplots
 for nn in range(nfuel+1,rows*cols):
     axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
