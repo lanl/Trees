@@ -68,5 +68,7 @@ if(ilitter.eq.2) then
     print *, "DUET is not included in this release of Trees! Please use ilitter=1 or 0. See README"
   endif
 endif
-  
+
+if (verbose.eq.1) call output_1fuellist
+
 end

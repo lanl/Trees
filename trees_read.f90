@@ -26,7 +26,7 @@ implicit none
 
 ! Local Variables
 integer i
-  
+
 ! Executable Code
 allocate(ntrees(ntspecies)); ntrees(:)=0.0 ! Number of trees for each species
 allocate(tstemdensity(ntspecies)) ! Stem density of each species [stem/ha]
@@ -90,7 +90,13 @@ real,dimension(7+3*tfuelbins):: temp_array
 real:: nsub,nsubdecimal,rnumx,rnumy,newx,newy
 integer:: q,t,r,s,tindex,dataleft,dataright,databottom,datatop,treecount,num
 integer,allocatable:: rounddown(:),ntreesold(:)
+real xtest,ytest
+character(len=50) :: treelistformat
 
+if (verbose.eq.1) then 
+  open (222,file=TRIM(newtreefile)//'_treelist.txt',form='formatted',status='unknown')
+  treelistformat = '(I2.1,6F12.5,F10.6,F10.4,F10.5)'
+end if
 ! Executable Code
 itree = 0
 open (2,file=treefile)
@@ -160,8 +166,18 @@ allocate(numarray(ntspecies)); numarray(:)=0
 do i=1,itree
   read(2,*) temp_array(:)
   numarray(tspecies(i)) = numarray(tspecies(i))+1
-  tlocation(tspecies(i),numarray(tspecies(i)),1) = temp_array(2)+datalocx
-  tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(3)+datalocy
+  if (itree.eq.2) then
+    tlocation(tspecies(i),numarray(tspecies(i)),1) = temp_array(2)+datalocx
+    tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(3)+datalocy
+  else
+    call random_number(xtest)
+    xtest = xtest*nx*dx
+    call random_number(ytest)
+    ytest = tdny(1)+ytest*(tdny(2)-tdny(1))*dy !why is this different? JO
+
+    tlocation(tspecies(i),numarray(tspecies(i)),1) = temp_array(2)+datalocx
+    tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(3)+datalocy
+  endif
   theight(numarray(tspecies(i)),tspecies(i)) = temp_array(4)
   tcrownbotheight(numarray(tspecies(i)),tspecies(i)) = temp_array(5)
   tcrowndiameter(numarray(tspecies(i)),tspecies(i)) = temp_array(6)
@@ -308,6 +324,25 @@ if (nsub.gt.1) then
   enddo
   print*,'Number of relocation due to crowding = ',num
 endif
+
+if (verbose.eq.1) then 
+  do j=1,ntspecies
+    do i=1,ntrees(j)
+      !species, x, y, ht, htlc, cd , htmcd, cbd, fmc, ss
+    write(222,treelistformat) j,&
+        tlocation(j,i,1),&
+        tlocation(j,i,2),&
+        theight(i,j),&
+        tcrownbotheight(i,j),&
+        tcrowndiameter(i,j),&
+        tcrownmaxheight(i,j),&
+        t2bulkdensity(i,1,j),&
+        t2moisture(i,1,j),&
+        t2ss(i,1,j)
+    enddo
+  enddo
+  close(222)
+end if
 
 end subroutine treelist_readin
 

@@ -47,7 +47,8 @@ namelist/fuellist/ &
    winddatafile,windprofile,grassstep, &
    YearsSinceBurn,StepsPerYear, &
    itreatment,sdnx,sdny, &
-   sdiameter,sheight,sprho,smoist,sdepth
+   sdiameter,sheight,sprho,smoist,sdepth, &
+   verbose
 
  namelist/speciesdata/ &
    FIA
@@ -483,3 +484,311 @@ deallocate(uni_sp)
 
 end subroutine find_numspecies
 
+
+!-------------------------------------------
+!Write New Fuellist based on old params
+!-------------------------------------------
+subroutine output_fuellist
+  use grid_variables
+  use io_variables
+  use infile_variables
+  use baseline_variables
+  use treatment_variables
+  use duet_variables
+  use species_variables
+
+    !Local Variables
+  namelist/fuellist/ &
+  nx,ny,nz,dx,dy,dz,aa1,topofile, &
+  singlefuel,firetecshock,intopofile, &
+  ifuelin,rhoffile,moistfile,ssfile,afdfile, &
+  inx,iny,inz,idx,idy,idz,iaa1,infuel, &
+  igrass,ngrass,grassconstant,grassfile, &
+  itrees,ntspecies,iFIA,iFIAspecies, &
+  tfuelbins,tdnx,tdny,treefile,istem, &
+  ndatax,ndatay,datalocx,datalocy, & !JSM added for populate function
+  ilitter,litterconstant,litterfile, &
+  speciesfile,randomwinds,relhum,litout, &
+  controlseed,seedchange, &
+  winddatafile,windprofile,grassstep, &
+  YearsSinceBurn,StepsPerYear, &
+  itreatment,sdnx,sdny, &
+  sdiameter,sheight,sprho,smoist,sdepth
+
+  namelist/speciesdata/ &
+  FIA
+
+  namelist/litterdata/ &
+  lrho,lmoisture,lss,ldepth
+
+  namelist/grassdata/ &
+  grho,gmoisture,gss,gdepth,gmoistoverride
+
+  namelist/winddata/ &
+  uavg,vavg,ustd,vstd
+
+
+
+  open(unit=15,file='fuellist',form='formatted',status='old')
+    read (15,nml=fuellist)
+
+    if (infuel+ntspecies.ne.0) then
+       read (15,nml=speciesdata)
+    end if
+
+    if (ilitter.gt.0.and.ilitter.ne.2) then
+      read (15,nml=litterdata)
+    endif
+
+    if (igrass.eq.1.or.ilitter.eq.2) then
+      read (15,nml=grassdata)
+    endif
+
+    if (windprofile.eq.0) then
+      read (15,nml=winddata)
+    endif
+
+  close(15)
+
+
+  open(unit=2222,file='fuellist_'//newtreefile,form='formatted',status='unknown')
+    !fuellist
+    ndatax=nx
+    ndatay=ny
+    treefile=TRIM(newtreefile)//'_treelist.txt'
+    write(2222,nml=fuellist)
+
+    !species list
+    if (infuel+ntspecies.ne.0) then
+      write(2222,nml=speciesdata)
+    end if
+
+    if (ilitter.gt.0.and.ilitter.ne.2) then
+      write (2222,nml=litterdata)
+    endif
+
+    if (igrass.eq.1.or.ilitter.eq.2) then
+      write (2222,nml=grassdata)
+    endif
+
+    if (windprofile.eq.0) then
+      read (2222,nml=winddata)
+    end if
+
+
+  close(2222)
+
+
+end subroutine output_fuellist
+
+
+!-------------------------------------------
+!Write New Fuellist based on old params
+!-------------------------------------------
+subroutine output_1fuellist
+
+use grid_variables
+use io_variables
+use infile_variables
+use baseline_variables
+use treatment_variables
+use duet_variables
+use species_variables
+
+!stuff for writing new treelist
+character(len=100) :: newtreelistname
+integer :: ii
+
+open (2222,file='fuellist_'//newtreefile,form='formatted',status='unknown')
+newtreelistname = newtreefile//'_treelist.txt'
+write(2222,'(A10)') '&fuellist'
+write(2222,'(A35)') '! ----------------------------------'
+write(2222,'(A35)') '! FIRETEC domain info'
+write(2222,'(A35)') '! ----------------------------------'
+write(2222,'(A4,I6.2,A5,I6.2,A5,I6.2,A50)') 'nx=',nx,' ny=',ny,' nz=',nz,'! Size of HIGRAD/FIRETEC grid [cells]'
+write(2222,'(A4,F6.2,A5,F6.2,A5,F6.2,A50)') 'dx=',dx,' dy=',dy,' dz=',dz,'! Grid Resolution [m]'
+write(2222,'(A4,F6.2,A50)') 'aa1=',aa1,'! Vertical stretching component [default=0.1]'
+write(2222,'(A15,I2.1,A50)') 'singlefuel=',singlefuel,'! Flag forcing single fuel type instead of multiple fuels'
+write(2222,'(3A30)') 'topofile= "'//TRIM(topofile)//'"  	     '
+write(2222,'(A35)')'! ----------------------------------'
+write(2222,'(A35)')'! Data import from existing files'
+write(2222,'(A35)')'! ----------------------------------'
+write(2222,'(A25)')'ifuelin=0 ! Fuel read-in flag '
+write(2222,'(A50)')'inx=0 iny=0 inz=0 ! Size of HIGRAD/FIRETEC grid'
+write(2222,'(A40)')'idx=0 idy=0 idz=0 ! Grid Resolution [m]'
+write(2222,'(A50)')'iaa1=0.1 ! Vertical stretching component'
+write(2222,'(A30)')'infuel=1 ! Number of Fuel Types'
+write(2222,'(A15)')'intopofile= " " '
+write(2222,'(A15)')'rhoffile =  " " '
+write(2222,'(A15)')'ssfile   =  " " '
+write(2222,'(A15)')'moistfile=  " " '
+write(2222,'(A15)')'afdfile  =  " " '
+
+write(2222,'(A35)')'! ----------------------------------'
+write(2222,'(A35)')'! Input dataset info'
+write(2222,'(A35)')'! ----------------------------------'
+if (itrees.eq.0) then 
+  write(2222,'(A25)')'itrees=0 ! Trees flag '
+else
+  write(2222,'(A25)')'itrees=2 ! Trees flag '
+end if
+write(2222,'(A11,I6.3,A25)')'ntspecies=',ntspecies,'! Number of Tree Species'
+write(2222,'(A5,I1,A25)')'iFIA=',iFIA,'!Turn on FIA code'
+write(2222,'(A15,I1,A25)')'iFIAspecies=',iFIAspecies,'!species or groups '
+
+write(2222,'(A12)') "tfuelbins=1"
+write(2222,*) "treefile='",TRIM(newtreelistname)//'_treelist.txt',"'"
+!write(2222,'(A10,A30,A1)') "treefile='",TRIM(newtreelistname),"'"
+write(2222,'(A10,F6.1)') "ndatax=",nx*dx
+write(2222,'(A10,F6.1)') "ndatay=",ny*dy
+write(2222,'(A10)') "datalocx= "
+write(2222,'(A10)') "datalocy= "
+write(2222,'(A10)') "tdnx=     "
+write(2222,'(A10)') "tdny=     "
+
+write(2222,'(A35)')'! ----------------------------------'
+write(2222,'(A35)')'! Litter and grass settings'
+write(2222,'(A35)')'! ----------------------------------'
+write(2222,'(A25,I1)')'ilitter=',ilitter
+write(2222,'(A25,F4.2)')'litterconstant=',litterconstant
+write(2222,'(A25,I1)')'windprofile=',windprofile
+write(2222,'(A25,I2.1)')'randomwinds=',randomwinds
+write(2222,'(A25,I3.1)')'grassstep=',grassstep
+write(2222,'(A25,I4.1)')'YearsSinceBurn=',YearsSinceBurn
+write(2222,'(A25,I4.1)')'StepsPerYear=',StepsPerYear
+write(2222,'(A25,F6.2)')'relhum =',relhum
+write(2222,'(A25,I1)')'igrass=',igrass
+write(2222,'(A25,I2.1)')'ngrass=',ngrass
+write(2222,'(A25,F4.2)')'grassconstant=',grassconstant
+
+write(2222,'(A35)') '! ----------------------------------'
+write(2222,'(A35)') '! Extra Options for '
+write(2222,'(A35)') '! producing more output files and '
+write(2222,'(A35)') '! controlling the random seed'
+write(2222,'(A35)') '! ----------------------------------'
+write(2222,'(A25,I4.1)')'litout =',litout
+write(2222,'(A25,I4.1)')'controlseed =',controlseed
+write(2222,'(A25,I4.1)')'seedchange =',seedchange
+
+write(2222,'(A35)')'! ----------------------------------'
+write(2222,'(A35)')'! Treatment options'
+write(2222,'(A35)')'! ----------------------------------'
+write(2222,'(A11,I4.1)')'itreatment=',itreatment
+write(2222,'(A10,I4.1,I4.1)')'sdnx=',sdnx(1),sdnx(2)
+write(2222,'(A10,I4.1,I4.1)')'sdny=',sdny(1),sdny(2)
+write(2222,'(A10,F5.2)')'sdiameter=',sdiameter
+write(2222,'(A10,F5.2)')'sheight=',sheight
+write(2222,'(A10,F5.2)')'sprho=',sprho
+write(2222,'(A10,F4.2)')'smoist=',smoist
+write(2222,'(A10,F4.2)')'sdepth=',sdepth
+write(2222,'(A35)')'! ----------------------------------'
+write(2222,'(A50)')'! Option to output tree list and fuellist'
+write(2222,'(A35)')'! ----------------------------------'
+write(2222,'(A75)')'verbose = 0 !flag to output treelist and fuellist from resulting run: 0=No ; 1=Yes'
+write(2222,'(A1)')'/'
+
+!SPECIES NAMELIST=====================================================
+write(2222,'(A15)')'&speciesdata'
+write(2222,'(A5)', Advance = 'No' )'FIA ='
+do ii = 1, ntspecies
+  write(2222, '( I4.3, A1 )', Advance = 'No' ) FIA(ii)
+  if (ii.ne.ntspecies) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/,A1)')'/'
+
+!LITTER NAMELIST=====================================================
+write(2222,'(A15)') '&litterdata'
+write(2222,'(A10)', Advance = 'No' ) 'lrho ='
+do ii = 1, ntspecies
+  write(2222, '( F5.3, A1 )', Advance = 'No' ) lrho(ii)
+  if (ii.ne.ntspecies) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/)')
+write(2222,'(A15)', Advance = 'No' ) 'lmoisture =' 
+do ii = 1, ntspecies
+  write(2222, '( F4.3, A1 )', Advance = 'No' ) lmoisture(ii)
+  if (ii.ne.ntspecies) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/)')
+write(2222,'(A5)', Advance = 'No' ) 'lss =' 
+do ii = 1, ntspecies
+  write(2222, '( F6.5, A1 )', Advance = 'No' ) lss(ii)
+  if (ii.ne.ntspecies) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/)')
+write(2222,'(A10)', Advance = 'No' ) 'ldepth =' 
+do ii = 1, ntspecies
+  write(2222, '( F4.3, A1 )', Advance = 'No' ) ldepth(ii)
+  if (ii.ne.ntspecies) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/,A1)')'/'
+
+
+!GRASS NAMELIST=====================================================
+write(2222,'(A15)') '&grassdata'
+
+write(2222,'(A10)', Advance = 'No' ) 'grho ='
+do ii = 1, ngrass
+  write(2222, '( F5.4, A1 )', Advance = 'No' ) grho(ii) 
+  if (ii.ne.ngrass) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/)')
+write(2222,'(A11)', Advance = 'No' ) 'gmoisture ='
+do ii = 1, ngrass
+  write(2222, '( F4.3, A1 )', Advance = 'No' ) gmoisture(ii) 
+  if (ii.ne.ngrass) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/)')
+write(2222,'(A10)', Advance = 'No' ) 'gss ='
+do ii = 1, ngrass
+  write(2222, '( F6.4, A1 )', Advance = 'No' ) gss(ii)  
+  if (ii.ne.ngrass) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/)')
+write(2222,'(A10)', Advance = 'No' ) 'gdepth ='
+do ii = 1, ngrass
+  write(2222, '( F4.3, A1 )', Advance = 'No' ) gdepth(ii) 
+  if (ii.ne.ngrass) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/)')
+write(2222,'(A25,F3.1)') 'gmoistoverride = ',gmoistoverride
+write(2222,'(A1)')'/'
+
+
+!WIND NAMELIST=====================================================
+if (windprofile.eq.0) then
+  periodTotal=YearsSinceBurn*StepsPerYear
+else
+  periodTotal=0
+end if 
+
+write(2222,'(A15)') '&winddata'
+write(2222,'(A10)', Advance = 'No' ) 'uavg = '
+do ii = 1, periodTotal
+  write(2222, '( F4.3, A1 )', Advance = 'No' ) uavg(ii) 
+  if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/)')
+write(2222,'(A10)', Advance = 'No' ) 'vavg = '
+do ii = 1, periodTotal
+  write(2222, '( F4.3, A1 )', Advance = 'No' ) vavg(ii) 
+  if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/)')
+write(2222,'(A10)', Advance = 'No' ) 'ustd = '
+do ii = 1, periodTotal
+  write(2222, '( F4.3, A1 )', Advance = 'No' ) ustd(ii)  
+  if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/)')
+write(2222,'(A10)', Advance = 'No' ) 'vstd = '
+do ii = 1, periodTotal
+  write(2222, '( F4.3, A1 )', Advance = 'No' ) vstd(ii)  
+  if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
+end do
+write(2222,'(/,A1)')'/'
+
+close(2222)
+  
+
+end subroutine output_1fuellist

@@ -192,6 +192,12 @@ real,allocatable:: rhoftemp(:)
 real,external:: paraboloid,normal 
 real x
 
+!222 format(I2.1,F3.1,F3.1,F3.1,F3.1,F3.1,F3.1,F3.1,F3.4,F5.2,F5.4) !1	52.5708	104.893	19.8	13.4	3	14.68	0.08644	1	0.0005
+!write(222,treelistformat) 1,52.57,104.83,19.8,13.4,3.0,14.68,0.08644,1.,0.0005
+!write(222,*) 1,52.5708,104.893,19.8,13.4,3.0,14.68,0.08644,1.,0.0005
+
+
+
 !-----Determine the number of trees for each species
 if(itrees.eq.1) then
   totarea = nx*dx*ny*dy
@@ -209,22 +215,24 @@ do i=1,ntspecies
     if (ntrees(i).gt.9) then
       if (MOD(j,int(ntrees(i)/10)).eq.0) print*,'Placing tree',j,'of',ntrees(i)
     endif
-    !----- Place tree location
-    if (itrees.eq.1.or.itrees.eq.3) then
-      ! Randomly place a tree
-      call random_number(xtest)
-      xtest = xtest*nx*dx
-      call random_number(ytest)
-      ytest = tdny(1)+ytest*(tdny(2)-tdny(1))*dy
-    else
+    !----- Place tree location 
+    !PLACE ME IN TREE READ IN!!!!!!!!!!!!!!!!!!!
+    if (itrees.eq.2.or.itrees.eq.3) then
       ! Specific tree placement
       xtest = tlocation(i,j,1)
       if(xtest.gt.nx*dx.or.xtest.lt.0) CYCLE
       ytest = tlocation(i,j,2)
       if(ytest.gt.ny*dy.or.ytest.lt.0) CYCLE
+    else
+      ! Randomly place a tree
+      call random_number(xtest)
+      xtest = xtest*nx*dx
+      call random_number(ytest)
+      ytest = tdny(1)+ytest*(tdny(2)-tdny(1))*dy !why is this different? JO
     endif
     xcor = floor(xtest/dx+1)
     ycor = floor(ytest/dy+1)
+
 
     !----- Determine tree shape characteristics
     if (itrees.eq.1) then
@@ -363,6 +371,7 @@ do i=1,ntspecies
         enddo
       enddo
     enddo
+    
   enddo
 enddo
 deallocate(rhoftemp)
@@ -415,6 +424,9 @@ do ift=1,ntspecies*ntreefueltypes
 enddo
 print*,'Trees actual fuel mass:',actual_mass
 print*,'Trees error:',100-actual_mass/target_mass*100,'%'
+
+
+
 
 end subroutine tree_baseline 
 

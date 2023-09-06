@@ -52,6 +52,7 @@ endif
 ! Executable Code
 ntreefueltypes = istem*2+tfuelbins
 nfuel = infuel+ngrass+ntspecies*ntreefueltypes
+print*,ntspecies
 if(ilitter.gt.0) nfuel=nfuel+ntspecies*tfuelbins
 allocate(rhof(nfuel,nx,ny,nz)); rhof(:,:,:,:)=0.0
 allocate(sizescale(nfuel,nx,ny,nz)); sizescale(:,:,:,:)=0.0
@@ -219,6 +220,11 @@ if (igrass.eq.2) then
   enddo
   close (1)
 endif
+
+!set name of output files
+if (verbose.gt.1) verbose = 1
+if (verbose.eq.1) call define_newtreefile
+
 !-----------------------------------------------------------------
 ! Tree variables unique to the tree baseline
 !-----------------------------------------------------------------
@@ -503,3 +509,30 @@ allocate(lssT(specTotal,nx,ny,periodTotal)); lssT(:,:,:,:)=0.0
 allocate(gssT(specTotal,nx,ny,periodTotal)); gssT(:,:,:,:)=0.0
 
 end subroutine define_duet_variables
+
+subroutine define_newtreefile
+  use baseline_variables, only: newtreefile, itrees, treefile
+  !stuff for writing new treelist
+    integer(8) :: timeit
+    character(len=30) :: dateit
+    character(len=24) :: resultit
+    character(len=30) :: treelistformat
+    integer :: n
+
+    if (itrees.eq.0) then 
+      newtreefile = '_blank'
+    else 
+      !------Open file for writing treelist to replicate files-------
+      timeit = time8()
+      call ctime(timeit,dateit)
+      do n = 1, len(TRIM(dateit))
+        resultit(n:n) = dateit(n:n)
+        if ((dateit(n:n) == ' ').or.(dateit(n:n) == ':')) then
+          resultit(n:n) = '_'
+        endif
+      enddo
+      !newtreefile = treefile(1:len_trim(treefile)-len_trim('.txt'))//'_verbose'
+      newtreefile = treefile(1:len_trim(treefile)-len_trim('.txt'))//'_'//TRIM(resultit)
+    end if
+
+end subroutine define_newtreefile

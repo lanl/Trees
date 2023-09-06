@@ -38,6 +38,7 @@ integer nfuel,zmax
 real,allocatable:: rhof(:,:,:,:),sizescale(:,:,:,:),moist(:,:,:,:),fueldepth(:,:,:,:)
 real,allocatable:: zs(:,:),zheight(:,:,:)
 character:: topofile*50='flat'
+integer :: verbose=0
 
 end module grid_variables
 
@@ -84,7 +85,7 @@ real:: grassconstant=5.,litterconstant=5.,gmoistoverride=0.
 real,allocatable:: grhof(:,:,:,:),gsizescale(:,:,:,:),gmoist(:,:,:,:),gfueldepth(:,:,:)
 real,allocatable:: trhof(:,:,:,:),tsizescale(:,:,:,:),tmoist(:,:,:,:),tfueldepth(:,:,:)
 real,allocatable:: lrhof(:,:,:,:),lsizescale(:,:,:,:),lmoist(:,:,:,:),lfueldepth(:,:,:)
-character:: grassfile*50,treefile*50,litterfile*50
+character:: grassfile*50,treefile*250,litterfile*50,newtreefile*250
 
 integer:: istem=0,ntspecies=1,tfuelbins=1,ntreefueltypes
 real,allocatable:: tstemdensity(:),tlocation(:,:,:)
