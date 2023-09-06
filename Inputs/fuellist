@@ -78,6 +78,10 @@
       sprho=30                        ! Bulk density of slashpiles
       smoist=0.15                     ! Moisture content of slash
       sdepth=0.2                      ! Depth of slash layer
+! ----------------------------------
+! Option to output tree list and fuellist
+! ----------------------------------
+      verbose = 0 !flag to output treelist and fuellist from resulting run: 0=No ; 1=Yes
 /
 
 &speciesdata
