@@ -17,78 +17,78 @@ There is one main input file and additional input files depending on the configu
 
 The main input file which the program will look for is called ‘fuellist’ and is a fortran namelist with variables listed in the following table.
 
-!-------------------------------------------------------------------------------------------------
-Variable -- Default Value -- Description
-!-------------------------------------------------------------------------------------------------
-      nx            -- Required             -- Number of cells in the x-dimension
-      ny            -- Required             -- Number of cells in the y-dimension
-      nz            -- Required             -- Number of cells in the z-dimension
-      dx            -- Required             -- Spacing of cells in the x-dimension (m)
-      dy            -- Required             -- Spacing of cells in the y-dimension (m)
-      dz            -- Required             -- Spacing of cells in the z-dimension before stretching (m)
-      aa1           -- 0.1                  -- Vertical stretching component defined in zcart function of metryc.f, 0 if no stretching or no topo to vertical size
-      singlefuel    -- 0                    -- Flag for averaging cells' fuels into a single fuel type
-      topofile      -- ‘flat’               -- Name of topo file to be read in if using  topography
-!-------------------------------------------------------------------------------------------------
-      ifiretecshock -- 0                    -- Flag to trigger io for firetecshock
-!-------------------------------------------------------------------------------------------------
-      ifuelin       -- 0                    -- Flag for reading existing fuel data files
-      inx           -- nx                   -- Number of cells in the existing fuel data x-dimension
-      iny           -- ny                   -- Number of cells in the existing fuel data y-dimension
-      inz           -- nz                   -- Number of cells in the existing fuel data z-dimension
-      idx           -- dx                   -- Spacing of cells in the existing fuel data x-dimension (m)
-      idy           -- dy                   -- Spacing of cells in the existing fuel data y-dimension (m)
-      idz           -- dz                   -- Spacing of cells in the existing fuel data z-dimension before stretching (m)
-      iaa1          -- aa1                  -- Vertical stretching component in existing fuel data
-      infuel        -- 1                    -- Number of fuel types in existing fuel data
-      intopofile    -- ‘flat’               -- Name of existing topo file to be read in if using topography
-      rhoffile      -- Required if ifuelin=1-- Existing rhof file for read-in fuel data
-      ssfile        -- Required if ifuelin=1-- Existing sizescale file for read-in fuel data
-      moistfile     -- Required if ifuelin=1-- Existing moisture file for read-in fuel data
-      afdfile       -- Required if ifuelin=1-- Existing fueldepth file for read-in fuel data
-!-------------------------------------------------------------------------------------------------
-      itrees        -- 0                    -- Flag for trees, 0 if no trees, 1 if generalized treefile, 2 if specific treefile w/ locations randomized to fill the domain, 3 if specific treefile w/ random locations using base area to fill the domain, 7 if using FastFuels csv file
-      ntspecies     -- 1                    -- Number of tree species (correct number not required if itrees=7)
-      iFIA          -- 0                    -- Turn on FIA code reference to database
-      iFIA species  -- 0                    -- Flag to choose specific species instead of species groups (FIA codes below should be group numbers if this = 0)
-      tfuelbins     -- 1                    -- Number of size bins to distribute canopy fuels (foliage, branches, etc)
-      treefile      -- Required if itrees>0 -- Name of treefile with the additional information to be read
-      istem         -- 0                    -- Adds tree stems and bark to fuel arrays, DO NOT USE!!!!
-      ndatax        -- nx*dx                -- Size of dataset domain in x direction (m); recalculated if itrees=7
-      ndatay        -- ny*dx                -- Size of dataset domain in y direction (m); recalculated if itrees=7
-      datalocx      -- 0                    -- Bottom left corner x coordinate for where dataset should be placed
-      datalocy      -- 0                    -- Bottom left corner y coordinate for where dataset should be placed
-      tdnx          -- [0,nx*dx]            -- x range of the domain to be populated with trees (m)
-      tdny          -- [0,ny*dy]            -- y range of the domain to be populated with trees (m)
-!-------------------------------------------------------------------------------------------------
-      ilitter       -- 0                    -- Flag for litter, 0 if no litter, 1 if litter distributed by vertical fuel-load, 2 if litter is filled with DUET
-      litterconstant-- 5                    -- Exponential constant to increase of litter mass under trees
-      windprofile   -- 0                    -- Flag for wind profile type used by DUET, 1 if yearly averaged, 2 if imported windfield
-      randomwinds   -- 3                    -- if windprofile=2, choose 1 for up to 3m/s, 2 for up to 6m/s, 3 for up to 9m/s, etc.
-      grassstep     -- 1                    -- Step within a year in which grass grows
-      YearsSinceBurn-- 4                    -- Years since last fire
-      StepsPerYear  -- 1                    -- Number of DUET timesteps within a year
-      relhum        -- 0.1                  -- relative humidity of the area
-
-      igrass        -- 0                    -- Flag for grass, 0 if no grass, 1 if generalizd grassfile, 2 if ground fuel levels read directly
-      ngrass        -- Required if igrass=1 -- Number of grass species (for multiple fuels)
-      grassconstant -- 5                    -- Exponential constant used to determine the decay of grass mass with tree shading
-!-------------------------------------------------------------------------------------------------
-      litout        -- 0                    -- flag to turn on extra output files for visualizations of DUET functionality
-      controlseed   -- 1                    -- flag to control random seed to recreate the same tree plot multiple times 
-      seedchange    -- 100                  -- if controlseed=1, choose a seed 
-!-------------------------------------------------------------------------------------------------
-      itreatment    -- 0                    -- Flag for fuel treatments, 0 if no treatment, 1 if slashlayer, 2 if slashpiles, 3 if fuel removal
-      sdnx          -- [0,nx*dx]            -- x range of the domain over which a treatment is applied (m)
-      sdny          -- [0,ny*dy]            -- y range of the domain over which a treatment is applied (m)
-      sdepth        -- 0                    -- Depth of slashlayer
-      smoist        -- 0                    -- Moisture content of slashlayers or slashpiles
-      sdiameter     -- 0                    -- Diameter of slashpiles
-      sheight       -- 0                    -- Height of slashpiles
-      sprho         -- 0                    -- Bulk density of slashpiles
-!-------------------------------------------------------------------------------------------------
-verbose       -- 0                    -- Option to output treelist and fuellist from trees run
-!-------------------------------------------------------------------------------------------------
+    !-------------------------------------------------------------------------------------------------
+    Variable -- Default Value -- Description
+    !-------------------------------------------------------------------------------------------------
+    nx            -- Required             -- Number of cells in the x-dimension
+    ny            -- Required             -- Number of cells in the y-dimension
+    nz            -- Required             -- Number of cells in the z-dimension
+    dx            -- Required             -- Spacing of cells in the x-dimension (m)
+    dy            -- Required             -- Spacing of cells in the y-dimension (m)
+    dz            -- Required             -- Spacing of cells in the z-dimension before stretching (m)
+    aa1           -- 0.1                  -- Vertical stretching component defined in zcart function of metryc.f, 0 if no stretching or no     topo to vertical size
+    singlefuel    -- 0                    -- Flag for averaging cells' fuels into a single fuel type
+    topofile      -- ‘flat’               -- Name of topo file to be read in if using  topography
+    !-------------------------------------------------------------------------------------------------
+    ifiretecshock -- 0                    -- Flag to trigger io for firetecshock
+    !-------------------------------------------------------------------------------------------------
+    ifuelin       -- 0                    -- Flag for reading existing fuel data files
+    inx           -- nx                   -- Number of cells in the existing fuel data x-dimension
+    iny           -- ny                   -- Number of cells in the existing fuel data y-dimension
+    inz           -- nz                   -- Number of cells in the existing fuel data z-dimension
+    idx           -- dx                   -- Spacing of cells in the existing fuel data x-dimension (m)
+    idy           -- dy                   -- Spacing of cells in the existing fuel data y-dimension (m)
+    idz           -- dz                   -- Spacing of cells in the existing fuel data z-dimension before stretching (m)
+    iaa1          -- aa1                  -- Vertical stretching component in existing fuel data
+    infuel        -- 1                    -- Number of fuel types in existing fuel data
+    intopofile    -- ‘flat’               -- Name of existing topo file to be read in if using topography
+    rhoffile      -- Required if ifuelin=1-- Existing rhof file for read-in fuel data
+    ssfile        -- Required if ifuelin=1-- Existing sizescale file for read-in fuel data
+    moistfile     -- Required if ifuelin=1-- Existing moisture file for read-in fuel data
+    afdfile       -- Required if ifuelin=1-- Existing fueldepth file for read-in fuel data
+    !-------------------------------------------------------------------------------------------------
+    itrees        -- 0                    -- Flag for trees, 0 if no trees, 1 if generalized treefile, 2 if specific treefile w/ locations     randomized to fill the domain, 3 if specific treefile w/ random locations using base area to fill the domain, 7 if using FastFuels csv     file
+    ntspecies     -- 1                    -- Number of tree species (correct number not required if itrees=7)
+    iFIA          -- 0                    -- Turn on FIA code reference to database
+    iFIA species  -- 0                    -- Flag to choose specific species instead of species groups (FIA codes below should be group     numbers if this = 0)
+    tfuelbins     -- 1                    -- Number of size bins to distribute canopy fuels (foliage, branches, etc)
+    treefile      -- Required if itrees>0 -- Name of treefile with the additional information to be read
+    istem         -- 0                    -- Adds tree stems and bark to fuel arrays, DO NOT USE!!!!
+    ndatax        -- nx*dx                -- Size of dataset domain in x direction (m); recalculated if itrees=7
+    ndatay        -- ny*dx                -- Size of dataset domain in y direction (m); recalculated if itrees=7
+    datalocx      -- 0                    -- Bottom left corner x coordinate for where dataset should be placed
+    datalocy      -- 0                    -- Bottom left corner y coordinate for where dataset should be placed
+    tdnx          -- [0,nx*dx]            -- x range of the domain to be populated with trees (m)
+    tdny          -- [0,ny*dy]            -- y range of the domain to be populated with trees (m)
+    !-------------------------------------------------------------------------------------------------
+    ilitter       -- 0                    -- Flag for litter, 0 if no litter, 1 if litter distributed by vertical fuel-load, 2 if litter is     filled with DUET
+    litterconstant-- 5                    -- Exponential constant to increase of litter mass under trees
+    windprofile   -- 0                    -- Flag for wind profile type used by DUET, 1 if yearly averaged, 2 if imported windfield
+    randomwinds   -- 3                    -- if windprofile=2, choose 1 for up to 3m/s, 2 for up to 6m/s, 3 for up to 9m/s, etc.
+    grassstep     -- 1                    -- Step within a year in which grass grows
+    YearsSinceBurn-- 4                    -- Years since last fire
+    StepsPerYear  -- 1                    -- Number of DUET timesteps within a year
+    relhum        -- 0.1                  -- relative humidity of the area
+    
+    igrass        -- 0                    -- Flag for grass, 0 if no grass, 1 if generalizd grassfile, 2 if ground fuel levels read directly
+    ngrass        -- Required if igrass=1 -- Number of grass species (for multiple fuels)
+    grassconstant -- 5                    -- Exponential constant used to determine the decay of grass mass with tree shading
+    !-------------------------------------------------------------------------------------------------
+    litout        -- 0                    -- flag to turn on extra output files for visualizations of DUET functionality
+    controlseed   -- 1                    -- flag to control random seed to recreate the same tree plot multiple times 
+    seedchange    -- 100                  -- if controlseed=1, choose a seed 
+    !-------------------------------------------------------------------------------------------------
+    itreatment    -- 0                    -- Flag for fuel treatments, 0 if no treatment, 1 if slashlayer, 2 if slashpiles, 3 if fuel removal
+    sdnx          -- [0,nx*dx]            -- x range of the domain over which a treatment is applied (m)
+    sdny          -- [0,ny*dy]            -- y range of the domain over which a treatment is applied (m)
+    sdepth        -- 0                    -- Depth of slashlayer
+    smoist        -- 0                    -- Moisture content of slashlayers or slashpiles
+    sdiameter     -- 0                    -- Diameter of slashpiles
+    sheight       -- 0                    -- Height of slashpiles
+    sprho         -- 0                    -- Bulk density of slashpiles
+    !-------------------------------------------------------------------------------------------------
+    verbose       -- 0                    -- Option to output treelist and fuellist from trees run
+    !-------------------------------------------------------------------------------------------------
 &speciesdata
 !-------------------------------------------------------------------------------------------------
 ! ONLY NECESSARY TO FILL THIS IN IF NOT USING FASTFUELS AND ITREES NOT EQUAL TO 1
