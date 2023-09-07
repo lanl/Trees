@@ -87,6 +87,8 @@ sdiameter     -- 0                    -- Diameter of slashpiles
 sheight       -- 0                    -- Height of slashpiles
 sprho         -- 0                    -- Bulk density of slashpiles
 !-------------------------------------------------------------------------------------------------
+verbose       -- 0                    -- Option to output treelist and fuellist from trees run
+!-------------------------------------------------------------------------------------------------
 &speciesdata
 !-------------------------------------------------------------------------------------------------
 ! ONLY NECESSARY TO FILL THIS IN IF NOT USING FASTFUELS AND ITREES NOT EQUAL TO 1
