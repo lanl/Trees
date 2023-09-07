@@ -183,7 +183,7 @@ If itrees is 2, the treefile should specific tree information the program will u
 
 If itrees is 3, you use the same file as for itrees equals 2, but the trees will randomly re-distributed instead of using the provided coordinates.
 
-### FastFuels Treelist (DEPRECTIATED 9/7/2023)
+### FastFuels Treelist (DEPRECIATED 9/7/2023)
 #### Update: Only using a FastFuels treelist from the website will provide expected results. A FastFuels treelist from another source, or containing information different from that listed below will not work as intended. This feature will be updated in the future. 
 If itrees is 7, use a FastFuels (FF) dataset. This code will take the FF data and calculate the 10 parameters listed in itrees equals 2. When using a FF dataset, do not alter the csv column order after downloading from FF website. In fuellist ndatax, ndatay, datalocx, datalocy, ntspecies and tfuelbins will be overwritten to match the FF data. 
 (JO - As of 10/19/2021) The FF bounding box is not completely filled by data you expect (ex: a 400 x 400 m box will actually return a 350 x 450 rectangle domain). The ndatax, ndatay, datalocx, datalocy values are computed to be the FF dataset bounds and (0,0) respectively. Currently no moisture specified in FF data, so set all trees to 100% moisture content. FF data has 19 columns currently: 
