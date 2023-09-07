@@ -1,22 +1,22 @@
 The Trees program is a pre-processing tool used to virtually build forest fuel arrays to be read into FIRETEC or QUIC-Fire. This is meant to be a living document to be updated as the program evolves and is modified.
 
 
-##Language and Compilers
+## Language and Compilers
 In its current form, the Trees program is written in fortran and has been tested/verified using the following compilers:
 - gfortran (9.2.0) with flags -O2 -ffixed-line-length=none
 - intel’s fortran compiler (19.0.4) with flags -g -extend_source
 
-##Getting Started
+## Getting Started
 The trees program is attached to the FIRETEC repository held on the turquoise HPC system HIGRAD project space. Will be included on branch 1.4.1 and later. Included in the directory called trees is the source code for the program, a makefile to build, and a Inputs directory which contains example input files for a basic forest build.
 
 To run the program make adjustments to the makefile for the desired compiler and flags, then simply run ‘make’. This will create an executable file called ‘trees’. Move this file to the location of your input files and execute to create the four fuel files: treesrhof.dat, treesss.dat, treesmoist.dat, and treesfueldepth.dat.
 
 
-##Inputs
+## Inputs
 There is one main input file and additional input files depending on the configurations of the main input file, and examples of each input file are found in the Inputs directory.
 
 The main input file which the program will look for is called ‘fuellist’ and is a fortran namelist with variables listed in the following table.
-###Fuellist Main Variables
+### Fuellist Main Variables
     !-------------------------------------------------------------------------------------------------
     Variable -- Default Value -- Description
     !-------------------------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ The main input file which the program will look for is called ‘fuellist’ and
     !-------------------------------------------------------------------------------------------------
     verbose       -- 0                    -- Option to output treelist and fuellist from trees run
     !-------------------------------------------------------------------------------------------------
-###Species Data Namelist
+### Species Data Namelist
     &speciesdata
     !-------------------------------------------------------------------------------------------------
     ! ONLY NECESSARY TO FILL THIS IN IF NOT USING FASTFUELS AND ITREES NOT EQUAL TO 1
@@ -101,7 +101,7 @@ The main input file which the program will look for is called ‘fuellist’ and
     ! LONGLEAF PINE = 121, GROUP 4
     ! TURKEY OAK = 819, GROUP 9
     !-------------------------------------------------------------------------------------------------
-###Litter Data Namelist
+### Litter Data Namelist
     &litterdata
     !-------------------------------------------------------------------------------------------------
     !LIST ALL VALUES FOR LITTER HERE IF NOT USING DUET (ILITTER NOT EQUAL TO 2);
@@ -112,7 +112,7 @@ The main input file which the program will look for is called ‘fuellist’ and
           lss       = 0.0005,0.0005    ! size scale of litter [m]
           ldepth    = 0.06,0.06        ! depth of litter [m]
     !-------------------------------------------------------------------------------------------------
-###Grass Data Namelist
+### Grass Data Namelist
     &grassdata
     !-------------------------------------------------------------------------------------------------
     !If igrass is 1, then the program will take parameters definied below to create grass. The first four rows of this file will be read by         the program and should contain the following:
@@ -128,7 +128,7 @@ The main input file which the program will look for is called ‘fuellist’ and
     !and use that to adjust all moisture levels for all species
     !If igrass is 2, then the program will read in an existing data array to populate the ground fuels and disregaurd these values
     !-------------------------------------------------------------------------------------------------
-###Wind Data Namelist
+### Wind Data Namelist
     &winddata
     !-------------------------------------------------------------------------------------------------
     !LIST ALL VALUES FOR YOUR WIND PROFILE HERE IF WINDPROFILE=0
@@ -145,10 +145,10 @@ The main input file which the program will look for is called ‘fuellist’ and
     !-------------------------------------------------------------------------------------------------
 
 
-##Trees Input Information
+## Trees Input Information
 If itrees is not 0, then the program will look for the treefile with a name specified in the main input file. However, different itrees values will read the file in different ways.
 
-###Trees General
+### Trees General
 If itrees is 1, the treefile should be a ‘generalized’ file with general species information that the program will use to compute the total number of trees for each tracked species and recreate these trees based on a normal distribution. For this treefile, the first 9+3*tfuelbins lines will be read by the program and should contain the following:
 
 1. frequency of trees [stem/ha]
@@ -168,7 +168,7 @@ If itrees is 1, the treefile should be a ‘generalized’ file with general spe
 15.  tfuel2 bin sizescale [m]
 16.  … and so on
 
-###Trees Specific
+### Trees Specific
 If itrees is 2, the treefile should specific tree information the program will use to populate the domain. For this treefile, include the data for each individual tree on a new line. Each line of data should contain 10 columns of data in the following order:
 1. Tree species identity, a numerical value
 2. x-coordinate of tree stem [m]
@@ -183,7 +183,8 @@ If itrees is 2, the treefile should specific tree information the program will u
 
 If itrees is 3, you use the same file as for itrees equals 2, but the trees will randomly re-distributed instead of using the provided coordinates.
 
-###FastFuels Treelist (DEPRECTIATED 9/7/2023)
+### FastFuels Treelist (DEPRECTIATED 9/7/2023)
+#### Update: Only using a FastFuels treelist from the website will provide expected results. A FastFuels treelist from another source, or containing information different from that listed below will not work as intended. This feature will be updated in the future. 
 If itrees is 7, use a FastFuels (FF) dataset. This code will take the FF data and calculate the 10 parameters listed in itrees equals 2. When using a FF dataset, do not alter the csv column order after downloading from FF website. In fuellist ndatax, ndatay, datalocx, datalocy, ntspecies and tfuelbins will be overwritten to match the FF data. 
 (JO - As of 10/19/2021) The FF bounding box is not completely filled by data you expect (ex: a 400 x 400 m box will actually return a 350 x 450 rectangle domain). The ndatax, ndatay, datalocx, datalocy values are computed to be the FF dataset bounds and (0,0) respectively. Currently no moisture specified in FF data, so set all trees to 100% moisture content. FF data has 19 columns currently: 
 1. sp - not used ; species number, Please see Jenkins et al. 2003 for a table of species codes with latin and common names. https://www.fs.fed.us/ne/newtown_square/publications/other_publishers/OCR/ne_2003jenkins01.pdf
@@ -206,14 +207,14 @@ If itrees is 7, use a FastFuels (FF) dataset. This code will take the FF data an
 18. x - Longitude in EPSG:5070 - NAD83 / Conus Albers [m]
 19. y - Latitude in EPSG:5070 - NAD83 / Conus Albers [m]
 
-##Outputs
+## Outputs
 This program creates four binary files each containing a full fortran array which can be read directly by FIRETEC or QUIC-Fire:
 1. treesrhof.dat contains bulk fuel density for entire HIGRAD array
 2. treesfueldepth.dat contains actual fuel depths for entire HIGRAD array (3D array, but only bottom layer actually used in fire simulations)
 3. treesss.dat contains sizescales for entire HIGRAD array
 4. treesmoist.dat contains fuel moisture contents for entire HIGRAD array
 
-##Program Outline
+## Program Outline
 Main driver file for this program is located in main.f. From this file, all other subroutines are called which execute in this order:
 1. namelist_input (io.f) is called to read input data and initialize variables used throughout the simulation
 2. define_constant variables (define_variables.f) defines all additional variables needed for the simulation and not specified by the user within input files.
@@ -222,9 +223,9 @@ Main driver file for this program is located in main.f. From this file, all othe
 5. treatment (treatments.f) executes any specified treatments to the base forest estabilished in the baseline function
 6. output (io.f) writes the .dat files and finalizes any simulation variables
 
-##Modifications
+## Modifications
 Under-development so modifications happening all the time and not recorded here for now.
 
-##Building and Executing
+## Building and Executing
 A makefile is provided for building this software. Simply execute 'make' from the commandline in the location where the makefile is located. Specific configurations unique to a users build should be specified there.
 There are a number of possible input configurations available to the user but in basic when executed, the program will look for a file called 'fuellist' in the location from which the executable is called. This fuellist contains input parameters are specified. Any additional input files (ie grassfile, treefile, or litterfile) are specified within the fuellist. The four output tree files will be written to the location from which the exectuable is called.
