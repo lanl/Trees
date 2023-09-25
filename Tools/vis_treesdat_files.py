@@ -137,7 +137,7 @@ def metrics(topofile, Nx, Ny, Nz, dx, dy, dz, a1, f0, Stretch):
 def plotTopdown(fig,axs,arr,title,X,Y,sum_flag,plane):
     if sum_flag == 1:
         arr = np.sum(arr,axis=2)
-        sp1 = axs.pcolormesh(X[:,:,0],Y[:,:,0],arr,cmap='Greens',shading='auto', )
+        sp1 = axs.pcolormesh(X[:,:,0],Y[:,:,0],arr,cmap='Greens',shading='auto')
         #sp1 = axs.imshow(arr,cmap='Greens')
     else:
         arr = arr[:,:,plane]
@@ -160,7 +160,8 @@ def plotVertical(fig,axs,arr,title,X,Z):
     return 0
 
 
-    
+if nfuel < 1:
+    nfuel=1    
 #STEP 1======================
 #open rhof
 #rhof is a 4D array: 1st position is species ID, 2nd is x, 3rd is y, 4th is z
@@ -184,57 +185,83 @@ Z = ZI[0,0,:]
 #STEP 3======================
 #Visualilize the X/Y plane of the .dat file
 name = datfile[:-4] #remove ".dat" from string
-#find correct number of subplots for nfuel
-rows = int(np.floor(np.sqrt(nfuel+1)))
-cols = int(rows + np.ceil(np.sqrt(nfuel+1) - rows))
-if (rows<(nfuel+1)/cols):
-    rows += 1
-print(rows, cols)
 
-fig,axs = plt.subplots(rows,cols, figsize=(15,10))
-for n in range(nfuel+1):
-    if (n==0):
-        arr = np.sum(rhof, axis=0)
-        t = 'Sum Species'
-    else:
-        arr = rhof[n-1,:,:,:]
-        t = 'Species '+str(n)
-    if (rows!=1):
-        inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
-    else:
-        inpaxs = axs[n]
+if nfuel>1:
+    #find correct number of subplots for nfuel
+    rows = int(np.floor(np.sqrt(nfuel+1)))
+    cols = int(rows + np.ceil(np.sqrt(nfuel+1) - rows))
+    if (rows<(nfuel+1)/cols):
+        rows += 1
+    print(rows, cols)
+
+    fig,axs = plt.subplots(rows,cols, figsize=(15,10))
+    for n in range(nfuel+1):
+        if (n==0):
+            arr = np.sum(rhof, axis=0)
+            t = 'Sum Species'
+        else:
+            arr = rhof[n-1,:,:,:]
+            t = 'Species '+str(n)
+        if (rows!=1):
+            inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
+        else:
+            inpaxs = axs[n]
+        plotTopdown(fig,inpaxs,arr,t,XI+Nx,YI+Ny,sum_flag,plane)  
+    #Hide unused subplots
+    for nn in range(nfuel+1,rows*cols):
+        axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
+    #figure title    
+    fig.suptitle(name)
+    plt.tight_layout()
+    plt.savefig(of+name+'_'+b+'_topdownview.png')
+    plt.close()    
+    #=================================
+
+    fig,axs = plt.subplots(rows,cols, figsize=(15,10))
+
+    for n in range(nfuel+1):
+        if (n==0):
+            arr = np.sum(rhof, axis=0)
+            t = 'Sum Species'
+            max_z = int(np.max(np.nonzero(np.sum(arr,axis=(0,1)))))+2
+        else:
+            arr = rhof[n-1,:,:,:]
+            t = 'Species '+str(n)
+        if (rows!=1):
+            inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
+        else:
+            inpaxs = axs[n]
+        plotVertical(fig,inpaxs,arr[:,:,:max_z],t,XI[:,:,:max_z]+Nx,ZI[:,:,:max_z])  
+    #Hide unused subplots
+    for nn in range(nfuel+1,rows*cols):
+        axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
+    #figure title    
+    fig.suptitle(name)
+    plt.tight_layout()
+    plt.savefig(of+name+'_'+b+'_verticalview.png')
+    plt.close()    
+    #=================================
+else:
+    fig,axs = plt.subplots(figsize=(15,10))
+    arr = rhof[0,:,:,:]
+    t = 'Species '+str(1)
+    inpaxs = axs
     plotTopdown(fig,inpaxs,arr,t,XI+Nx,YI+Ny,sum_flag,plane)  
-#Hide unused subplots
-for nn in range(nfuel+1,rows*cols):
-    axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
-#figure title    
-fig.suptitle(name)
-plt.tight_layout()
-plt.savefig(of+name+'_'+b+'_topdownview.png')
-plt.close()    
-#=================================
-
-fig,axs = plt.subplots(rows,cols, figsize=(15,10))
-
-for n in range(nfuel+1):
-    if (n==0):
-        arr = np.sum(rhof, axis=0)
-        t = 'Sum Species'
-        max_z = int(np.max(np.nonzero(np.sum(arr,axis=(0,1)))))+2
-    else:
-        arr = rhof[n-1,:,:,:]
-        t = 'Species '+str(n)
-    if (rows!=1):
-        inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
-    else:
-        inpaxs = axs[n]
+    #figure title    
+    fig.suptitle(name)
+    plt.tight_layout()
+    plt.savefig(of+name+'_'+b+'_topdownview.png')
+    plt.close()    
+    #=================================
+    fig,axs = plt.subplots(figsize=(15,10))
+    max_z = int(np.max(np.nonzero(np.sum(rhof,axis=(0,1,2)))))+2
+    arr = rhof[0,:,:,:]
+    t = 'Species '+str(1)
+    inpaxs = axs
     plotVertical(fig,inpaxs,arr[:,:,:max_z],t,XI[:,:,:max_z]+Nx,ZI[:,:,:max_z])  
-#Hide unused subplots
-for nn in range(nfuel+1,rows*cols):
-    axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
-#figure title    
-fig.suptitle(name)
-plt.tight_layout()
-plt.savefig(of+name+'_'+b+'_verticalview.png')
-plt.close()    
-#=================================
+    #figure title    
+    fig.suptitle(name)
+    plt.tight_layout()
+    plt.savefig(of+name+'_'+b+'_verticalview.png')
+    plt.close()    
+    #=================================
