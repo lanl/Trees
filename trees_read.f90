@@ -171,12 +171,15 @@ do i=1,itree
     tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(3)+datalocy
   else
     call random_number(xtest)
+    print*, xtest !  0.605270922  
     xtest = xtest*nx*dx
     call random_number(ytest)
+    print*, ytest
+    
     ytest = tdny(1)+ytest*(tdny(2)-tdny(1))*dy !why is this different? JO
 
-    tlocation(tspecies(i),numarray(tspecies(i)),1) = temp_array(2)+datalocx
-    tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(3)+datalocy
+    tlocation(tspecies(i),numarray(tspecies(i)),1) = xtest+datalocx
+    tlocation(tspecies(i),numarray(tspecies(i)),2) = ytest+datalocy
   endif
   theight(numarray(tspecies(i)),tspecies(i)) = temp_array(4)
   tcrownbotheight(numarray(tspecies(i)),tspecies(i)) = temp_array(5)
