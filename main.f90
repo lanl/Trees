@@ -36,7 +36,7 @@ print *,' files for FIRETEC or QUIC-Fire     '
 print *,'===================================='
 
 !-----Initialize
-call namelist_input
+call fuellist_input
 call define_constant_variables
 call define_grid_variables
 

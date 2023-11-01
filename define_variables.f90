@@ -305,7 +305,7 @@ subroutine define_duet_variables
 use grid_variables, only : nx,ny,nz
 use infile_variables, only : infuel
 use baseline_variables, only : ntspecies,tfuelbins
-use duet_variables, only : windprofile,winddatafile,StepsPerYear, &
+use duet_variables, only : windprofile,StepsPerYear, &
   YearsSinceBurn,uavg,vavg,VAR,ustd,vstd,Umean,Vmean,Uvar,Vvar,vterminal, &
   fuelSA,Froude,droptime,leafdropfreq,decay,speciesfile,lrhofT, &
   grhofT,dragco,lafdT,gafdT,lmoistT,gmoistT,lssT,gssT,randomwinds, &
@@ -325,11 +325,7 @@ if(windprofile.eq.0) then
   print*,'!----!----!----!----!----!----!----!----!----!----!----!'
   print*,'Windprofile is taken from a user provided in fuellist'
   allocate(VAR(periodTotal,2))
-  !open (100,file=winddatafile)  ! wind information for area per year
   do yt=1,periodTotal
-    !read(100,*) temp_array
-    !uavg(yt)=temp_array(3)
-    !vavg(yt)=temp_array(4)
     VAR(yt,1)=ustd(yt)
     VAR(yt,2)=vstd(yt)
   enddo

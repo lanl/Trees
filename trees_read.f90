@@ -171,9 +171,9 @@ do i=1,itree
     tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(3)+datalocy
   else
     call random_number(xtest)
-    xtest = ndatax*xtest!tdnx(1)+xtest*(tdnx(2)-tdnx(1))*dx
+    xtest = ndatax*xtest
     call random_number(ytest)
-    ytest = ndatay*ytest!tdny(1)+ytest*(tdny(2)-tdny(1))*dy 
+    ytest = ndatay*ytest
 
     tlocation(tspecies(i),numarray(tspecies(i)),1) = xtest+datalocx
     tlocation(tspecies(i),numarray(tspecies(i)),2) = ytest+datalocy

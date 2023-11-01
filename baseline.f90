@@ -382,8 +382,8 @@ deallocate(rhoftemp)
 !----- Tree fuel depth is equal to height of the first cell
 do i=1,ntspecies
   do j=1,ntreefueltypes
-    do ii=tdnx(1),tdnx(2)
-      do jj=tdny(1),tdny(2)
+    do ii=1,nx
+      do jj=1,ny
         tfueldepth((i-1)*ntreefueltypes+j,ii,jj) = zheight(ii,jj,2)
       enddo
     enddo
@@ -417,8 +417,8 @@ endif
 print*,'Trees target fuel mass:',target_mass
 actual_mass = 0
 do ift=1,ntspecies*ntreefueltypes
-  do i=tdnx(1),tdnx(2)
-    do j=tdny(1),tdny(2)
+  do i=1,nx
+    do j=1,ny
       do k=1,zmax
         actual_mass = actual_mass+trhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
       enddo

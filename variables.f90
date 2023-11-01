@@ -30,8 +30,8 @@ module grid_variables
 !-----------------------------------------------------------------
 implicit none
       
-integer nx,ny,nz
-real    dx,dy,dz
+integer :: nx,ny,nz
+real :: dx,dy,dz
 real :: aa1=0.1
 real :: ndatax=0.,ndatay=0.,datalocx=0.,datalocy=0. !JSM added ndatax, etc.
 integer nfuel,zmax
@@ -80,14 +80,14 @@ module baseline_variables
 implicit none
 
 integer:: igrass=0,itrees=0,ilitter=0
-integer:: ngrass=1,duet_ngrass=1
+integer:: ngrass=0,duet_ngrass=0
 real:: grassconstant=5.,litterconstant=5.,gmoistoverride=0.
 real,allocatable:: grhof(:,:,:,:),gsizescale(:,:,:,:),gmoist(:,:,:,:),gfueldepth(:,:,:)
 real,allocatable:: trhof(:,:,:,:),tsizescale(:,:,:,:),tmoist(:,:,:,:),tfueldepth(:,:,:)
 real,allocatable:: lrhof(:,:,:,:),lsizescale(:,:,:,:),lmoist(:,:,:,:),lfueldepth(:,:,:)
 character:: grassfile*50,treefile*250,litterfile*50,newtreefile*250
 
-integer:: istem=0,ntspecies=1,tfuelbins=1,ntreefueltypes
+integer:: istem=0,ntspecies=0,tfuelbins=0,ntreefueltypes
 real,allocatable:: tstemdensity(:),tlocation(:,:,:)
 real,allocatable:: t1moisture(:,:),t1ss(:,:),t1bulkdensity(:,:)
 real,allocatable:: t2moisture(:,:,:),t2ss(:,:,:),t2bulkdensity(:,:,:)
@@ -96,7 +96,6 @@ real,allocatable:: trhomicro(:),tdbh(:,:),tstemmoist(:),tbarkthick(:,:),tbarkmoi
 integer,allocatable:: ntrees(:),tspecies(:)
 real,allocatable:: gdepth(:),grho(:),gss(:),gmoisture(:)
 real,allocatable:: ldepth(:),lrho(:),lss(:),lmoisture(:)
-integer,allocatable:: tdnx(:),tdny(:)
 
 character :: command*50
 
