@@ -226,9 +226,12 @@ do i=1,ntspecies
     else
       ! Randomly place a tree
       call random_number(xtest)
-      xtest = xtest*nx*dx
+      xtest = xtest*ndatax
+      if(xtest.gt.nx*dx.or.xtest.lt.0) CYCLE
       call random_number(ytest)
-      ytest = tdny(1)+ytest*(tdny(2)-tdny(1))*dy !why is this different? JO
+      ytest = ytest*ndatay !why is this different? JO
+      if(ytest.gt.ny*dy.or.ytest.lt.0) CYCLE
+
     endif
     xcor = floor(xtest/dx+1)
     ycor = floor(ytest/dy+1)
