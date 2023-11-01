@@ -14,7 +14,7 @@
 ! prepare derivative works, distribute copies to the public, perform
 ! publicly and display publicly, and to permit others to do so.
 !-----------------------------------------------------------------
-subroutine namelist_input
+subroutine fuellist_input
 !-----------------------------------------------------------------
 ! namelist_input is a function reads in the user-defined variables 
 ! from the treelist then assigns those variables for use by the 
@@ -31,166 +31,114 @@ use species_variables
 implicit none
 
 !Local Variables
-namelist/fuellist/ &
-   nx,ny,nz,dx,dy,dz,aa1,topofile, &
-   singlefuel,firetecshock,intopofile, &
-   ifuelin,rhoffile,moistfile,ssfile,afdfile, &
-   inx,iny,inz,idx,idy,idz,iaa1,infuel, &
-   igrass,ngrass,grassconstant,grassfile, &
-   itrees,ntspecies,iFIA,iFIAspecies, &
-   tfuelbins,tdnx,tdny,treefile,istem, &
-   ndatax,ndatay,datalocx,datalocy, & !JSM added for populate function
-   ilitter,litterconstant,litterfile, &
-   speciesfile,randomwinds,relhum,litout, &
-   controlseed,seedchange, &
-   winddatafile,windprofile,grassstep, &
-   YearsSinceBurn,StepsPerYear, &
-   verbose
-
- namelist/speciesdata/ &
-   FIA
-
- namelist/litterdata/ &
-   lrho,lmoisture,lss,ldepth
-
- namelist/grassdata/ &
-   grho,gmoisture,gss,gdepth,gmoistoverride
-
- namelist/winddata/ &
-   uavg,vavg,ustd,vstd
-
 
 ! Executable Code
-! Area of interest arrays need to be allocated before calling namelist
-allocate(tdnx(2)); tdnx(:)=0 ! Array of the cell range (x)  where the trees are applied
-allocate(tdny(2)); tdny(:)=0 ! Array of the cell range (x)  where the trees are applied
+open(unit=48,file='fuellist',form='formatted',status='old')
 
-!if(iFIA.eq.1.and.itrees.ne.7) call find_numspecies
-!allocate(FIA(ntspecies))
+! Domain information
+call QueryFuellist_integer('nx',nx,48,200)
+call QueryFuellist_integer('ny',ny,48,200)
+call QueryFuellist_integer('nz',nz,48,41)
+call QueryFuellist_real('dx',dx,48,2.)
+call QueryFuellist_real('dy',dy,48,2.)
+call QueryFuellist_real('dz',dz,48,15.)
+call QueryFuellist_real('aa1',aa1,48,0.1)
+call QueryFuellist_integer('singlefuel',singlefuel,48,0)
+call QueryFuellist_string('topofile',topofile,48,'flat')
 
-open(unit=15,file='fuellist',form='formatted',status='old')
-     read (15,nml=fuellist)
+! Data import from existing files
+call QueryFuellist_integer('ifuelin',ifuelin,48,0)
+if(ifuelin.eq.1) then
+  call QueryFuellist_integer('inx',inx,48,nx)
+  call QueryFuellist_integer('iny',iny,48,ny)
+  call QueryFuellist_integer('inz',inz,48,nz)
+  call QueryFuellist_real('idx',idx,48,dx)
+  call QueryFuellist_real('idy',idy,48,dy)
+  call QueryFuellist_real('idz',idz,48,dz)
+  call QueryFuellist_real('iaa1',iaa1,48,aa1)
+  call QueryFuellist_integer('infuel',infuel,48,1)
+  call QueryFuellist_string('intopofile',intopofile,48,'flat')
+  call QueryFuellist_string('rhoffile',rhoffile,48,'treesrhof.dat.orig')
+  call QueryFuellist_string('ssfile',ssfile,48,'treesss.dat.orig')
+  call QueryFuellist_string('moistfile',moistfile,48,'treesmoist.dat.orig')
+  call QueryFuellist_string('afdfile',afdfile,48,'treesfueldepth.dat.orig')
+endif
      
-     if (ndatax.eq.0) ndatax=nx*dx
-     if (ndatay.eq.0) ndatay=ny*dy
-     
-     if (ifuelin.eq.1) then
-       if(inx.eq.0) inx=nx
-       if(iny.eq.0) iny=ny
-       if(inz.eq.0) inz=nz
-       if(idx.eq.0) idx=dx
-       if(idy.eq.0) idy=dy
-       if(idz.eq.0) idz=dz
-       if(iaa1.eq.-1) iaa1=aa1
-       if(infuel.eq.0) infuel=1
-     endif
-     if (ifuelin.eq.0) then
-       infuel=0
-       inx=nx
-       iny=ny
-       inz=nz
-       idx=dx
-       idy=dy
-       idz=dz
-       iaa1=aa1
-     endif
-     
-     if (itrees.eq.0) then
-       ntspecies=0
-     endif
-     
-     if (igrass.eq.0) then
-       duet_ngrass = ngrass
-       ngrass=0
-     endif
-
-     if (itrees.eq.7) then
-      if (iFIA.eq.1) then
-        iFIAspecies=0
-      end if
-      call find_fastfuels_numspecies
-      tfuelbins = 1
-    endif
-    
-     if (infuel+ntspecies.eq.0) then
-        iFIA = 0
-        allocate(FIA(1*tfuelbins))        
-     else
-      allocate(FIA(infuel+ntspecies*tfuelbins))
-      if (itrees.eq.7) then
-        FIA = final_uni_sp
-      else
-        read (15,nml=speciesdata)
-      end if
-    endif
-    
-     if (ilitter.gt.0.and.ilitter.ne.2) then
-       allocate(lrho(ntspecies*tfuelbins))
-       allocate(lmoisture(ntspecies*tfuelbins))
-       allocate(lss(ntspecies*tfuelbins))
-       allocate(ldepth(ntspecies*tfuelbins))
-
-       read (15,nml=litterdata)
-     endif
-
-     if (igrass.eq.1.or.ilitter.eq.2) then
-       allocate(grho(ngrass))
-       allocate(gmoisture(ngrass))
-       allocate(gss(ngrass))
-       allocate(gdepth(ngrass))
-
-       read (15,nml=grassdata)
-     endif
-
-     if (windprofile.eq.0) then
-       periodTotal=YearsSinceBurn*StepsPerYear
-       allocate(uavg(periodTotal))
-       allocate(vavg(periodTotal))
-       allocate(ustd(periodTotal))
-       allocate(vstd(periodTotal))
-
-       read (15,nml=winddata)
-     
-     endif
-
-close(15)
-
-
-if (controlseed.eq.1) then
-  call random_seed(size=n)
-  allocate(seed(n))
-  seed=seedchange
-  call random_seed(put=seed)
-  deallocate(seed)
+! Grass
+call QueryFuellist_integer('igrass',igrass,48,0)
+if(igrass.eq.1)then
+  call QueryFuellist_integer('ngrass',ngrass,48,1)
+  call QueryFuellist_real('grassconstant',grassconstant,48,5.)
+  allocate(grho(ngrass))
+  call QueryFuellist_real_array('grho',grho,ngrass,48,1.18)
+  allocate(gmoisture(ngrass))
+  call QueryFuellist_real_array('gmoisture',gmoisture,ngrass,48,0.06)
+  allocate(gss(ngrass))
+  call QueryFuellist_real_array('gss',gss,ngrass,48,0.0005)
+  allocate(gdepth(ngrass))
+  call QueryFuellist_real_array('gdepth',gdepth,ngrass,48,0.27)
 endif
 
-! Corrections for if variables not specified on namelist
-if (tdnx(1).eq.0) then
-  tdnx(1) = 1
-  tdnx(2) = dx*nx
-  tdny(1) = 1
-  tdny(2) = dy*ny
+! Trees
+call QueryFuellist_integer('itrees',itrees,48,3)
+if(itrees.ge.1)then
+  call QueryFuellist_integer('ntspecies',ntspecies,48,1)
+  call QueryFuellist_integer('tfuelbins',tfuelbins,48,1)
+  call QueryFuellist_string('treefile',treefile,48,'AJoseEglinTrees.txt')
+  call QueryFuellist_real('ndatax',ndatax,48,nx*dx)
+  call QueryFuellist_real('ndatay',ndatay,48,ny*dy)
+  call QueryFuellist_real('datalocx',datalocx,48,0.)
+  call QueryFuellist_real('datalocy',datalocy,48,0.)
 endif
-tdnx(1)=floor(tdnx(1)/dx+1)
-tdnx(2)=ceiling(tdnx(2)/dx)
-tdny(1)=floor(tdny(1)/dy+1)
-tdny(2)=ceiling(tdny(2)/dy)
+if (itrees.eq.7) call find_fastfuels_numspecies
 
-!Find number species if using FastFuels dataset
-if (itrees.eq.7) then
-  
-  
+! Litter
+call QueryFuellist_integer('ilitter',ilitter,48,0)
+if(ilitter.eq.1) then
+  allocate(lrho(ntspecies*tfuelbins))
+  call QueryFuellist_real_array('lrho',lrho,ntspecies*tfuelbins,48,0.)
+  allocate(lmoisture(ntspecies*tfuelbins))
+  call QueryFuellist_real_array('lmoisture',lmoisture,ntspecies*tfuelbins,48,0.)
+  allocate(lss(ntspecies*tfuelbins))
+  call QueryFuellist_real_array('lss',lss,ntspecies*tfuelbins,48,0.)
+  allocate(ldepth(ntspecies*tfuelbins))
+  call QueryFuellist_real_array('ldepth',ldepth,ntspecies*tfuelbins,48,0.)
+elseif(ilitter.eq.2)then  ! DUET
+  call QueryFuellist_integer('windprofile',windprofile,48,2)
+  call QueryFuellist_integer('YearsSinceBurn',YearsSinceBurn,48,1)
+  call QueryFuellist_integer('StepsPerYear',StepsPerYear,48,1)
+  if(windprofile.eq.0)then
+    periodTotal=YearsSinceBurn*StepsPerYear
+    allocate(uavg(periodTotal))
+    call QueryFuellist_real_array('uavg',uavg,periodTotal,48,0.)
+    allocate(vavg(periodTotal))
+    call QueryFuellist_real_array('vavg',vavg,periodTotal,48,0.)
+    allocate(ustd(periodTotal))
+    call QueryFuellist_real_array('ustd',ustd,periodTotal,48,0.)
+    allocate(vstd(periodTotal))
+    call QueryFuellist_real_array('vstd',vstd,periodTotal,48,0.)
+  elseif(windprofile.eq.2)then
+    call QueryFuellist_integer('randomwinds',randomwinds,48,2)
+  endif
+  call QueryFuellist_real('relhum',relhum,48,0.1)
+  call QueryFuellist_integer('iFIA',iFIA,48,1)
+  call QueryFuellist_integer('iFIAspecies',iFIAspecies,48,1)
+  if(iFIA.eq.0)then
+    call QueryFuellist_string('speciesfile',speciesfile,48,'speciesfile.dat')
+  elseif(iFIA.eq.1)then 
+    allocate(FIA(infuel+ntspecies*tfuelbins))
+    call QueryFuellist_integer_array('FIA',FIA,infuel+ntspecies*tfuelbins,48,1)
+    call define_species_variables
+  endif
+  call QueryFuellist_integer('litout',litout,48,0)
 endif
 
+! Verbose
+call QueryFuellist_integer('verbose',verbose,48,0)
+     
+close(48)
 
-if (iFIA.eq.1) then
-  call define_species_variables
-endif
-
-
-
-
-end subroutine namelist_input
+end subroutine fuellist_input
 
 subroutine output_nfuel
 !-----------------------------------------------------------------
@@ -487,7 +435,7 @@ subroutine output_fuellist
   inx,iny,inz,idx,idy,idz,iaa1,infuel, &
   igrass,ngrass,grassconstant,grassfile, &
   itrees,ntspecies,iFIA,iFIAspecies, &
-  tfuelbins,tdnx,tdny,treefile,istem, &
+  tfuelbins,treefile,istem, &
   ndatax,ndatay,datalocx,datalocy, & !JSM added for populate function
   ilitter,litterconstant,litterfile, &
   speciesfile,randomwinds,relhum,litout, &
@@ -622,8 +570,6 @@ write(2222,'(A10,F6.1)') "ndatax=",nx*dx
 write(2222,'(A10,F6.1)') "ndatay=",ny*dy
 write(2222,'(A10)') "datalocx= "
 write(2222,'(A10)') "datalocy= "
-write(2222,'(A10)') "tdnx=     "
-write(2222,'(A10)') "tdny=     "
 
 write(2222,'(A35)')'! ----------------------------------'
 write(2222,'(A35)')'! Litter and grass settings'
