@@ -24,7 +24,6 @@ use grid_variables
 use io_variables
 use infile_variables
 use baseline_variables
-use treatment_variables
 use duet_variables, only : speciesfile,winddatafile,windprofile, &
   grassstep,YearsSinceBurn,StepsPerYear,randomwinds,relhum, &
   ustd,vstd,uavg,vavg,periodTotal,litout
@@ -46,8 +45,6 @@ namelist/fuellist/ &
    controlseed,seedchange, &
    winddatafile,windprofile,grassstep, &
    YearsSinceBurn,StepsPerYear, &
-   itreatment,sdnx,sdny, &
-   sdiameter,sheight,sprho,smoist,sdepth, &
    verbose
 
  namelist/speciesdata/ &
@@ -67,8 +64,6 @@ namelist/fuellist/ &
 ! Area of interest arrays need to be allocated before calling namelist
 allocate(tdnx(2)); tdnx(:)=0 ! Array of the cell range (x)  where the trees are applied
 allocate(tdny(2)); tdny(:)=0 ! Array of the cell range (x)  where the trees are applied
-allocate(sdnx(2)); sdnx(:)=0 ! Array of the cell range (x)  where the treatment is applied
-allocate(sdny(2)); sdny(:)=0 ! Array of the cell range (x)  where the treatment is applied
 
 !if(iFIA.eq.1.and.itrees.ne.7) call find_numspecies
 !allocate(FIA(ntspecies))
@@ -176,22 +171,10 @@ if (tdnx(1).eq.0) then
   tdny(1) = 1
   tdny(2) = dy*ny
 endif
-if (sdnx(1).eq.0) then
-  sdnx(1) = 1
-  sdnx(2) = dx*nx
-  sdny(1) = 1
-  sdny(2) = dy*ny
-endif
 tdnx(1)=floor(tdnx(1)/dx+1)
 tdnx(2)=ceiling(tdnx(2)/dx)
 tdny(1)=floor(tdny(1)/dy+1)
 tdny(2)=ceiling(tdny(2)/dy)
-sdnx(1)=floor(sdnx(1)/dx+1)
-sdnx(2)=ceiling(sdnx(2)/dx)
-sdny(1)=floor(sdny(1)/dy+1)
-sdny(2)=ceiling(sdny(2)/dy)
-
-!JO
 
 !Find number species if using FastFuels dataset
 if (itrees.eq.7) then
@@ -493,7 +476,6 @@ subroutine output_fuellist
   use io_variables
   use infile_variables
   use baseline_variables
-  use treatment_variables
   use duet_variables
   use species_variables
 
@@ -511,9 +493,7 @@ subroutine output_fuellist
   speciesfile,randomwinds,relhum,litout, &
   controlseed,seedchange, &
   winddatafile,windprofile,grassstep, &
-  YearsSinceBurn,StepsPerYear, &
-  itreatment,sdnx,sdny, &
-  sdiameter,sheight,sprho,smoist,sdepth
+  YearsSinceBurn,StepsPerYear
 
   namelist/speciesdata/ &
   FIA
@@ -591,7 +571,6 @@ use grid_variables
 use io_variables
 use infile_variables
 use baseline_variables
-use treatment_variables
 use duet_variables
 use species_variables
 
@@ -670,17 +649,6 @@ write(2222,'(A25,I4.1)')'litout =',litout
 write(2222,'(A25,I4.1)')'controlseed =',controlseed
 write(2222,'(A25,I4.1)')'seedchange =',seedchange
 
-write(2222,'(A35)')'! ----------------------------------'
-write(2222,'(A35)')'! Treatment options'
-write(2222,'(A35)')'! ----------------------------------'
-write(2222,'(A11,I4.1)')'itreatment=',itreatment
-write(2222,'(A10,I4.1,I4.1)')'sdnx=',sdnx(1),sdnx(2)
-write(2222,'(A10,I4.1,I4.1)')'sdny=',sdny(1),sdny(2)
-write(2222,'(A10,F5.2)')'sdiameter=',sdiameter
-write(2222,'(A10,F5.2)')'sheight=',sheight
-write(2222,'(A10,F5.2)')'sprho=',sprho
-write(2222,'(A10,F4.2)')'smoist=',smoist
-write(2222,'(A10,F4.2)')'sdepth=',sdepth
 write(2222,'(A35)')'! ----------------------------------'
 write(2222,'(A50)')'! Option to output tree list and fuellist'
 write(2222,'(A35)')'! ----------------------------------'

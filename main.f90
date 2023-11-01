@@ -21,7 +21,6 @@ program fuel_maps
 use grid_variables
 use io_variables
 use infile_variables
-use treatment_variables
 use species_variables
 use baseline_variables, only : ilitter,command
 
@@ -46,9 +45,6 @@ if(ifuelin.eq.1) call grid_readin
 
 !-----Establish baseline
 call baseline
-
-!-----Perform fuel treatments
-if(itreatment.ne.0) call treatment
 
 !-----Export data to binary files
 print*,'Singlefuel',singlefuel
