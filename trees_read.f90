@@ -104,7 +104,7 @@ do
   read (2,*,end=10)
   itree = itree+1
 enddo
-10  rewind(2)
+10 rewind(2)
 allocate(tspecies(itree))
 do i=1,itree
   read(2,*) temp_array(:)
@@ -171,12 +171,9 @@ do i=1,itree
     tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(3)+datalocy
   else
     call random_number(xtest)
-    print*, xtest !  0.605270922  
-    xtest = xtest*nx*dx
+    xtest = ndatax*xtest!tdnx(1)+xtest*(tdnx(2)-tdnx(1))*dx
     call random_number(ytest)
-    print*, ytest
-    
-    ytest = tdny(1)+ytest*(tdny(2)-tdny(1))*dy !why is this different? JO
+    ytest = ndatay*ytest!tdny(1)+ytest*(tdny(2)-tdny(1))*dy 
 
     tlocation(tspecies(i),numarray(tspecies(i)),1) = xtest+datalocx
     tlocation(tspecies(i),numarray(tspecies(i)),2) = ytest+datalocy
