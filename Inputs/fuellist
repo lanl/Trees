@@ -68,17 +68,6 @@
       seedchange = 100                ! if controlseed=1, choose a seed 
 
 ! ----------------------------------
-! Treatment options
-! ----------------------------------
-      itreatment=0                    ! Treatment flag (0 is no treatment, 1 slashlayer, 2 slashpile, 3 clearing)
-      sdnx=25,75                      ! Range of x cells undergoing treatment
-      sdny=25,75                      ! Range of y cells undergoing treatment
-      sdiameter=25                    ! Diameter of slashpiles
-      sheight=15                      ! Height of slashpiles
-      sprho=30                        ! Bulk density of slashpiles
-      smoist=0.15                     ! Moisture content of slash
-      sdepth=0.2                      ! Depth of slash layer
-! ----------------------------------
 ! Option to output tree list and fuellist
 ! ----------------------------------
       verbose = 0 !flag to output treelist and fuellist from resulting run: 0=No ; 1=Yes

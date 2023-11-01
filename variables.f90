@@ -102,24 +102,6 @@ character :: command*50
 
 end module baseline_variables
 
-module treatment_variables
-!-----------------------------------------------------------------
-! Types of treatments which can occur
-!-----------------------------------------------------------------
-implicit none
-integer:: itreatment=0
-
-!-----------------------------------------------------------------
-! Slash Treatment variables
-!-----------------------------------------------------------------
-
-integer,allocatable:: sdnx(:),sdny(:)
-real sdiameter,sheight
-real sdepth
-real sprho,smoist
-
-end module treatment_variables
-
 module duet_variables
 !-----------------------------------------------------------------
 ! Surface fuel variables

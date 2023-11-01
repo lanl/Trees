@@ -29,6 +29,7 @@ implicit none
 if (itreatment.eq.1) call slash_layer
 if (itreatment.eq.2) call slash_piles
 if (itreatment.eq.3) call clearing
+if (itreatment.eq.4) call mowing
 
 end subroutine treatment
 
