@@ -321,7 +321,7 @@ real,dimension(19):: temp_array ! FF trees csv has at least 19 columns
 
 ! Executable Code
 ff_len = 0
-open (2,file=treefile)
+open (2,file=treefile,status='old')
 do
   read (2,*,end=19) !length of FF columns
   ff_len = ff_len+1
@@ -380,7 +380,7 @@ integer,allocatable :: temp_array(:)
 
 ! Executable Code
 numtrees = 0
-open (2,file=treefile)
+open (2,file=treefile,status='old')
 do
   read (2,*,end=5) !length of treelist columns
   numtrees = numtrees+1

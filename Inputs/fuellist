@@ -2,59 +2,64 @@
 ! ----------------------------------
 ! FIRETEC domain info
 ! ----------------------------------
-      nx=100 ny=100 nz=41     ! Size of HIGRAD/FIRETEC grid [cells]
-      dx=2.0 dy=2.0 dz=15.0   ! Grid Resolution [m]
-      aa1=0.1                 ! Vertical stretching component [default=0.1]
-      singlefuel=0            ! Flag forcing single fuel type instead of multiple fuels
-      !topofile= 'topotest.dat'  	      ! 'flat' -> no topo, 'name.dat' of topo file for topo
-      topofile= 'flat'  	      ! 'flat' -> no topo, 'name.dat' of topo file for topo
+      nx  = 100 
+      ny  = 100 
+      nz  = 41     ! Size of HIGRAD/FIRETEC grid [cells]
+      dx  = 2.0 
+      dy  = 2.0 
+      dz  = 15.0   ! Grid Resolution [m]
+      aa1 = 0.1                 ! Vertical stretching component [default=0.1]
+      singlefuel = 0            ! Flag forcing single fuel type instead of multiple fuels
+      topofile = 'flat'  	      ! 'flat' -> no topo, 'name.dat' of topo file for topo
 
 ! ----------------------------------
 ! Data import from existing files
 ! ----------------------------------
-      ifuelin=0                     ! Fuel read-in flag (0 no existing fuel files, 1 read-in exisiting fuel files)
-      inx=200 iny=100 inz=41     ! Size of HIGRAD/FIRETEC grid [cells]
-      idx=2.0 idy=2.0 idz=15.0       ! Grid Resolution [m]
-      iaa1=0.1                      ! Vertical stretching component [default=0.1]
-      infuel=2                      ! Number of Fuel Types
-      intopofile= 'flat'            ! 'flat' -> no topo, 'name.dat' of topo file for topo JO
-      rhoffile ='treesrhof.dat.orig'      ! Existing rhof fuel file
-      ssfile   ='treesss.dat.orig'         ! Existing sizescale fuel file
-      moistfile='treesmoist.dat.orig' ! Existing moisture fuel file
-      afdfile  ='treesfueldepth.dat.orig'      ! Existing depth fuel file
+      ifuelin = 0                     ! Fuel read-in flag (0 no existing fuel files, 1 read-in exisiting fuel files)
+      inx = 100 
+      iny = 100 
+      inz = 41     ! Size of HIGRAD/FIRETEC grid [cells]
+      idx = 2.0 
+      idy = 2.0 
+      idz = 15.0       ! Grid Resolution [m]
+      iaa1 = 0.1                      ! Vertical stretching component [default=0.1]
+      infuel = 2                      ! Number of Fuel Types
+      intopofile = 'flat'            ! 'flat' -> no topo, 'name.dat' of topo file for topo JO
+      rhoffile = 'treesrhof.dat.orig'      ! Existing rhof fuel file
+      ssfile   = 'treesss.dat.orig'         ! Existing sizescale fuel file
+      moistfile = 'treesmoist.dat.orig' ! Existing moisture fuel file
+      afdfile  = 'treesfueldepth.dat.orig'      ! Existing depth fuel file
 
 ! ----------------------------------
 ! Input dataset info
 ! ----------------------------------
-      itrees=3                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
-      ntspecies=1                     ! Number of Tree Species
-      iFIA=1                          ! Turn on FIA code reference to database
-      iFIAspecies=1                   ! Flag to choose specific species instead of species groups (FIA codes below should be group numbers if this = 0)
+      itrees = 3                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
+      ntspecies = 1                     ! Number of Tree Species
+      iFIA = 1                          ! Turn on FIA code reference to database
+      iFIAspecies = 1                   ! Flag to choose specific species instead of species groups (FIA codes below should be group numbers if this = 0)
 
-      tfuelbins=1                     ! Number of size bins to distribute branches
-      treefile= 'Chaparral_treelist.txt'
-      ndatax=100                      ! size of dataset domain in x direction [m]
-      ndatay=100                      ! size of dataset domain in y direction [m]
-      datalocx=                       ! x coordinate [m] for bottom left corner where dataset should be placed (if unspecified, =0)
-      datalocy=                       ! y coordinate [m] for bottom left corner where dataset should be placed (if unspecified, =0)
-      tdnx= 0                         ! CURRENTLY UNUSED -- Range of x cells with trees (if unspecified then whole domain)
-      tdny= 0                         ! CURRENTLY UNUSED -- Range of y cells with trees (if unspecified then whole domain)
+      tfuelbins = 1                     ! Number of size bins to distribute branches
+      treefile = 'AJOSEglinTrees.txt'
+      ndatax = 100                      ! size of dataset domain in x direction [m]
+      ndatay = 100                      ! size of dataset domain in y direction [m]
+      tdnx = 0                         ! CURRENTLY UNUSED -- Range of x cells with trees (if unspecified then whole domain)
+      tdny = 0                         ! CURRENTLY UNUSED -- Range of y cells with trees (if unspecified then whole domain)
 
 ! ----------------------------------
 ! Litter and grass settings
 ! ----------------------------------
-      ilitter=0                       ! Litter flag
-      litterconstant=5                ! Exponential constant to determine increase of litter mass under trees
-      windprofile=2                   ! type of windprofile used by DUET: 0 = user provided below, 1 = binary wind profile, 2 = random generated
-      randomwinds=2                   ! if windprofile=2, choose 1 for up to 3m/s, 2 for up to 6m/s, 3 for up to 9m/s, etc.
-      grassstep=1                     ! StepPerYear in which the grass grows
-      YearsSinceBurn=1                ! number of years since the last burn
-      StepsPerYear=1                  ! number of time steps during the year: 1 = yearly, 2 = semiyearly, 4 = seasonally, 6 = bimonthly, 12 = monthly
-      relhum = 0.1                    ! relative humidity of the area
+      ilitter = 0                       ! Litter flag
+      litterconstant = 5                ! Exponential constant to determine increase of litter mass under trees
+      windprofile = 2                   ! type of windprofile used by DUET: 0 = user provided below, 1 = binary wind profile, 2 = random generated
+      randomwinds = 2                   ! if windprofile=2, choose 1 for up to 3m/s, 2 for up to 6m/s, 3 for up to 9m/s, etc.
+      grassstep = 1                     ! StepPerYear in which the grass grows
+      YearsSinceBurn = 1                ! number of years since the last burn
+      StepsPerYear = 1                  ! number of time steps during the year: 1 = yearly, 2 = semiyearly, 4 = seasonally, 6 = bimonthly, 12 = monthly
+      relhum = 0.1                      ! relative humidity of the area
 
-      igrass=0                        ! Grass flag (1 is generalized grass data, 2 is if already have a file with 2d arrays for groundfuels)
-      ngrass=1                        ! Number of Grass Species
-      grassconstant=5                 ! Exponential constant used to determine the decay of grass mass with tree shading
+      igrass = 0                        ! Grass flag (1 is generalized grass data, 2 is if already have a file with 2d arrays for groundfuels)
+      ngrass = 1                        ! Number of Grass Species
+      grassconstant = 5                 ! Exponential constant used to determine the decay of grass mass with tree shading
 
 
 ! ----------------------------------
@@ -63,8 +68,6 @@
 ! controlling the random seed
 ! ----------------------------------
       litout = 1                      ! flag to turn on extra output files for visualizations of DUET functionality
-      controlseed = 0                 ! flag to control random seed to recreate the same tree plot multiple times 
-      seedchange = 100                ! if controlseed=1, choose a seed 
 
 ! ----------------------------------
 ! Option to output tree list and fuellist
@@ -106,7 +109,7 @@
       gmoisture = 0.06          ! grass moisture content [fraction]
       gss = 0.0005              ! size scale of grass [m]
       gdepth = 0.27             ! depth of grass [m]
-      gmoistoverride=0        ! value for moisture if override is desired; SET TO 0 TO TURN OFF
+      gmoistoverride = 0        ! value for moisture if override is desired; SET TO 0 TO TURN OFF
 
 !gmoistoverride will retain spatial heterogeneity but override maximum moisture level
 !and use that to adjust all moisture levels for all species

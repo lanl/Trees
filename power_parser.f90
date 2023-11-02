@@ -22,10 +22,12 @@ subroutine QueryFuellist_real(variableName,variableValue, &
   do ! Iterate through all lines of file
     read(fileunit,"(a)",iostat=ierror) text ! Read line into text
     if (ierror/=0) exit
-    read(text,*) word
-    if(word.eq.variableName)then
-      read(text,*) word,equal,variableValue
-      exit
+    if(text/='')then
+      read(text,*) word
+      if(word.eq.variableName)then
+        read(text,*) word,equal,variableValue
+        exit
+      endif
     endif
   enddo
   rewind(fileunit)
@@ -57,10 +59,12 @@ subroutine QueryFuellist_real_array(variableName,array, &
   do ! Iterate through all lines of file
     read(fileunit,"(a)",iostat=ierror) text ! Read line into text
     if (ierror/=0) exit
-    read(text,*) word
-    if(word.eq.variableName)then
-      read(text,*) word,equal,array
-      exit
+    if(text/='')then
+      read(text,*) word
+      if(word.eq.variableName)then
+        read(text,*) word,equal,array
+        exit
+      endif
     endif
   enddo
   rewind(fileunit)
@@ -82,19 +86,20 @@ subroutine QueryFuellist_integer(variableName,variableValue, &
 
   integer :: ierror
   character(len=1)    :: equal
-  character(len=20)   :: word
+  character(len=len(variableName))   :: word
   character(len=1000) :: text
 
   ! Executable Code
   variableValue=variableDefault
-
   do ! Iterate through all lines of file
     read(fileunit,"(a)",iostat=ierror) text ! Read line into text
     if (ierror/=0) exit
-    read(text,*) word
-    if(word.eq.variableName)then
-      read(text,*) word,equal,variableValue
-      exit
+    if(text/='')then
+      read(text,*) word
+      if(word.eq.variableName)then
+        read(text,*) word,equal,variableValue
+        exit
+      endif
     endif
   enddo
   rewind(fileunit)
@@ -126,10 +131,12 @@ subroutine QueryFuellist_integer_array(variableName,array, &
   do ! Iterate through all lines of file
     read(fileunit,"(a)",iostat=ierror) text ! Read line into text
     if (ierror/=0) exit
-    read(text,*) word
-    if(word.eq.variableName)then
-      read(text,*) word,equal,array
-      exit
+    if(text/='')then
+      read(text,*) word
+      if(word.eq.variableName)then
+        read(text,*) word,equal,array
+        exit
+      endif
     endif
   enddo
   rewind(fileunit)
@@ -160,10 +167,12 @@ subroutine QueryFuellist_string(variableName,variableValue, &
   do ! Iterate through all lines of file
     read(fileunit,"(a)",iostat=ierror) text ! Read line into text
     if (ierror/=0) exit
-    read(text,*) word
-    if(word.eq.variableName)then
-      read(text,*) word,equal,variableValue
-      exit
+    if(text/='')then
+      read(text,*) word
+      if(word.eq.variableName)then
+        read(text,*) word,equal,variableValue
+        exit
+      endif
     endif
   enddo
   rewind(fileunit)
