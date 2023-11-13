@@ -73,7 +73,7 @@ character:: rhoffile*50,moistfile*50,ssfile*50,afdfile*50
 
 end module infile_variables
 
-module baseline_variables
+module fuels_create_variables
 !-----------------------------------------------------------------
 ! Tree and groundfuel variables unique to baseline establishment
 !-----------------------------------------------------------------
@@ -99,7 +99,7 @@ real,allocatable:: ldepth(:),lrho(:),lss(:),lmoisture(:)
 
 character :: command*50
 
-end module baseline_variables
+end module fuels_create_variables
 
 module duet_variables
 !-----------------------------------------------------------------

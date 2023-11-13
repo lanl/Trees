@@ -22,7 +22,7 @@ use grid_variables
 use io_variables
 use infile_variables
 use species_variables
-use baseline_variables, only : ilitter,command
+use fuels_create_variables, only : ilitter,command
 
 implicit none
 
@@ -43,8 +43,8 @@ call define_grid_variables
 !-----Fuel Read-in
 if(ifuelin.eq.1) call grid_readin
 
-!-----Establish baseline
-call baseline
+!-----Establish fuels_create
+call fuels_create
 
 !-----Export data to binary files
 print*,'Singlefuel',singlefuel

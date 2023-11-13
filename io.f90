@@ -23,7 +23,7 @@ subroutine fuellist_input
 use grid_variables
 use io_variables
 use infile_variables
-use baseline_variables
+use fuels_create_variables
 use duet_variables, only : speciesfile,winddatafile,windprofile, &
   grassstep,YearsSinceBurn,StepsPerYear,randomwinds,relhum, &
   ustd,vstd,uavg,vavg,periodTotal,litout
@@ -309,7 +309,7 @@ subroutine find_fastfuels_numspecies
 ! Added 10/21 JO
 !-----------------------------------------------------------------
 use grid_variables
-use baseline_variables
+use fuels_create_variables
 use species_variables
 
 implicit none
@@ -368,7 +368,7 @@ subroutine find_numspecies
 ! Added 10/22 JSM
 !-----------------------------------------------------------------
 use grid_variables
-use baseline_variables
+use fuels_create_variables
 use species_variables
 
 implicit none
@@ -423,7 +423,7 @@ subroutine output_fuellist
   use grid_variables
   use io_variables
   use infile_variables
-  use baseline_variables
+  use fuels_create_variables
   use duet_variables
   use species_variables
 
@@ -518,7 +518,7 @@ subroutine output_1fuellist
 use grid_variables
 use io_variables
 use infile_variables
-use baseline_variables
+use fuels_create_variables
 use duet_variables
 use species_variables
 
