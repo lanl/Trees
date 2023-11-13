@@ -384,7 +384,7 @@ do i=1,ntspecies
   do j=1,ntreefueltypes
     do ii=tdnx(1),tdnx(2)
       do jj=tdny(1),tdny(2)
-        tfueldepth((i-1)*ntreefueltypes+j,ii,jj) = zheight(ii,jj,2)
+        tfueldepth((i-1)*ntreefueltypes+j,ii,jj) = zheight(ii,jj,2) - zs(ii,jj)
       enddo
     enddo
   enddo
