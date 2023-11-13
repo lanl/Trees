@@ -33,8 +33,7 @@
 ! ----------------------------------
 ! Input dataset info
 ! ----------------------------------
-      itrees = 3                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
-      ntspecies = 1                     ! Number of Tree Species
+      itrees = 2                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
       iFIA = 1                          ! Turn on FIA code reference to database
       iFIAspecies = 1                   ! Flag to choose specific species instead of species groups (FIA codes below should be group numbers if this = 0)
 
@@ -73,10 +72,7 @@
 ! Option to output tree list and fuellist
 ! ----------------------------------
       verbose = 0 !flag to output treelist and fuellist from resulting run: 0=No ; 1=Yes
-/
 
-&speciesdata
- 
 ! ONLY NECESSARY TO FILL THIS IN IF NOT USING FASTFUELS AND ITREES NOT EQUAL TO 1
 ! NUMBER OF ENTRIES MUST MATCH NTSPECIES*TFUELBINS ABOVE
 ! VALUES SHOULD BE GROUP NUMBERS IF IFIASPECIES=0
@@ -86,10 +82,6 @@
 ! LONGLEAF PINE = 121, GROUP 4
 ! TURKEY OAK = 819, GROUP 9
 
-/
-
-&litterdata
-
 !LIST ALL VALUES FOR LITTER HERE IF NOT USING DUET (ILITTER NOT EQUAL TO 2);
 !NUMBER MUST MATCH NTSPECIES*TFUELBINS ABOVE
 
@@ -97,11 +89,6 @@
       lmoisture = 0.06    ! litter moisture content [fraction]
       lss = 0.0005       ! size scale of litter [m]
       ldepth = 0.06       ! depth of litter [m]
-
-/
-
-
-&grassdata
 
 !LIST ALL VALUES FOR GRASSES HERE; SPECIES SEPARATED BY COMMAS; NUMBER OF SPECIES MUST MATCH NGRASS ABOVE
 
@@ -114,10 +101,6 @@
 !gmoistoverride will retain spatial heterogeneity but override maximum moisture level
 !and use that to adjust all moisture levels for all species
 
-/
-
-&winddata
-
 !LIST ALL VALUES FOR YOUR WIND PROFILE HERE IF WINDPROFILE=0
 !THIS WILL NOT BE READ UNLESS WINDPROFILE=0!!!
 
@@ -127,7 +110,3 @@
       vavg = 0,0,15,15,20
       ustd = 0,8,0,8,20
       vstd = 0,8,0,8,20
-
-/
-
-
