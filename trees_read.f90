@@ -14,77 +14,18 @@
 ! prepare derivative works, distribute copies to the public, perform
 ! publicly and display publicly, and to permit others to do so.
 !-----------------------------------------------------------------
-subroutine treesGeneral_readin
-!-----------------------------------------------------------------
-! treesGeneral_readin is a function which reads in a general trees
-! file for use in FIRETEC or QUIC-Fire
-!-----------------------------------------------------------------
-use grid_variables
-use baseline_variables
-
-implicit none
-
-! Local Variables
-integer i
-
-! Executable Code
-allocate(ntrees(ntspecies)); ntrees(:)=0.0 ! Number of trees for each species
-allocate(tstemdensity(ntspecies)) ! Stem density of each species [stem/ha]
-allocate(theight(2,ntspecies)) ! Tree heights [m]
-allocate(tcrownbotheight(2,ntspecies)) ! Height to live crown [m]
-allocate(tcrowndiameter(2,ntspecies)) ! Crown diameter [m]
-allocate(tcrownmaxheight(2,ntspecies)) ! Height to max crown diameter [m]
-allocate(t1bulkdensity(tfuelbins,ntspecies)) ! Crown fuel bulk density [kg/m3]
-allocate(t1moisture(tfuelbins,ntspecies)) ! Crown fuel moisture content [fraction]
-allocate(t1ss(tfuelbins,ntspecies)) ! Crown fuel size scale [m]
-if(istem.eq.1)then
-  allocate(trhomicro(ntspecies)) ! Micro-density of tree species [kg/m3]
-  allocate(tdbh(2,ntspecies)) ! Tree diameter breast heights [m]
-  allocate(tstemmoist(ntspecies)) ! Tree stem moisture content [fraction]
-  allocate(tbarkthick(2,ntspecies)) ! Bark Thickness [m]
-  allocate(tbarkmoist(ntspecies)) ! Bark moisture content [fraction]
-endif
-
-open (2,file=treefile)
-read (2,*) tstemdensity
-read (2,*) theight(1,:)
-read (2,*) theight(2,:)
-read (2,*) tcrownbotheight(1,:)
-read (2,*) tcrownbotheight(2,:)
-read (2,*) tcrowndiameter(1,:)
-read (2,*) tcrowndiameter(2,:)
-read (2,*) tcrownmaxheight(1,:)
-read (2,*) tcrownmaxheight(2,:)
-if(istem.eq.1)then
-  read (2,*) trhomicro(:)
-  read (2,*) tdbh(1,:)
-  read (2,*) tdbh(2,:)
-  read (2,*) tstemmoist(:)
-  read (2,*) tbarkthick(1,:)
-  read (2,*) tbarkthick(2,:)
-  read (2,*) tbarkmoist(:)
-endif 
-do i=1,tfuelbins
-  read(2,*) t1bulkdensity(i,:)
-  read(2,*) t1moisture(i,:)
-  read(2,*) t1ss(i,:)
-enddo
-close (2)
-
-end subroutine treesGeneral_readin
-
 subroutine treelist_readin
 !-----------------------------------------------------------------
 ! treesGeneral_readin is a function which reads in a treelist
 ! file for use in FIRETEC or QUIC-Fire
 !-----------------------------------------------------------------
 use grid_variables
-use baseline_variables
+use fuels_create_variables
 
 implicit none
 
 ! Local Variables
-integer i,j,ift,itree
+integer i,j,ift,itree,ierror
 integer,allocatable:: numarray(:)
 real,dimension(7+3*tfuelbins):: temp_array
 real:: nsub,nsubdecimal,rnumx,rnumy,newx,newy
@@ -93,18 +34,23 @@ integer,allocatable:: rounddown(:),ntreesold(:)
 real xtest,ytest
 character(len=50) :: treelistformat
 
+! Executable Code
 if (verbose.eq.1) then 
   open (222,file=TRIM(newtreefile)//'_treelist.txt',form='formatted',status='unknown')
   treelistformat = '(I2.1,6F12.5,F10.6,F10.4,F10.5)'
 end if
-! Executable Code
+
+! Count number of trees in file
 itree = 0
-open (2,file=treefile)
+open (2,file=treefile,form='formatted',status='old')
 do
-  read (2,*,end=10)
+  read (2,*,iostat=ierror)
+  if (ierror/=0) exit
   itree = itree+1
 enddo
-10 rewind(2)
+rewind(2)
+
+! Find number of species
 allocate(tspecies(itree))
 do i=1,itree
   read(2,*) temp_array(:)
@@ -117,6 +63,7 @@ ntrees=0
 do i=1,itree
   ntrees(tspecies(i)) = ntrees(tspecies(i))+1
 enddo
+
 !---Determine how many dataset subdomains fit within your main domain
 !if(ndatax.lt.nx*dx.or.ndatay.lt.ny*dy) then
 nsub = (nx*dx*ny*dy)/(ndatax*ndatay)
@@ -171,9 +118,9 @@ do i=1,itree
     tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(3)+datalocy
   else
     call random_number(xtest)
-    xtest = ndatax*xtest!tdnx(1)+xtest*(tdnx(2)-tdnx(1))*dx
+    xtest = ndatax*xtest
     call random_number(ytest)
-    ytest = ndatay*ytest!tdny(1)+ytest*(tdny(2)-tdny(1))*dy 
+    ytest = ndatay*ytest
 
     tlocation(tspecies(i),numarray(tspecies(i)),1) = xtest+datalocx
     tlocation(tspecies(i),numarray(tspecies(i)),2) = ytest+datalocy
@@ -355,7 +302,7 @@ subroutine treelist_fastfuels
 !-----------------------------------------------------------------
 !-----------------------------------------------------------------
 use grid_variables
-use baseline_variables
+use fuels_create_variables
 
 implicit none
 

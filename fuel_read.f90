@@ -18,7 +18,7 @@ subroutine grid_readin
 !-----------------------------------------------------------------
 use grid_variables
 use infile_variables
-use baseline_variables
+use fuels_create_variables
 
 implicit none
 
