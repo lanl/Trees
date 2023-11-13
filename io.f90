@@ -82,7 +82,6 @@ endif
 ! Trees
 call QueryFuellist_integer('itrees',itrees,48,3)
 if(itrees.ge.1)then
-  call QueryFuellist_integer('ntspecies',ntspecies,48,1)
   call QueryFuellist_integer('tfuelbins',tfuelbins,48,1)
   call QueryFuellist_string('treefile',treefile,48,'AJoseEglinTrees.txt')
   call QueryFuellist_real('ndatax',ndatax,48,nx*dx)
@@ -90,7 +89,7 @@ if(itrees.ge.1)then
   call QueryFuellist_real('datalocx',datalocx,48,0.)
   call QueryFuellist_real('datalocy',datalocy,48,0.)
 endif
-if (itrees.eq.7) call find_fastfuels_numspecies
+call find_numspecies
 
 ! Litter
 call QueryFuellist_integer('ilitter',ilitter,48,0)
@@ -302,66 +301,6 @@ print*,'Your lfuel is',lfuel
 
 end subroutine output_1fuel
 
-subroutine find_fastfuels_numspecies
-!-----------------------------------------------------------------
-! This subroutine will find the number of species in the fast 
-! fuels data
-! Added 10/21 JO
-!-----------------------------------------------------------------
-use grid_variables
-use fuels_create_variables
-use species_variables
-
-implicit none
-
-!Local Variables
-integer i,j,ift,ff_len,min_val_sp, max_val_sp
-integer,allocatable :: uni_sp(:)
-real,dimension(19):: temp_array ! FF trees csv has at least 19 columns
-
-! Executable Code
-ff_len = 0
-open (2,file=treefile,status='old')
-do
-  read (2,*,end=19) !length of FF columns
-  ff_len = ff_len+1
-enddo
-19  rewind(2)
-
-allocate(tspecies(ff_len-1))
-read(2,*) !read 1st line and throw away, has column headers
-do i=1,ff_len-1
-  read(2,*) temp_array(:)
-  if (iFIAspecies.eq.1) then
-    tspecies(i)=temp_array(1)
-  else
-    tspecies(i)=temp_array(5) !take from sp_grp, 5th pos
-  !print*,'species# = ',temp_array(5)
-  endif
-enddo
-rewind(2)
-
-!find unique number of tree species!
-allocate(uni_sp(maxval(tspecies)))
-min_val_sp = minval(tspecies)-1
-max_val_sp = maxval(tspecies)
-i=0
-do while (min_val_sp<max_val_sp)
-  i = i+1
-  min_val_sp = minval(tspecies, mask=tspecies>min_val_sp)
-  uni_sp(i) = min_val_sp
-enddo
-allocate(final_uni_sp(i), source=uni_sp(1:i)) 
-ntspecies = count(final_uni_sp==final_uni_sp)
-print*,'New Set Species = ',ntspecies
-print*,'Groups = ',final_uni_sp
-
-deallocate(tspecies)
-deallocate(uni_sp)
-
-end subroutine find_fastfuels_numspecies
-
-
 subroutine find_numspecies
 !-----------------------------------------------------------------
 ! This subroutine will find the number of species in any treelist
@@ -377,6 +316,7 @@ implicit none
 integer i,numtrees,numspec,min_val_sp, max_val_sp
 integer,allocatable :: uni_sp(:)
 integer,allocatable :: temp_array(:)
+real,dimension(19) :: read_array
 
 ! Executable Code
 numtrees = 0
@@ -387,10 +327,24 @@ do
 enddo
 5  rewind(2)
 
-allocate(temp_array(numtrees))
-do i=1,numtrees
-   read(2,*) temp_array(i)
-enddo
+if(itrees.eq.7)then ! Read FastFuels Files
+  allocate(temp_array(numtrees-1))
+  read(2,*) !read 1st line and throw away, has column headers
+  do i=1,numtrees-1
+    read(2,*) read_array(:)
+    if (iFIAspecies.eq.1) then
+      temp_array(i)=read_array(1)
+    else
+      temp_array(i)=read_array(5) !take from sp_grp, 5th pos
+    endif
+  enddo
+else
+  allocate(temp_array(numtrees))
+  do i=1,numtrees
+    read(2,*) temp_array(i)
+  enddo
+endif
+close(2)
 
 allocate(uni_sp(maxval(temp_array)))
 min_val_sp = minval(temp_array)-1
@@ -404,14 +358,12 @@ do while (min_val_sp<max_val_sp)
    uni_sp(i) = min_val_sp
 enddo
 allocate(final_uni_sp(i), source=uni_sp(1:i))
-numspec = count(final_uni_sp==final_uni_sp)
+ntspecies = count(final_uni_sp==final_uni_sp)
 
-ntspecies = numspec
+print*,'Number of Set Species = ',ntspecies
+print*,'Groups = ',final_uni_sp
 
-print*,'New Set Species Number = ',ntspecies
-
-deallocate(temp_array)
-deallocate(uni_sp)
+deallocate(temp_array,uni_sp)
 
 end subroutine find_numspecies
 

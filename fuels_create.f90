@@ -181,7 +181,7 @@ integer ift,i,j,k,ii,jj,kk,iii,jjj,kkk
 integer ii_real,jj_real
 integer ift_index
 real totarea
-real xtest,ytest,ztest,xloc,yloc
+real ztest,xloc,yloc
 integer xcor,ycor
 integer xtop,xbot,ybot,ytop,zbot,ztop
 real canopytop,canopybot,canopydiameter,canopymaxh
@@ -205,25 +205,11 @@ do i=1,ntspecies
       if (MOD(j,int(ntrees(i)/10)).eq.0) print*,'Placing tree',j,'of',ntrees(i)
     endif
     !----- Place tree location 
-    !PLACE ME IN TREE READ IN!!!!!!!!!!!!!!!!!!!
-    if (itrees.eq.2.or.itrees.eq.3) then
-      ! Specific tree placement
-      xtest = tlocation(i,j,1)
-      if(xtest.gt.nx*dx.or.xtest.lt.0) CYCLE
-      ytest = tlocation(i,j,2)
-      if(ytest.gt.ny*dy.or.ytest.lt.0) CYCLE
-    else
-      ! Randomly place a tree
-      call random_number(xtest)
-      xtest = xtest*ndatax
-      if(xtest.gt.nx*dx.or.xtest.lt.0) CYCLE
-      call random_number(ytest)
-      ytest = ytest*ndatay !why is this different? JO
-      if(ytest.gt.ny*dy.or.ytest.lt.0) CYCLE
-
-    endif
-    xcor = floor(xtest/dx+1)
-    ycor = floor(ytest/dy+1)
+    ! Specific tree placement
+    if(tlocation(i,j,1).gt.nx*dx.or.tlocation(i,j,1).lt.0) CYCLE
+    if(tlocation(i,j,2).gt.ny*dy.or.tlocation(i,j,2).lt.0) CYCLE
+    xcor = floor(tlocation(i,j,1)/dx+1)
+    ycor = floor(tlocation(i,j,2)/dy+1)
 
 
     !----- Determine tree shape characteristics
@@ -234,19 +220,19 @@ do i=1,ntspecies
     canopymaxh= tcrownmaxheight(j,i)+zs(xcor,ycor)
     
     !----- Translate tree shape to grid
-    xbot = floor((xtest-canopydiameter/2.)/dx+1)
-    xtop = floor((xtest+canopydiameter/2.)/dx+1)
-    ybot = floor((ytest-canopydiameter/2.)/dy+1)
-    ytop = floor((ytest+canopydiameter/2.)/dy+1)
+    xbot = floor((tlocation(i,j,1)-canopydiameter/2.)/dx+1)
+    xtop = floor((tlocation(i,j,1)+canopydiameter/2.)/dx+1)
+    ybot = floor((tlocation(i,j,2)-canopydiameter/2.)/dy+1)
+    ytop = floor((tlocation(i,j,2)+canopydiameter/2.)/dy+1)
     
     do k=1,nz-1
-      if (canopybot.le.zheight(nint(xtest/dx+1),nint(ytest/dy+1),k+1)) then
+      if (canopybot.le.zheight(xcor,ycor,k)) then
         zbot = k
         exit
       endif
     enddo
     do kk=k,nz-1
-      if (canopytop.le.zheight(nint(xtest/dx+1),nint(ytest/dy+1),kk+1)) then
+      if (canopytop.le.zheight(xcor,ycor,kk+1)) then
         ztop = kk
         if (kk.gt.zmax) zmax=kk
         exit
@@ -301,7 +287,6 @@ do i=1,ntspecies
         do kk=zbot,ztop
           ! Determine how many of subcells of a cell are within the paraboloid, the fraction of the subcells is equal to the fraction of the cell within the paraboloid
           rhoftemp(:) = 0 ! Density of fuels to be added to current cell of interest
-          !print*,'here1'
           do iii=1,10
             do jjj=1,10
               do kkk=1,10
@@ -309,13 +294,13 @@ do i=1,ntspecies
                   *(zheight(ii_real,jj_real,kk+1)-zheight(ii_real,jj_real,kk))
                 xloc = ((ii-1)+(2.*iii-1.)/20.)*dx
                 yloc = ((jj-1)+(2.*jjj-1.)/20.)*dy
-                bot_height = paraboloid(abot,xloc,xtest,yloc,ytest,canopybot)
-                top_height = paraboloid(atop,xloc,xtest,yloc,ytest,canopytop)
+                bot_height = paraboloid(abot,xloc,tlocation(i,j,1),yloc,tlocation(i,j,2),canopybot)
+                top_height = paraboloid(atop,xloc,tlocation(i,j,1),yloc,tlocation(i,j,2),canopytop)
                 if (test_height.ge.bot_height.and.test_height.le.top_height) then 
                   do ift=1,tfuelbins
                     rhoftemp(ift) = rhoftemp(ift)+3./2000.*t2bulkdensity(j,ift,i)* &
-                      (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-xtest)**2.+ &
-                      (yloc-ytest)**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density; 
+                      (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-tlocation(i,j,1))**2.+ &
+                      (yloc-tlocation(i,j,2))**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density; 
                     !note the 4 in the above equations is for making canopydiameter a radius by 
                     !dividing by 2 and then squaring that in the denominator of the denominator
                   enddo
