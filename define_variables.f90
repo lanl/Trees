@@ -32,7 +32,7 @@ subroutine define_grid_variables
 !-----------------------------------------------------------------
 use grid_variables
 use infile_variables
-use baseline_variables
+use fuels_create_variables
 
 implicit none
 
@@ -64,79 +64,15 @@ allocate(fueldepth(nfuel,nx,ny,nz)); fueldepth(:,:,:,:)=0.0
 !-----------------------------------------------------------------
 
 allocate(zs(nx,ny))
-allocate(izs(inx,iny))
 allocate(zheight(nx,ny,nz))
-allocate(izheight(inx,iny,inz))
-
-if(ifuelin.eq.1.and.(inx.ne.nx.or.idx.ne.dx.or. &
-    iny.ne.ny.or.idy.ne.dy.or.inz.ne.nz.or.idz.ne.dz &
-      .or.aa1.ne.iaa1.or.topofile.ne.intopofile)) &
-      iintpr=1
-
-if (iintpr.eq.0) then
-  if (topofile.eq.'flat'.or.topofile.eq.'') then ! No topo
-    zs(:,:)=0.0
-    izs(:,:)=0.0
-    print *,'Not using target topo'
-  else ! Normal topo
-    print *,'Reading target topo file = ',topofile
-    open (1,file=topofile,form='unformatted',status='old')
-    read (1) zs
-    close (1)
-    izs(:,:)=zs(:,:)
-  endif
-endif
-
-if (iintpr.eq.1) then ! Topo with existing fuels
-  if (topofile.eq.'flat'.or.topofile.eq.'')then ! No target topo JO
-    zs(:,:)=0.0
-    print *,'Not using target topo'
-  else  ! Normal target topo
-    print *,'Define Varibles: Reading target topo file = ',topofile
-    open (1,file=topofile,form='unformatted',status='old')
-    read (1) zs(:,:)
-    close (1)
-    !izs(:,:)=zs(:,:)
-  endif
-  if (intopofile.eq.'flat'.or.intopofile.eq.'')then ! No previous topo
-    izs(:,:)=0.0
-    print *,'Not using previous topo'
-  else  ! Normal previous topo
-    print *,'Reading previous fuel topo file = ',intopofile    !JO
-    open (2,file=intopofile,form='unformatted',status='old') !JO
-    read (2) izs
-    close (2)
-  endif
-  do i=1,nx
-    do j=1,ny
-      xcor(1) = (i-1)*dx ! Real x lower edge
-      xcor(2) = i*dx     ! Real x upper edge
-      xbot    = floor(xcor(1)/idx+1) ! Fuel readin grid x lower edge
-      xtop    = floor(xcor(2)/idx+1) ! Fuel readin grid x upper edge
-      ycor(1) = (j-1)*dy ! Real y lower edge
-      ycor(2) = j*dy     ! Real y upper edge
-      ybot    = floor(ycor(1)/idy+1) ! Fuel readin grid y lower edge
-      ytop    = floor(ycor(2)/idy+1) ! Fuel readin grid y upper edge
-      cells   = 0.
-      do ii=xbot,xtop
-        do jj=ybot,ytop
-          xfrac  = (min(ii*idx,xcor(2))-max((ii-1)*idx,xcor(1)))/idx
-          yfrac  = (min(jj*idy,ycor(2))-max((jj-1)*idy,ycor(1)))/idy
-          cells  = cells+xfrac*yfrac
-          zs(i,j)= zs(i,j)+xfrac*yfrac*izs(ii,jj)
-        enddo
-      enddo
-      zs(i,j) = zs(i,j)/cells
-    enddo
-  enddo
-endif
-
-if(minval(zs).gt.0)then ! Reduce topo values to least common value
-  izs = izs-minval(zs)
-  zs  = zs-minval(zs)
-  open (2,file='toporeduced.dat',form='unformatted',status='unknown')
-  write(2) zs
-  close(2)
+if (topofile.eq.'flat'.or.topofile.eq.'') then ! No topo
+  zs(:,:)=0.0
+  print *,'Not using target topo'
+else ! Normal topo
+  print *,'Reading target topo file = ',topofile
+  open (1,file=topofile,form='unformatted',status='old')
+  read (1) zs
+  close (1)
 endif
 
 do i=1,nx
@@ -151,32 +87,82 @@ do i=1,nx
     enddo
   enddo
 enddo
-if (iintpr.eq.1) then ! Topo with existing fuels
-  print*,'Readin fuel grid heights'
-  do i=1,inx
-    do j=1,iny
-      do k=1,inz
-        if (iaa1.eq.0) then
-          izheight(i,j,k) = izs(i,j)+(k-1)*idz
-        else
-          izheight(i,j,k) = zcart(iaa1,(k-1)*idz,inz,idz,izs(i,j))
-        endif
-        if(i.eq.1.and.j.eq.1) print*,'cell',k,'bottom height',izheight(i,j,k)
+
+if(minval(zs).gt.0)then ! Reduce topo values to least common value
+  zs  = zs-minval(zs)
+  open (2,file='toporeduced.dat',form='unformatted',status='unknown')
+  write(2) zs
+  close(2)
+endif
+
+if(ifuelin.eq.1)then
+  allocate(izs(inx,iny))
+  allocate(izheight(inx,iny,inz))
+
+  if(inx.ne.nx.or.idx.ne.dx.or.iny.ne.ny.or.idy.ne.dy.or.inz.ne.nz &
+    .or.idz.ne.dz.or.aa1.ne.iaa1.or.topofile.ne.intopofile) &
+      iintpr=1
+
+  if (iintpr.eq.0) then
+    izs(:,:)=zs(:,:)
+    izheight(:,:,:)=zheight(:,:,:)
+  else  ! Topo with existing fuels
+    if (intopofile.eq.'flat'.or.intopofile.eq.'')then ! No previous topo
+      izs(:,:)=0.0
+      print *,'Not using previous topo'
+    else  ! Normal previous topo
+      print *,'Reading previous fuel topo file = ',intopofile    !JO
+      open (2,file=intopofile,form='unformatted',status='old') !JO
+      read (2) izs
+      close (2)
+    endif
+    izs = izs-minval(zs)
+    do i=1,nx
+      do j=1,ny
+        xcor(1) = (i-1)*dx ! Real x lower edge
+        xcor(2) = i*dx     ! Real x upper edge
+        xbot    = floor(xcor(1)/idx+1) ! Fuel readin grid x lower edge
+        xtop    = floor(xcor(2)/idx+1) ! Fuel readin grid x upper edge
+        ycor(1) = (j-1)*dy ! Real y lower edge
+        ycor(2) = j*dy     ! Real y upper edge
+        ybot    = floor(ycor(1)/idy+1) ! Fuel readin grid y lower edge
+        ytop    = floor(ycor(2)/idy+1) ! Fuel readin grid y upper edge
+        cells   = 0.
+        do ii=xbot,xtop
+          do jj=ybot,ytop
+            xfrac  = (min(ii*idx,xcor(2))-max((ii-1)*idx,xcor(1)))/idx
+            yfrac  = (min(jj*idy,ycor(2))-max((jj-1)*idy,ycor(1)))/idy
+            cells  = cells+xfrac*yfrac
+            zs(i,j)= zs(i,j)+xfrac*yfrac*izs(ii,jj)
+          enddo
+        enddo
+        zs(i,j) = zs(i,j)/cells
       enddo
     enddo
-  enddo
-else
-  izheight(:,:,:)=zheight(:,:,:)
+    print*,'Readin fuel grid heights'
+    do i=1,inx
+      do j=1,iny
+        do k=1,inz
+          if (iaa1.eq.0) then
+            izheight(i,j,k) = izs(i,j)+(k-1)*idz
+          else
+            izheight(i,j,k) = zcart(iaa1,(k-1)*idz,inz,idz,izs(i,j))
+          endif
+          if(i.eq.1.and.j.eq.1) print*,'cell',k,'bottom height',izheight(i,j,k)
+        enddo
+      enddo
+    enddo
+  endif
 endif
 
 end subroutine define_grid_variables
 
-subroutine define_baseline_variables
+subroutine define_fuels_create_variables
 !-----------------------------------------------------------------
-! Variables unique to the baseline
+! Variables unique to the fuels_create
 !-----------------------------------------------------------------
 use grid_variables
-use baseline_variables
+use fuels_create_variables
 
 implicit none
 
@@ -204,7 +190,7 @@ allocate(tfueldepth(ntspecies*ntreefueltypes,nx,ny)); tfueldepth(:,:,:)=0.0
 command = 'cd DUET; make;  cd ..; ./duet.exe'
 
 !-----------------------------------------------------------------
-! Groundfuel variables unique to the ground fuels baseline
+! Groundfuel variables unique to the ground fuels fuels_create
 !-----------------------------------------------------------------
 
 ! Grass and litter inputs defined in io.f90 from fuellist
@@ -226,16 +212,14 @@ if (verbose.gt.1) verbose = 1
 if (verbose.eq.1) call define_newtreefile
 
 !-----------------------------------------------------------------
-! Tree variables unique to the tree baseline
+! Tree variables unique to the tree fuels_create
 !-----------------------------------------------------------------
-if (itrees.eq.1) then
-  call treesGeneral_readin
-else if(itrees.eq.2.or.itrees.eq.3) then
+if(itrees.eq.2.or.itrees.eq.3) then
   call treelist_readin
 else if(itrees.eq.7) then
   call treelist_fastfuels
 endif
-end subroutine define_baseline_variables
+end subroutine define_fuels_create_variables
 
 subroutine define_species_variables
 !-----------------------------------------------------------------
@@ -243,7 +227,7 @@ subroutine define_species_variables
 !-----------------------------------------------------------------
 
 use species_variables
-use baseline_variables, only:ntspecies
+use fuels_create_variables, only:ntspecies
 
 
 integer :: i,j,ct,fdrop=0,fstep=0
@@ -304,8 +288,8 @@ subroutine define_duet_variables
 !-----------------------------------------------------------------
 use grid_variables, only : nx,ny,nz
 use infile_variables, only : infuel
-use baseline_variables, only : ntspecies,tfuelbins
-use duet_variables, only : windprofile,winddatafile,StepsPerYear, &
+use fuels_create_variables, only : ntspecies,tfuelbins
+use duet_variables, only : windprofile,StepsPerYear, &
   YearsSinceBurn,uavg,vavg,VAR,ustd,vstd,Umean,Vmean,Uvar,Vvar,vterminal, &
   fuelSA,Froude,droptime,leafdropfreq,decay,speciesfile,lrhofT, &
   grhofT,dragco,lafdT,gafdT,lmoistT,gmoistT,lssT,gssT,randomwinds, &
@@ -325,11 +309,7 @@ if(windprofile.eq.0) then
   print*,'!----!----!----!----!----!----!----!----!----!----!----!'
   print*,'Windprofile is taken from a user provided in fuellist'
   allocate(VAR(periodTotal,2))
-  !open (100,file=winddatafile)  ! wind information for area per year
   do yt=1,periodTotal
-    !read(100,*) temp_array
-    !uavg(yt)=temp_array(3)
-    !vavg(yt)=temp_array(4)
     VAR(yt,1)=ustd(yt)
     VAR(yt,2)=vstd(yt)
   enddo
@@ -511,7 +491,7 @@ allocate(gssT(specTotal,nx,ny,periodTotal)); gssT(:,:,:,:)=0.0
 end subroutine define_duet_variables
 
 subroutine define_newtreefile
-  use baseline_variables, only: newtreefile, itrees, treefile
+  use fuels_create_variables, only: newtreefile, itrees, treefile
   !stuff for writing new treelist
     integer(8) :: timeit
     character(len=30) :: dateit

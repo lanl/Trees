@@ -1,5 +1,5 @@
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-! baseline contains the functions which construct the basic fuel map
+! fuels_create contains the functions which construct the basic fuel map
 ! based off the forest and ground fuel dimensions defined in
 ! define_variables
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -15,15 +15,15 @@
 ! prepare derivative works, distribute copies to the public, perform
 ! publicly and display publicly, and to permit others to do so.
 !-----------------------------------------------------------------
-subroutine baseline
+subroutine fuels_create
 !-----------------------------------------------------------------
-! baseline is a function which calls the grass and tree baselines
+! fuels_create is a function which calls the grass and tree fuels_creates
 ! and consolidates them to fill the rhof, sizescale, moisture, and
 ! fueldepth arrays.
 !-----------------------------------------------------------------
 use grid_variables
 use infile_variables
-use baseline_variables
+use fuels_create_variables
 implicit none
 
 ! Local variables
@@ -31,12 +31,12 @@ integer i,j,k,ift
 real,external:: zcart
 
 ! Executable code
-call define_baseline_variables 
+call define_fuels_create_variables 
 
 ! Fill grass arrays
 if (igrass.ne.0) then     
-  print*,'Filling Grass Baseline'
-  call grass_baseline
+  print*,'Filling Grass fuels_create'
+  call grass_fuels_create
   do ift=1,ngrass
     do i=1,nx
       do j=1,ny
@@ -53,8 +53,8 @@ endif
 
 ! Fill tree arrays
 if (itrees.ne.0) then
-  print*,'Filling Trees Baseline'
-  call tree_baseline
+  print*,'Filling Trees fuels_create'
+  call tree_fuels_create
   do ift=1,ntspecies*ntreefueltypes
     do i=1,nx
       do j=1,ny
@@ -73,13 +73,13 @@ endif
 if (ilitter.ne.0) then
   if (ilitter.eq.1) then
     if (itrees.gt.0) then
-      print*,'Filling Litter Baseline'
-      call litter_baseline
+      print*,'Filling Litter fuels_create'
+      call litter_fuels_create
     else if (itrees.eq.0) then
       print*,'Warning: itrees=0, no litter placed'
     end if
   else if (ilitter.eq.2) then
-    print*,'Filling Litter Baseline for Duet'
+    print*,'Filling Litter fuels_create for Duet'
     call Duet_Inputs
   endif
   do ift=1,ntspecies
@@ -108,16 +108,16 @@ if (ilitter.ne.0) then
   enddo
 endif
 
-end subroutine baseline
+end subroutine fuels_create
 
-subroutine grass_baseline
+subroutine grass_fuels_create
 !-----------------------------------------------------------------
-! grass_baseline is a function which computes the characteristics
+! grass_fuels_create is a function which computes the characteristics
 ! of a base grass field and fills rhof, sizescale, moisture, and
 ! fueldepth arrays.
 !-----------------------------------------------------------------
 use grid_variables
-use baseline_variables
+use fuels_create_variables
 implicit none
 
 ! Local variables
@@ -161,18 +161,18 @@ print*,'Grass target fuel mass:',target_mass
 print*,'Grass actual fuel mass:',actual_mass
 print*,'Grass error:',100-actual_mass/target_mass*100,'%'
              
-end subroutine grass_baseline
+end subroutine grass_fuels_create
 
-subroutine tree_baseline 
+subroutine tree_fuels_create 
 !-----------------------------------------------------------------
-! tree_baseline is a function which computes the characteristics  
+! tree_fuels_create is a function which computes the characteristics  
 ! of a forest from the variables designated in 
 ! define_variables.f. It then fills trhof, tsizescale, tmoisture, 
 ! and tfueldepth arrays.
 !-----------------------------------------------------------------
 use constant_variables
 use grid_variables
-use baseline_variables
+use fuels_create_variables
 
 implicit none
 
@@ -181,7 +181,7 @@ integer ift,i,j,k,ii,jj,kk,iii,jjj,kkk
 integer ii_real,jj_real
 integer ift_index
 real totarea
-real xtest,ytest,ztest,xloc,yloc
+real ztest,xloc,yloc
 integer xcor,ycor
 integer xtop,xbot,ybot,ytop,zbot,ztop
 real canopytop,canopybot,canopydiameter,canopymaxh
@@ -192,19 +192,8 @@ real,allocatable:: rhoftemp(:)
 real,external:: paraboloid,normal 
 real x
 
-!222 format(I2.1,F3.1,F3.1,F3.1,F3.1,F3.1,F3.1,F3.1,F3.4,F5.2,F5.4) !1	52.5708	104.893	19.8	13.4	3	14.68	0.08644	1	0.0005
-!write(222,treelistformat) 1,52.57,104.83,19.8,13.4,3.0,14.68,0.08644,1.,0.0005
-!write(222,*) 1,52.5708,104.893,19.8,13.4,3.0,14.68,0.08644,1.,0.0005
-
-
-
+! Executable Code
 !-----Determine the number of trees for each species
-if(itrees.eq.1) then
-  totarea = nx*dx*ny*dy
-  do i=1,ntspecies
-    ntrees(i) = ceiling(totarea*tstemdensity(i)/100.**2.)
-  enddo
-endif
 print*,'Number of trees of each species:',ntrees
 
 !----- Begin loop which fills arrays with information for each tree
@@ -216,56 +205,34 @@ do i=1,ntspecies
       if (MOD(j,int(ntrees(i)/10)).eq.0) print*,'Placing tree',j,'of',ntrees(i)
     endif
     !----- Place tree location 
-    !PLACE ME IN TREE READ IN!!!!!!!!!!!!!!!!!!!
-    if (itrees.eq.2.or.itrees.eq.3) then
-      ! Specific tree placement
-      xtest = tlocation(i,j,1)
-      if(xtest.gt.nx*dx.or.xtest.lt.0) CYCLE
-      ytest = tlocation(i,j,2)
-      if(ytest.gt.ny*dy.or.ytest.lt.0) CYCLE
-    else
-      ! Randomly place a tree
-      call random_number(xtest)
-      xtest = xtest*ndatax
-      if(xtest.gt.nx*dx.or.xtest.lt.0) CYCLE
-      call random_number(ytest)
-      ytest = ytest*ndatay !why is this different? JO
-      if(ytest.gt.ny*dy.or.ytest.lt.0) CYCLE
-
-    endif
-    xcor = floor(xtest/dx+1)
-    ycor = floor(ytest/dy+1)
+    ! Specific tree placement
+    if(tlocation(i,j,1).gt.nx*dx.or.tlocation(i,j,1).lt.0) CYCLE
+    if(tlocation(i,j,2).gt.ny*dy.or.tlocation(i,j,2).lt.0) CYCLE
+    xcor = floor(tlocation(i,j,1)/dx+1)
+    ycor = floor(tlocation(i,j,2)/dy+1)
 
 
     !----- Determine tree shape characteristics
-    if (itrees.eq.1) then
-      ! Sample shape from distributions
-      canopybot = max(0.,normal(tcrownbotheight(1,i),tcrownbotheight(2,i)))+zs(xcor,ycor)
-      canopytop = max(0.002,min(nz*dz,normal(theight(1,i),theight(2,i))))+zs(xcor,ycor)
-      canopydiameter = max(0.001,normal(tcrowndiameter(1,i),tcrowndiameter(2,i)))
-      canopymaxh = min(canopytop-0.001,max(canopybot+0.001,normal(tcrownmaxheight(1,i),tcrownmaxheight(2,i))+zs(xcor,ycor)))
-    else
-      ! Shape from tree file
-      canopytop = theight(j,i)+zs(xcor,ycor)
-      canopybot = tcrownbotheight(j,i)+zs(xcor,ycor)
-      canopydiameter = tcrowndiameter(j,i)
-      canopymaxh= tcrownmaxheight(j,i)+zs(xcor,ycor)
-    endif
+    ! Shape from tree file
+    canopytop = theight(j,i)+zs(xcor,ycor)
+    canopybot = tcrownbotheight(j,i)+zs(xcor,ycor)
+    canopydiameter = tcrowndiameter(j,i)
+    canopymaxh= tcrownmaxheight(j,i)+zs(xcor,ycor)
     
     !----- Translate tree shape to grid
-    xbot = floor((xtest-canopydiameter/2.)/dx+1)
-    xtop = floor((xtest+canopydiameter/2.)/dx+1)
-    ybot = floor((ytest-canopydiameter/2.)/dy+1)
-    ytop = floor((ytest+canopydiameter/2.)/dy+1)
+    xbot = floor((tlocation(i,j,1)-canopydiameter/2.)/dx+1)
+    xtop = floor((tlocation(i,j,1)+canopydiameter/2.)/dx+1)
+    ybot = floor((tlocation(i,j,2)-canopydiameter/2.)/dy+1)
+    ytop = floor((tlocation(i,j,2)+canopydiameter/2.)/dy+1)
     
     do k=1,nz-1
-      if (canopybot.le.zheight(nint(xtest/dx+1),nint(ytest/dy+1),k+1)) then
+      if (canopybot.le.zheight(xcor,ycor,k)) then
         zbot = k
         exit
       endif
     enddo
     do kk=k,nz-1
-      if (canopytop.le.zheight(nint(xtest/dx+1),nint(ytest/dy+1),kk+1)) then
+      if (canopytop.le.zheight(xcor,ycor,kk+1)) then
         ztop = kk
         if (kk.gt.zmax) zmax=kk
         exit
@@ -320,7 +287,6 @@ do i=1,ntspecies
         do kk=zbot,ztop
           ! Determine how many of subcells of a cell are within the paraboloid, the fraction of the subcells is equal to the fraction of the cell within the paraboloid
           rhoftemp(:) = 0 ! Density of fuels to be added to current cell of interest
-          !print*,'here1'
           do iii=1,10
             do jjj=1,10
               do kkk=1,10
@@ -328,21 +294,15 @@ do i=1,ntspecies
                   *(zheight(ii_real,jj_real,kk+1)-zheight(ii_real,jj_real,kk))
                 xloc = ((ii-1)+(2.*iii-1.)/20.)*dx
                 yloc = ((jj-1)+(2.*jjj-1.)/20.)*dy
-                bot_height = paraboloid(abot,xloc,xtest,yloc,ytest,canopybot)
-                top_height = paraboloid(atop,xloc,xtest,yloc,ytest,canopytop)
+                bot_height = paraboloid(abot,xloc,tlocation(i,j,1),yloc,tlocation(i,j,2),canopybot)
+                top_height = paraboloid(atop,xloc,tlocation(i,j,1),yloc,tlocation(i,j,2),canopytop)
                 if (test_height.ge.bot_height.and.test_height.le.top_height) then 
                   do ift=1,tfuelbins
-                    if (itrees.eq.1)then 
-                      rhoftemp(ift) = rhoftemp(ift)+3./2000.*t1bulkdensity(ift,i)* &
-                        (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-xtest)**2.+ &
-                        (yloc-ytest)**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density
-                    else 
-                      rhoftemp(ift) = rhoftemp(ift)+3./2000.*t2bulkdensity(j,ift,i)* &
-                        (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-xtest)**2.+ &
-                        (yloc-ytest)**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density; 
+                    rhoftemp(ift) = rhoftemp(ift)+3./2000.*t2bulkdensity(j,ift,i)* &
+                      (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-tlocation(i,j,1))**2.+ &
+                      (yloc-tlocation(i,j,2))**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density; 
                     !note the 4 in the above equations is for making canopydiameter a radius by 
                     !dividing by 2 and then squaring that in the denominator of the denominator
-                    endif
                   enddo
                 endif
               enddo
@@ -353,22 +313,13 @@ do i=1,ntspecies
           do ift=1,tfuelbins
             if (rhoftemp(ift).gt.0) then
               ift_index = (i-1)*ntreefueltypes+ift
-              if (itrees.eq.1) then
-                tsizescale(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)* &
-                  tsizescale(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)*t1ss(ift,i))/ &
-                  (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
-                tmoist(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)* &
-                  tmoist(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)*t1moisture(ift,i))/ &
-                  (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
-              else
-                tsizescale(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)* &
-                  tsizescale(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)*t2ss(j,ift,i))/ &
-                  (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
-                tmoist(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)* &
-                  tmoist(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)*t2moisture(j,ift,i))/ &
-                  (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
-              endif
-            trhof(ift_index,ii_real,jj_real,kk) = trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)
+              tsizescale(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)* &
+                tsizescale(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)*t2ss(j,ift,i))/ &
+                (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
+              tmoist(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)* &
+                tmoist(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)*t2moisture(j,ift,i))/ &
+                (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
+              trhof(ift_index,ii_real,jj_real,kk) = trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)
             endif
           enddo
         enddo
@@ -392,33 +343,19 @@ enddo
 
 ! Print out the target and actual fuel masses for comparisons sake
 target_mass = 0
-if (itrees.eq.1) then
-  do i=1,ntspecies
-    do j=1,tfuelbins
-      target_mass = target_mass + ntrees(i)*t1bulkdensity(j,i)*PI*tcrowndiameter(1,i)**2./ &
-        8.*(theight(1,i)-tcrownbotheight(1,i))
-    enddo
-    if (istem.eq.1) then
-      target_mass = target_mass+ntrees(i)*trhomicro(i)*PI*tdbh(1,i)**2.*theight(1,i)/12.
-      target_mass = target_mass+ntrees(i)*trhomicro(i)*PI*((tdbh(1,i)+tbarkthick(1,i))**2.-tdbh(1,i)**2.)*theight(1,i)
-    endif
-  enddo
-endif
-if (itrees.ne.1) then
-  do i=1,ntspecies
-    do j=1,ntrees(i)
-      do k=1,tfuelbins
-        target_mass = target_mass + t2bulkdensity(j,k,i)*PI*tcrowndiameter(j,i)**2./ &
-          8.*(theight(j,i)-tcrownbotheight(j,i))
-      enddo
+do i=1,ntspecies
+  do j=1,ntrees(i)
+    do k=1,tfuelbins
+      target_mass = target_mass + t2bulkdensity(j,k,i)*PI*tcrowndiameter(j,i)**2./ &
+        8.*(theight(j,i)-tcrownbotheight(j,i))
     enddo
   enddo
-endif
+enddo
 print*,'Trees target fuel mass:',target_mass
 actual_mass = 0
 do ift=1,ntspecies*ntreefueltypes
-  do i=tdnx(1),tdnx(2)
-    do j=tdny(1),tdny(2)
+  do i=1,nx
+    do j=1,ny
       do k=1,zmax
         actual_mass = actual_mass+trhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
       enddo
@@ -431,18 +368,18 @@ print*,'Trees error:',100-actual_mass/target_mass*100,'%'
 
 
 
-end subroutine tree_baseline 
+end subroutine tree_fuels_create 
 
-subroutine litter_baseline
+subroutine litter_fuels_create
 !-----------------------------------------------------------------
-! litter_baseline is a function which computes the characteristics
+! litter_fuels_create is a function which computes the characteristics
 ! of a base litter from trees and fills rhof, sizescale, moisture,
 ! and fueldepth arrays for litter and subracts mass of the grass 
 ! arrays for tree shading.
 !-----------------------------------------------------------------
 use constant_variables
 use grid_variables
-use baseline_variables
+use fuels_create_variables
 use infile_variables
 
 implicit none
@@ -518,4 +455,4 @@ enddo
 print*,'Litter actual fuel mass:',actual_mass
 print*,'Litter error:',100-actual_mass/target_mass*100,'%'
 
-end subroutine litter_baseline 
+end subroutine litter_fuels_create 

@@ -38,7 +38,7 @@ use grid_variables, only : nx,ny,nz,dx,dy,zheight,zmax,rhof, &
   sizescale,moist,fueldepth
 use infile_variables, only : infuel,ifuelin
 use io_variables, only : controlseed,seedchange,singlefuel
-use baseline_variables, only : ntspecies,tfuelbins,trhof, &
+use fuels_create_variables, only : ntspecies,tfuelbins,trhof, &
   tsizescale,tmoist,tfueldepth,grassconstant,litterconstant, &
   ngrass,gdepth,gmoisture,gss,grho,gmoistoverride,itrees,duet_ngrass
 use duet_variables, only : vterminal,StepsPerYear,YearsSinceBurn, &
@@ -78,10 +78,6 @@ if(ifuelin.eq.0.and.itrees.ne.1) then
   Drhof  = trhof
   Dss    = tsizescale
   Dmoist = tmoist
-elseif(ifuelin.eq.0.and.itrees.eq.1) then
-  Drhof  = rhof(1+ngrass:ngrass+fueltotal,:,:,:)
-  Dss    = sizescale(1+ngrass:ngrass+fueltotal,:,:,:)
-  Dmoist = moist(1+ngrass:ngrass+fueltotal,:,:,:)
 elseif(ifuelin.eq.1.and.itrees.eq.0) then
   Drhof  = rhof(1:fueltotal,:,:,:)
   Dss    = sizescale(1:fueltotal,:,:,:)

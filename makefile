@@ -1,7 +1,7 @@
 #--Top level trees makefile--
 OBJS    = variables.o main.o define_variables.o \
-				  io.o metryc.o shapes.o distribution.o \
-			 		baseline.o duet_inputs.o \
+				  power_parser.o io.o metryc.o shapes.o \
+					distribution.o baseline.o duet_inputs.o \
 			 		fuel_read.o trees_read.o \
 
 FC = gfortran   ## compiler
