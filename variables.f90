@@ -68,7 +68,7 @@ integer :: iintpr=0
 integer :: infuel=0
 real,allocatable:: irhof(:,:,:,:),iss(:,:,:,:),imoist(:,:,:,:),iafd(:,:,:,:)
 real,allocatable:: izs(:,:),izheight(:,:,:)
-character:: intopofile*50='flat' !JO
+character:: intopofile*50='flat' 
 character:: rhoffile*50,moistfile*50,ssfile*50,afdfile*50
 
 end module infile_variables
