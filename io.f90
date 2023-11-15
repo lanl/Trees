@@ -88,8 +88,8 @@ if(itrees.ge.1)then
   call QueryFuellist_real('ndatay',ndatay,48,ny*dy)
   call QueryFuellist_real('datalocx',datalocx,48,0.)
   call QueryFuellist_real('datalocy',datalocy,48,0.)
+  call find_numspecies
 endif
-call find_numspecies
 
 ! Litter
 call QueryFuellist_integer('ilitter',ilitter,48,0)
