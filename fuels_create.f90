@@ -333,8 +333,8 @@ deallocate(rhoftemp)
 !----- Tree fuel depth is equal to height of the first cell
 do i=1,ntspecies
   do j=1,ntreefueltypes
-    do ii=tdnx(1),tdnx(2)
-      do jj=tdny(1),tdny(2)
+    do ii=1,nx
+      do jj=1,ny
         tfueldepth((i-1)*ntreefueltypes+j,ii,jj) = zheight(ii,jj,2) - zs(ii,jj)
       enddo
     enddo
