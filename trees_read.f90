@@ -113,7 +113,7 @@ allocate(numarray(ntspecies)); numarray(:)=0
 do i=1,itree
   read(2,*) temp_array(:)
   numarray(tspecies(i)) = numarray(tspecies(i))+1
-  if (itree.eq.2) then
+  if (itrees.eq.2) then
     tlocation(tspecies(i),numarray(tspecies(i)),1) = temp_array(2)+datalocx
     tlocation(tspecies(i),numarray(tspecies(i)),2) = temp_array(3)+datalocy
   else
