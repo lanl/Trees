@@ -167,7 +167,9 @@ use fuels_create_variables
 implicit none
 
 ! Local Variables
-integer ift
+integer ift,i
+real,allocatable:: averagedensity(:),trhofmaxtmp(:)
+
 ! Executable Code
 if (igrass.ne.0) then
   allocate(grhof(ngrass,nx,ny,nz))
@@ -219,6 +221,27 @@ if(itrees.eq.2.or.itrees.eq.3) then
 else if(itrees.eq.7) then
   call treelist_fastfuels
 endif
+
+! Set maximum density tolerances for different species (unless values provided by user)
+allocate(trhofmaxindex(ntspecies))
+do ift=1,ntspecies
+  if(trhofmax(ift).eq.0.) then
+    allocate(averagedensity(ntrees(ift)))
+    do i=1,ntrees(ift)
+      averagedensity(i)=sum(t2bulkdensity(i,:,ift))
+    enddo
+    trhofmax(ift)=3./2.*maxval(averagedensity)
+    deallocate(averagedensity)
+  endif
+enddo
+allocate(trhofmaxtmp(ntspecies))
+trhofmaxtmp=trhofmax(:)
+do ift=1,ntspecies
+  trhofmaxindex(ift)=maxloc(trhofmaxtmp,dim=1)
+  trhofmaxtmp(maxloc(trhofmaxtmp,dim=1))=minval(trhofmax)-1
+enddo
+deallocate(trhofmaxtmp)
+
 end subroutine define_fuels_create_variables
 
 subroutine define_species_variables

@@ -14,13 +14,13 @@
 ! paid-up, irrevocable worldwide license in this material to reproduce,
 ! prepare derivative works, distribute copies to the public, perform
 ! publicly and display publicly, and to permit others to do so.
-!-----------------------------------------------------------------
+!-----------------------------------------------------------------------
 subroutine fuels_create
-!-----------------------------------------------------------------
-! fuels_create is a function which calls the grass and tree fuels_creates
-! and consolidates them to fill the rhof, sizescale, moisture, and
-! fueldepth arrays.
-!-----------------------------------------------------------------
+!-----------------------------------------------------------------------
+! fuels_create is a function which calls the grass and tree 
+! fuels_creates and consolidates them to fill the rhof, sizescale, 
+! moisture, and fueldepth arrays.
+!-----------------------------------------------------------------------
 use grid_variables
 use infile_variables
 use fuels_create_variables
@@ -111,11 +111,11 @@ endif
 end subroutine fuels_create
 
 subroutine grass_fuels_create
-!-----------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! grass_fuels_create is a function which computes the characteristics
 ! of a base grass field and fills rhof, sizescale, moisture, and
 ! fueldepth arrays.
-!-----------------------------------------------------------------
+!-----------------------------------------------------------------------
 use grid_variables
 use fuels_create_variables
 implicit none
@@ -164,12 +164,12 @@ print*,'Grass error:',100-actual_mass/target_mass*100,'%'
 end subroutine grass_fuels_create
 
 subroutine tree_fuels_create 
-!-----------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! tree_fuels_create is a function which computes the characteristics  
 ! of a forest from the variables designated in 
 ! define_variables.f. It then fills trhof, tsizescale, tmoisture, 
 ! and tfueldepth arrays.
-!-----------------------------------------------------------------
+!-----------------------------------------------------------------------
 use constant_variables
 use grid_variables
 use fuels_create_variables
@@ -177,7 +177,7 @@ use fuels_create_variables
 implicit none
 
 ! Local variables
-integer ift,i,j,k,ii,jj,kk,iii,jjj,kkk
+integer ift,it,i,j,k,ii,jj,kk,iii,jjj,kkk
 integer ii_real,jj_real
 integer ift_index
 real totarea
@@ -187,6 +187,7 @@ integer xtop,xbot,ybot,ytop,zbot,ztop
 real canopytop,canopybot,canopydiameter,canopymaxh
 real atop,abot,test_height,bot_height,top_height
 real dbh,barkthick,sstemp,srhoftemp
+real tot,add,prt
 real target_mass,actual_mass
 real,allocatable:: rhoftemp(:)
 real,external:: paraboloid,normal 
@@ -301,8 +302,6 @@ do i=1,ntspecies
                     rhoftemp(ift) = rhoftemp(ift)+3./2000.*t2bulkdensity(j,ift,i)* &
                       (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-tlocation(i,j,1))**2.+ &
                       (yloc-tlocation(i,j,2))**2.)/canopydiameter**2.)/(canopytop-canopybot) ! Contribution of one subcell to overall bulk density; 
-                    !note the 4 in the above equations is for making canopydiameter a radius by 
-                    !dividing by 2 and then squaring that in the denominator of the denominator
                   enddo
                 endif
               enddo
@@ -325,17 +324,40 @@ do i=1,ntspecies
         enddo
       enddo
     enddo
-    
   enddo
 enddo
 deallocate(rhoftemp)
 
+!----- Limit Tree Densities for overlapping trees -----
+do i=1,nx
+  do j=1,ny
+    do k=1,zmax
+      tot=0.
+      do it=1,ntspecies
+        ift=trhofmaxindex(it)
+        ift_index=(ift-1)*ntreefueltypes
+        add=sum(trhof(ift_index+1:ift_index+tfuelbins,i,j,k))
+        if(tot+add.le.trhofmax(ift))then
+          tot=tot+add
+        else
+          prt=max(0.,tot-trhofmax(ift))
+          trhof(ift_index+1:ift_index+tfuelbins,i,j,k)= &
+            trhof(ift_index+1:ift_index+tfuelbins,i,j,k)+prt/add
+          tot=tot+prt
+        endif
+      enddo
+    enddo
+  enddo
+enddo
+
+!----- SANITY CHECK -----
 !----- Tree fuel depth is equal to height of the first cell
 do i=1,ntspecies
   do j=1,ntreefueltypes
+    ift_index = (i-1)*ntreefueltypes+j
     do ii=1,nx
       do jj=1,ny
-        tfueldepth((i-1)*ntreefueltypes+j,ii,jj) = zheight(ii,jj,2) - zs(ii,jj)
+        tfueldepth(ift_index,ii,jj) = zheight(ii,jj,2) - zs(ii,jj)
       enddo
     enddo
   enddo
@@ -365,18 +387,15 @@ enddo
 print*,'Trees actual fuel mass:',actual_mass
 print*,'Trees error:',100-actual_mass/target_mass*100,'%'
 
-
-
-
 end subroutine tree_fuels_create 
 
 subroutine litter_fuels_create
-!-----------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! litter_fuels_create is a function which computes the characteristics
 ! of a base litter from trees and fills rhof, sizescale, moisture,
 ! and fueldepth arrays for litter and subracts mass of the grass 
 ! arrays for tree shading.
-!-----------------------------------------------------------------
+!-----------------------------------------------------------------------
 use constant_variables
 use grid_variables
 use fuels_create_variables

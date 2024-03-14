@@ -94,6 +94,8 @@ real,allocatable:: t2moisture(:,:,:),t2ss(:,:,:),t2bulkdensity(:,:,:)
 real,allocatable:: theight(:,:),tcrownbotheight(:,:),tcrownmaxheight(:,:),tcrowndiameter(:,:)
 real,allocatable:: trhomicro(:),tdbh(:,:),tstemmoist(:),tbarkthick(:,:),tbarkmoist(:)
 integer,allocatable:: ntrees(:),tspecies(:)
+real,allocatable:: trhofmax(:)
+integer,allocatable:: trhofmaxindex(:)
 real,allocatable:: gdepth(:),grho(:),gss(:),gmoisture(:)
 real,allocatable:: ldepth(:),lrho(:),lss(:),lmoisture(:)
 

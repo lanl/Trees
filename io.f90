@@ -80,7 +80,7 @@ if(igrass.eq.1)then
 endif
 
 ! Trees
-call QueryFuellist_integer('itrees',itrees,48,3)
+call QueryFuellist_integer('itrees',itrees,48,0)
 if(itrees.ge.1)then
   call QueryFuellist_integer('tfuelbins',tfuelbins,48,1)
   call QueryFuellist_string('treefile',treefile,48,'AJoseEglinTrees.txt')
@@ -89,6 +89,8 @@ if(itrees.ge.1)then
   call QueryFuellist_real('datalocx',datalocx,48,0.)
   call QueryFuellist_real('datalocy',datalocy,48,0.)
   call find_numspecies
+  allocate(trhofmax(ntspecies))
+  call QueryFuellist_real_array('trhofmax',trhofmax,ntspecies,48,0.)
 endif
 
 ! Litter
@@ -96,13 +98,13 @@ call QueryFuellist_integer('ilitter',ilitter,48,0)
 if(ilitter.eq.1) then
   call QueryFuellist_real('litterconstant',litterconstant,48,0.0)
   allocate(lrho(ntspecies*tfuelbins))
-  call QueryFuellist_real_array('lrho',lrho,ntspecies*tfuelbins,48,0.)
+  call QueryFuellist_real_array('lrho',lrho,ntspecies*tfuelbins,48,1.18)
   allocate(lmoisture(ntspecies*tfuelbins))
-  call QueryFuellist_real_array('lmoisture',lmoisture,ntspecies*tfuelbins,48,0.)
+  call QueryFuellist_real_array('lmoisture',lmoisture,ntspecies*tfuelbins,48,0.06)
   allocate(lss(ntspecies*tfuelbins))
-  call QueryFuellist_real_array('lss',lss,ntspecies*tfuelbins,48,0.)
+  call QueryFuellist_real_array('lss',lss,ntspecies*tfuelbins,48,0.0005)
   allocate(ldepth(ntspecies*tfuelbins))
-  call QueryFuellist_real_array('ldepth',ldepth,ntspecies*tfuelbins,48,0.)
+  call QueryFuellist_real_array('ldepth',ldepth,ntspecies*tfuelbins,48,0.05)
 elseif(ilitter.eq.2)then  ! DUET
   call QueryFuellist_integer('windprofile',windprofile,48,2)
   call QueryFuellist_integer('YearsSinceBurn',YearsSinceBurn,48,1)
