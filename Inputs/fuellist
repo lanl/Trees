@@ -9,6 +9,7 @@
       dz  = 15.0                    ! Grid Resolution [m]
       aa1 = 0.1                     ! Vertical stretching component [default=0.1]
       singlefuel = 0                ! Flag forcing single fuel type instead of multiple fuels
+      lreduced = 0                  ! Flage to reduce output vertical number of cells to only layers with fuel
       topofile = 'flat'  	      ! 'flat' -> no topo, 'name.dat' of topo file for topo
 ! ----------------------------------
 ! Data import from existing files

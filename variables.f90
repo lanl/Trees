@@ -48,7 +48,7 @@ module io_variables
 !-----------------------------------------------------------------
 implicit none
       
-integer :: singlefuel=0,firetecshock=0
+integer :: singlefuel=0,lreduced=0
 integer :: controlseed,n,seedchange
 integer,allocatable :: seed(:)
 

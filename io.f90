@@ -44,6 +44,7 @@ call QueryFuellist_real('dy',dy,48,2.)
 call QueryFuellist_real('dz',dz,48,15.)
 call QueryFuellist_real('aa1',aa1,48,0.1)
 call QueryFuellist_integer('singlefuel',singlefuel,48,0)
+call QueryFuellist_integer('lreduced',lreduced,48,0)
 call QueryFuellist_string('topofile',topofile,48,'flat')
 
 ! Data import from existing files
@@ -144,7 +145,7 @@ close(48)
 
 end subroutine fuellist_input
 
-subroutine output_nfuel
+subroutine output_fuel
 !-----------------------------------------------------------------
 ! output is a function which writes the .dat files for use in 
 ! FIRETEC or QUIC-Fire
@@ -156,226 +157,78 @@ implicit none
 
 ! Local Variables
 integer ift,i,j,k,lfuel
-real,dimension(nfuel):: nonzero
-real*8,allocatable :: frhof(:,:,:,:),frhow(:,:,:,:)
-real*8,allocatable :: fss(:,:,:,:),fafd(:,:,:)
+integer,dimension(nfuel):: nonzero
 
 ! Executable Code
-nonzero(:) = 1
-lfuel = 1
-do ift=1,nfuel
-  if (sum(rhof(ift,:,:,:)).le.0) then
-    nonzero(ift) = 0
-  else
-    do k=1,nz
-      if (sum(rhof(ift,:,:,k)).gt.0) lfuel = max(lfuel,k)
-    enddo
-  endif
-enddo
-
-print*,'Exporting data to .dat files'
-if (firetecshock.eq.1)then
-  allocate(frhof(nfuel,nx,ny,lfuel),frhow(nfuel,nx,ny,lfuel), &
-    fss(nfuel,nx,ny,lfuel),fafd(nfuel,nx,ny))
-  frhof=rhof(:,:,:,1:lfuel)
-  frhow=moist(:,:,:,1:lfuel)*rhof(:,:,:,1:lfuel)
-  fss=sizescale(:,:,:,1:lfuel)
-  fafd=fueldepth(:,:,:,1)
-  open(1,file= 'fuelArrays.dat',form= 'unformatted',status= 'unknown')
-  do ift=1,nfuel
-    if (nonzero(ift).ne.0) then
-      write (1) frhof(ift,:,:,:)
-      write (1) frhow(ift,:,:,:)
-      write (1) fss(ift,:,:,:)
-      write (1) fafd(ift,:,:)
-    endif
-  enddo
-  close (1)
-  deallocate(frhof,frhow,fss,fafd)
-else
-  open (1,file= 'treesrhof.dat',form= 'unformatted',status= 'unknown')
-  do ift=1,nfuel
-    if (nonzero(ift).ne.0)  write (1) rhof(ift,:,:,:)
-  enddo
-  close (1)
-  
-  open (1,file= 'treesmoist.dat',form= 'unformatted',status= 'unknown')
-  do ift=1,nfuel
-    if (nonzero(ift).ne.0)  write (1) moist(ift,:,:,:)
-  enddo
-  close (1)
-  
-  open (1,file= 'treesss.dat',form= 'unformatted',status= 'unknown')
-  do ift=1,nfuel
-    if (nonzero(ift).ne.0)  write (1) sizescale(ift,:,:,:)
-  enddo
-  close (1)
-  
-  open (1,file= 'treesfueldepth.dat',form= 'unformatted',status= 'unknown')
-  do ift=1,nfuel
-    if (nonzero(ift).ne.0)  write (1) fueldepth(ift,:,:,:)
-  enddo
-  close (1)
-endif
-
-print*,'Your nfuel is',int(sum(nonzero(:)))
-print*,'Your lfuel is',lfuel
-
-end subroutine output_nfuel
-
-subroutine output_1fuel
-!-----------------------------------------------------------------
-! output_1fuel is a function which writes the .dat files for use in 
-! FIRETEC or QUIC-Fire but combines all fuels into a single fuel
-! type.
-!-----------------------------------------------------------------
-use grid_variables
-use io_variables
-
-implicit none
-
-! Local Variables
-integer ift,i,j,k,lfuel
-real,allocatable :: srhof(:,:,:),sss(:,:,:),smoist(:,:,:),safd(:,:,:)
-real*8,allocatable :: frhof(:,:,:),frhow(:,:,:)
-real*8,allocatable :: fss(:,:,:),fafd(:,:)
-
-! Executable Code
-allocate(srhof(nx,ny,nz))
-allocate(sss(nx,ny,nz))
-allocate(smoist(nx,ny,nz))
-allocate(safd(nx,ny,nz))
-do i=1,nx
-  do j=1,ny
-    do k=1,nz
-      do ift=1,nfuel
-        if(rhof(ift,i,j,k).gt.0)then
-          sss(i,j,k)=(sss(i,j,k)*srhof(i,j,k)+sizescale(ift,i,j,k)*rhof(ift,i,j,k)) &
-            /(srhof(i,j,k)+rhof(ift,i,j,k))
-          smoist(i,j,k)=(smoist(i,j,k)*srhof(i,j,k)+moist(ift,i,j,k)*rhof(ift,i,j,k)) &
-            /(srhof(i,j,k)+rhof(ift,i,j,k))
-          safd(i,j,k)=(safd(i,j,k)*srhof(i,j,k)+fueldepth(ift,i,j,k)*rhof(ift,i,j,k)) &
-            /(srhof(i,j,k)+rhof(ift,i,j,k))
-          srhof(i,j,k)=srhof(i,j,k)+rhof(ift,i,j,k)
+if (singlefuel.eq.1) then
+  do i=1,nx
+    do j=1,ny
+      do k=1,nz
+        if(sum(rhof(:,i,j,k)).gt.0)then
+          sizescale(1,i,j,k)=sum(sizescale(:,i,j,k)*rhof(:,i,j,k))/sum(rhof(:,i,j,k))
+          moist(1,i,j,k)=sum(moist(:,i,j,k)*rhof(:,i,j,k))/sum(rhof(:,i,j,k))
+          fueldepth(1,i,j,k)=sum(fueldepth(:,i,j,k)*rhof(:,i,j,k))/sum(rhof(:,i,j,k))
+          rhof(1,i,j,k)=sum(rhof(:,i,j,k))
+          if(nfuel.gt.1) rhof(2:nfuel,i,j,k)=0.
         endif
       enddo
     enddo
   enddo
-enddo
-
-lfuel = 1
-do k=1,nz
-  if (sum(srhof(:,:,k)).gt.0) lfuel = max(lfuel,k)
-enddo
-
-print*,'Exporting data to .dat files'
-if (firetecshock.eq.1)then
-  allocate(frhof(nx,ny,lfuel),frhow(nx,ny,lfuel), &
-    fss(nx,ny,lfuel),fafd(nx,ny))
-  frhof=srhof(:,:,1:lfuel)
-  frhow=smoist(:,:,1:lfuel)*srhof(:,:,1:lfuel)
-  fss=sss(:,:,1:lfuel)
-  fafd=safd(:,:,1)
-  open(1,file= 'fuelArrays.dat',form= 'unformatted',status= 'unknown')
-  write (1) frhof(:,:,:)
-  write (1) frhow(:,:,:)
-  write (1) fss(:,:,:)
-  write (1) fafd(:,:)
-  close (1)
-  deallocate(frhof,frhow,fss,fafd)
-else
-  open (1,file= 'treesrhof.dat',form= 'unformatted',status= 'unknown')
-  write (1) srhof
-  close (1)
-
-  open (1,file= 'treesfueldepth.dat',form= 'unformatted',status= 'unknown')
-  write (1) safd
-  close (1)
-
-  open (1,file= 'treesss.dat',form= 'unformatted',status= 'unknown')
-  write (1) sss
-  close (1)
-
-  open (1,file= 'treesmoist.dat',form= 'unformatted',status= 'unknown')
-  write (1) smoist
-  close (1)
 endif
-
-print*,'Your nfuel is 1'
-print*,'Your lfuel is',lfuel
-
-end subroutine output_1fuel
-
-subroutine find_numspecies
-!-----------------------------------------------------------------
-! This subroutine will find the number of species in any treelist
-! Added 10/22 JSM
-!-----------------------------------------------------------------
-use grid_variables
-use fuels_create_variables
-use species_variables
-
-implicit none
-
-!Local Variables
-integer i,numtrees,numspec,min_val_sp, max_val_sp
-integer,allocatable :: uni_sp(:)
-integer,allocatable :: temp_array(:)
-real,dimension(19) :: read_array
-
-! Executable Code
-numtrees = 0
-open (2,file=treefile,status= 'old')
-do
-  read (2,*,end=5) !length of treelist columns
-  numtrees = numtrees+1
-enddo
-5  rewind(2)
-
-if(itrees.eq.7)then ! Read FastFuels Files
-  allocate(temp_array(numtrees-1))
-  read(2,*) !read 1st line and throw away, has column headers
-  do i=1,numtrees-1
-    read(2,*) read_array(:)
-    if (iFIAspecies.eq.1) then
-      temp_array(i)=read_array(1)
+if (lreduced.eq.1) then
+  nonzero(:) = 1
+  lfuel = 1
+  do ift=1,nfuel
+    if (sum(rhof(ift,:,:,:)).le.0) then
+      nonzero(ift) = 0
     else
-      temp_array(i)=read_array(5) !take from sp_grp, 5th pos
+      do k=1,nz
+        if (sum(rhof(ift,:,:,k)).gt.0) lfuel = max(lfuel,k)
+      enddo
     endif
   enddo
 else
-  allocate(temp_array(numtrees))
-  do i=1,numtrees
-    read(2,*) temp_array(i)
-  enddo
+  lfuel=nz
 endif
-close(2)
 
-allocate(uni_sp(maxval(temp_array)))
-min_val_sp = minval(temp_array)-1
-max_val_sp = maxval(temp_array)
+print*,'Exporting data to .dat files'
+call write_file('treesrhof.dat',rhof(:,:,:,1:lfuel),nfuel,nx,ny,lfuel,nonzero)
+call write_file('treesmoist.dat',moist(:,:,:,1:lfuel),nfuel,nx,ny,lfuel,nonzero)
+call write_file('treesss.dat',sizescale(:,:,:,1:lfuel),nfuel,nx,ny,lfuel,nonzero)
+call write_file('treesafd.dat',fueldepth(:,:,:,1:lfuel),nfuel,nx,ny,lfuel,nonzero)
 
-i=0
+print*,'Your nfuel is',int(sum(nonzero(:)))
+print*,'Your lfuel is',lfuel
 
-do while (min_val_sp<max_val_sp)
-   i=i+1
-   min_val_sp = minval(temp_array, mask=temp_array>min_val_sp)
-   uni_sp(i) = min_val_sp
+end subroutine output_fuel
+
+subroutine write_file(filename,dataname,nfuel,nx,ny,nz,nonzero)
+!-----------------------------------------------------------------
+! write_file writes data to specified file
+!-----------------------------------------------------------------
+implicit none
+
+! Local Variables
+character(len=*),intent(in) :: filename
+integer,intent(in) :: nfuel,nx,ny,nz
+integer,intent(in) :: nonzero(nfuel)
+real,intent(in) :: dataname(nfuel,nx,ny,nz)
+
+integer :: ift
+
+! Executable Code
+open (1,file= filename,form= 'unformatted',status= 'unknown')
+do ift=1,nfuel
+  if (nonzero(ift).ne.0)  write (1) dataname(ift,:,:,:)
 enddo
-allocate(final_uni_sp(i), source=uni_sp(1:i))
-ntspecies = count(final_uni_sp==final_uni_sp)
+close (1)
 
-print*,'Number of Set Species = ',ntspecies
-print*,'Groups = ',final_uni_sp
-
-deallocate(temp_array,uni_sp)
-
-end subroutine find_numspecies
+end subroutine write_file
 
 !-------------------------------------------
-!Write New Fuellist based on old params
+! Write New Fuellist based on old params
 !-------------------------------------------
-subroutine output_1fuellist
+subroutine output_fuellist
 
 use grid_variables
 use io_variables
@@ -557,4 +410,4 @@ write(2222,'(A75)')'verbose = 0 !flag to output treelist and fuellist from resul
 close(2222)
   
 
-end subroutine output_1fuellist
+end subroutine output_fuellist

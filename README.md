@@ -28,6 +28,7 @@ The main input file which the program will look for is called ‘fuellist’ and
     dz          -- 15.0     -- None     -- Spacing of cells in the z-dimension before stretching (m)
     aa1         -- 0.1      -- None     -- Vertical stretching component defined in zcart function of metryc.f, 0 if no stretching or no     topo to vertical size
     singlefuel  -- 0        -- None     -- Flag for averaging cells' fuels into a single fuel type
+    lreduced    -- 0        -- None     -- Flag for writing files only up to lfuel rather than entire domain
     topofile    -- ‘flat’   -- None     -- Name of topo file to be read in if using  topography
     !-------------------------------------------------------------------------------------------------
     ifuelin     -- 0                          -- None       --Flag for reading existing fuel data files
