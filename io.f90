@@ -156,7 +156,7 @@ use io_variables
 implicit none
 
 ! Local Variables
-integer ift,i,j,k,lfuel
+integer ift,i,j,k,lfuel,lz
 integer,dimension(nfuel):: nonzero
 
 ! Executable Code
@@ -175,27 +175,29 @@ if (singlefuel.eq.1) then
     enddo
   enddo
 endif
+  
+nonzero(:) = 1
+lfuel = 1
+do ift=1,nfuel
+  if (sum(rhof(ift,:,:,:)).le.0.001*sum(rhof)) then
+    nonzero(ift) = 0
+  else
+    do k=1,nz
+      if (sum(rhof(ift,:,:,k)).gt.0) lfuel = max(lfuel,k)
+    enddo
+  endif
+enddo
 if (lreduced.eq.1) then
-  nonzero(:) = 1
-  lfuel = 1
-  do ift=1,nfuel
-    if (sum(rhof(ift,:,:,:)).le.0) then
-      nonzero(ift) = 0
-    else
-      do k=1,nz
-        if (sum(rhof(ift,:,:,k)).gt.0) lfuel = max(lfuel,k)
-      enddo
-    endif
-  enddo
+  lz=lfuel
 else
-  lfuel=nz
+  lz=nz
 endif
 
 print*,'Exporting data to .dat files'
-call write_file('treesrhof.dat',rhof(:,:,:,1:lfuel),nfuel,nx,ny,lfuel,nonzero)
-call write_file('treesmoist.dat',moist(:,:,:,1:lfuel),nfuel,nx,ny,lfuel,nonzero)
-call write_file('treesss.dat',sizescale(:,:,:,1:lfuel),nfuel,nx,ny,lfuel,nonzero)
-call write_file('treesafd.dat',fueldepth(:,:,:,1:lfuel),nfuel,nx,ny,lfuel,nonzero)
+call write_file('treesrhof.dat',rhof(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+call write_file('treesmoist.dat',moist(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+call write_file('treesss.dat',sizescale(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+call write_file('treesfueldepth.dat',fueldepth(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
 
 print*,'Your nfuel is',int(sum(nonzero(:)))
 print*,'Your lfuel is',lfuel
