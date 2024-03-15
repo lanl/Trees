@@ -633,3 +633,69 @@ if (nsub.gt.1) then
   print*,'Number of relocation due to crowding = ',num
 endif
 end subroutine treelist_fastfuels
+
+subroutine find_numspecies
+!-----------------------------------------------------------------
+! This subroutine will find the number of species in any treelist
+! Added 10/22 JSM
+!-----------------------------------------------------------------
+use grid_variables
+use fuels_create_variables
+use species_variables
+
+implicit none
+
+!Local Variables
+integer i,numtrees,numspec,min_val_sp, max_val_sp
+integer,allocatable :: uni_sp(:)
+integer,allocatable :: temp_array(:)
+real,dimension(19) :: read_array
+
+! Executable Code
+numtrees = 0
+open (2,file=treefile,status= 'old')
+do
+  read (2,*,end=5) !length of treelist columns
+  numtrees = numtrees+1
+enddo
+5  rewind(2)
+
+if(itrees.eq.7)then ! Read FastFuels Files
+  allocate(temp_array(numtrees-1))
+  read(2,*) !read 1st line and throw away, has column headers
+  do i=1,numtrees-1
+    read(2,*) read_array(:)
+    if (iFIAspecies.eq.1) then
+      temp_array(i)=read_array(1)
+    else
+      temp_array(i)=read_array(5) !take from sp_grp, 5th pos
+    endif
+  enddo
+else
+  allocate(temp_array(numtrees))
+  do i=1,numtrees
+    read(2,*) temp_array(i)
+  enddo
+endif
+close(2)
+
+allocate(uni_sp(maxval(temp_array)))
+min_val_sp = minval(temp_array)-1
+max_val_sp = maxval(temp_array)
+
+i=0
+
+do while (min_val_sp<max_val_sp)
+   i=i+1
+   min_val_sp = minval(temp_array, mask=temp_array>min_val_sp)
+   uni_sp(i) = min_val_sp
+enddo
+allocate(final_uni_sp(i), source=uni_sp(1:i))
+ntspecies = count(final_uni_sp==final_uni_sp)
+
+print*,'Number of Set Species = ',ntspecies
+print*,'Groups = ',final_uni_sp
+
+deallocate(temp_array,uni_sp)
+
+end subroutine find_numspecies

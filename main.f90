@@ -47,12 +47,7 @@ if(ifuelin.eq.1) call grid_readin
 call fuels_create
 
 !-----Export data to binary files
-print*,'Singlefuel',singlefuel
-if(singlefuel.eq.1)then
-  call output_1fuel
-else
-  call output_nfuel
-endif
+call output_fuel
 
 !-----Check for and run DUET
 if(ilitter.eq.2) then
@@ -65,6 +60,6 @@ if(ilitter.eq.2) then
   endif
 endif
 
-if (verbose.eq.1) call output_1fuellist
+if (verbose.eq.1) call output_fuellist
 
 end
