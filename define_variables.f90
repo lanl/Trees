@@ -223,24 +223,26 @@ else if(itrees.eq.7) then
 endif
 
 ! Set maximum density tolerances for different species (unless values provided by user)
-allocate(trhofmaxindex(ntspecies))
-do ift=1,ntspecies
-  if(trhofmax(ift).eq.0.) then
-    allocate(averagedensity(ntrees(ift)))
-    do i=1,ntrees(ift)
-      averagedensity(i)=sum(t2bulkdensity(i,:,ift))
-    enddo
-    trhofmax(ift)=3./2.*maxval(averagedensity)
-    deallocate(averagedensity)
-  endif
-enddo
-allocate(trhofmaxtmp(ntspecies))
-trhofmaxtmp=trhofmax(:)
-do ift=1,ntspecies
-  trhofmaxindex(ift)=maxloc(trhofmaxtmp,dim=1)
-  trhofmaxtmp(maxloc(trhofmaxtmp,dim=1))=minval(trhofmax)-1
-enddo
-deallocate(trhofmaxtmp)
+if(itrees.gt.0)then
+  allocate(trhofmaxindex(ntspecies))
+  do ift=1,ntspecies
+    if(trhofmax(ift).eq.0.) then
+      allocate(averagedensity(ntrees(ift)))
+      do i=1,ntrees(ift)
+        averagedensity(i)=sum(t2bulkdensity(i,:,ift))
+      enddo
+      trhofmax(ift)=3./2.*maxval(averagedensity)
+      deallocate(averagedensity)
+    endif
+  enddo
+  allocate(trhofmaxtmp(ntspecies))
+  trhofmaxtmp=trhofmax(:)
+  do ift=1,ntspecies
+    trhofmaxindex(ift)=maxloc(trhofmaxtmp,dim=1)
+    trhofmaxtmp(maxloc(trhofmaxtmp,dim=1))=minval(trhofmax)-1
+  enddo
+  deallocate(trhofmaxtmp)
+endif
 
 end subroutine define_fuels_create_variables
 
