@@ -140,8 +140,9 @@ module FF_variables
 
 real :: winddirection,windvary
 real,allocatable :: FFrhof(:,:,:),FFmoist(:,:,:)
-real,allocatable :: surfrhof(:,:),surfdepth(:,:)
+real,allocatable :: surfrhof(:,:,:),surfdepth(:,:,:)
 integer*2,allocatable :: FFspec(:,:,:)
+integer*2,allocatable :: specarray(:)
 
 end module FF_variables
 

@@ -160,6 +160,8 @@ if (iFIAspecies.eq.0) then
   enddo
 endif
 
+
+
 end subroutine define_species_variables
 
 subroutine define_3Dspecies_variables
@@ -437,7 +439,7 @@ do yt=1,periodTotal
     uavg(yt) = ((a*real(low+high))+real(low))*cos(-(winddirection+90)*PI/180)
     vavg(yt) = ((a*real(low+high))+real(low))*sin(-(winddirection+90)*PI/180)
   endif
-  if(windvary.eq.0) then
+  if(windvary.ne.0) then
     a = rand()    
     a = (-(winddirection+windvary/2+90)*PI/180)*a
     if (a.gt.0) then
@@ -493,17 +495,51 @@ allocate(gssT(ngrass,nx,ny,periodTotal)); gssT(:,:,:,:)=0.0
 
 end subroutine define_3Dduet_variables
 
+subroutine find_unique_values(FFSpec,na,nb,nc)
+
+  use FF_variables, only : specarray
+
+  integer,intent(inout) :: na,nb,nc
+  integer(2),intent(inout) :: FFSpec(na,nb,nc)
+
+  integer,dimension(290) :: FIA,vals
+  
+  FIA = 0
+  vals = 0
+
+  do i=1,na
+    do j=1,nb
+      do k=1,nc
+        FIA(int(FFSpec(i,j,k))) = FIA(int(FFSpec(i,j,k))) + 1
+      enddo
+    enddo
+  enddo
+
+  n=1
+  do i=1,290
+    if (FIA(i).ne.0)  then 
+      vals(n) = i
+      n = n+1
+    endif
+  enddo
+
+  allocate(specarray(n-1))
+  specarray(:) = vals(1:n-1)
+  !print*,'specarray: ',specarray, vals, n
+
+end subroutine find_unique_values
+
+
 subroutine define_ff_variables
 
 use grid_variables
 use FF_variables
 
+!integer,allocatable :: spectemp(:,:,:)
+
 allocate(FFrhof(nx,ny,nz),FFmoist(nx,ny,nz))
 allocate(FFspec(nx,ny,nz))
-allocate(surfrhof(nx,ny),surfdepth(nx,ny))
 
-surfrhof = 0.0
-surfdepth = 0.0
 
 open(1,file='treesrhof.dat',form='unformatted',status='old')
 read(1) FFrhof
@@ -517,6 +553,23 @@ open(unit=1,file='treesspcd.dat',form='unformatted',status='unknown')
 read(1) FFSpec
 close(1)
 
+!print*,'FFSpec:',FFSpec(:,:,1)
+
+!spectemp = int(FFSpec)
+
+!print*,'Max and Min of integer spectemp:',maxval(spectemp),minval(spectemp)
+
+!call find_unique_values(spectemp,nx,ny,nz)
+!print*,'Spectemp codes:',specarray
+!allocate(surfrhof(2,nx,ny),surfdepth(2,nx,ny))
+!surfrhof = 0.0
+!surfdepth = 0.0
+
+call find_unique_values(FFSpec,nx,ny,nz)
+
+print*,'Shape of unique species values:',shape(specarray)
+!print*,'Species codes: ',specarray
+
 !if(any(isNaN(FFSpec))) print*,'Reading in NaNs for FF Data species'
 
 print*,'Shape of FFrhof = ',shape(FFrhof)
@@ -526,6 +579,6 @@ print*,'Shape of FFmoist = ',shape(FFmoist)
 print*,'Max,Min of FFmoist = ',maxval(FFmoist),minval(FFmoist)
 if(any(isNaN(FFmoist))) print*,'Reading in NaNs for FF Data moisture'
 print*,'Shape of FFspec = ',shape(FFspec)
-print*,'Max,Min of FFspec = ',maxval(FFspec),minval(FFspec)
+!print*,'Max,Min of FFspec = ',maxval(FFspec),minval(FFspec)
 
 end subroutine define_ff_variables

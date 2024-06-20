@@ -28,13 +28,15 @@ use FF_variables
 implicit none
 
 real :: timestart, timefinish
+!logical :: there
 
 ! Executable Code
 
 ! Uncomment the below for FastFuels
-!print *,'Building input list...'
-!call FFmakeDuetInputs
-!print *,'Input list complete.'
+print *,'Building input list...'
+call FFmakeDuetInputs
+print *,'Input list complete.'
+
 
 !-----Initialize
 call cpu_time(timestart)
@@ -85,6 +87,12 @@ if(inputprogram.eq.2) print*,'Average canopy density per area = ',sum(FFrhof)/(n
 if(inputprogram.eq.2) print*,'Wind Direction = ',winddirection
 print*,'Min and Max Winds = ',min(minval(uavg),minval(vavg)),max(maxval(uavg),maxval(vavg))
 print*,'Number of timesteps run = ',YearsSinceBurn*StepsPerYear
+if (inputprogram.eq.2) then
+  print*,'------------------------------'
+  print*,'Length of Species array:',size(specarray)
+  print*,'Shape of rhof: ',shape(surfrhof)
+  print*,'------------------------------'
+endif
 print*,'Time in seconds = ',timefinish-timestart
 print*,'Time in minutes = ',(timefinish-timestart)/60.0
 

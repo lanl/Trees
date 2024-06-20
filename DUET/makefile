@@ -6,11 +6,11 @@ OBJS    = MakeFFInputs_DUET.o variables_DUET.o main_DUET.o define_variables_DUET
 FC = gfortran   ## compiler
 FFLAGS = -O2 -ffixed-line-length-none
 
-../duet.exe: ${OBJS}
+duet: ${OBJS}
 	${FC} -o $@ ${FFLAGS} ${OBJS}
 
 clean: 
-	rm ../duet.exe *.o *.mod ../duet*.dat ../DUETInputs
+	rm duet *.o *.mod duet*.dat
 
 # optimized suffix rules
 .SUFFIXES: .f .f90

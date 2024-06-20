@@ -245,7 +245,13 @@ end subroutine output_1fuel
 
 subroutine output_FF
 
-use FF_variables, only : surfrhof,surfdepth
+use FF_variables, only : surfrhof,surfdepth,specarray
+
+implicit none
+
+integer :: s
+
+! Executable Code
 
 open (11,file='surface_rhof.dat',form='unformatted',status='unknown')
 write (11) surfrhof
@@ -254,6 +260,15 @@ close (11)
 open (111,file='surface_depth.dat',form='unformatted',status='unknown')
 write (111) surfdepth
 close (111)
+
+open (1111,file='surface_species.dat',form='formatted',status='unknown')
+!write (1111) specarray
+  do s=1,size(specarray)
+    print*,'Verifying specarray:',specarray(s)
+    write (1111,'(I16)') specarray(s)
+  enddo
+close(1111)
+
 
 end subroutine output_FF
 
