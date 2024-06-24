@@ -51,7 +51,7 @@ call output_fuel
 
 !-----Check for and run DUET
 if(ilitter.eq.2) then
-  inquire(file='DUET', exist=DUETexists)
+  inquire(file='../DUET', exist=DUETexists)
   if (DUETexists) then
     print *, "Found DUET"
     call system(command)

@@ -1,8 +1,8 @@
 ! ----------------------------------
 ! FIRETEC domain info
 ! ----------------------------------
-      nx  = 100 
-      ny  = 100 
+      nx  = 300 
+      ny  = 200 
       nz  = 41                      ! Size of HIGRAD/FIRETEC grid [cells]
       dx  = 2.0 
       dy  = 2.0 
@@ -41,7 +41,7 @@
 ! ----------------------------------
 ! Litter switch
 ! ----------------------------------
-      ilitter = 1                       ! Litter flag; 0=no litter, 1=basic litter, 2=DUET
+      ilitter = 2                       ! Litter flag; 0=no litter, 1=basic litter, 2=DUET
       !ilitter eq 1 (BASIC) info
       litterconstant = 5  ! Exponential constant to determine increase of litter mass under trees
       lrho = 4.667,4.667       ! litter bulk densities for each fuel type [kg/m3]
@@ -55,10 +55,11 @@
       StepsPerYear = 1                ! number of time steps during the year: 1 = yearly, 2 = semiyearly, 4 = seasonally, 6 = bimonthly, 12 = monthly
       relhum = 0.1                    ! relative humidity of the area
       grassstep = 1                   ! StepPerYear in which the grass grows
-      iFIA
+      iFIA = 1
+      FIA = 121,819
       randomwinds = 2                 ! if windprofile=2, choose 1 for up to 3m/s, 2 for up to 6m/s, 3 for up to 9m/s, etc.
       
-      litout = 1                      ! flag to turn on extra output files for visualizations of DUET functionality
+      litout = 0                      ! flag to turn on extra output files for visualizations of DUET functionality
       gmoistoverride = 0        ! value for moisture if override is desired; SET TO 0 TO TURN OFF
       uavg = 0,0,15,15,20             ! wind velocity m/s average (u) each year since burn
       vavg = 0,0,15,15,20             ! wind velocity m/s average (v) each year since burn

@@ -28,14 +28,22 @@ use FF_variables
 implicit none
 
 real :: timestart, timefinish
-!logical :: there
+logical :: DUETexists
 
 ! Executable Code
 
+inquire(file='DUETInputs', exist=DUETexists)
+if (DUETexists) then
+  print *, "Using FIRETEC Trees."
+else
+  call FFmakeDuetInputs
+endif
+
+
 ! Uncomment the below for FastFuels
-print *,'Building input list...'
-call FFmakeDuetInputs
-print *,'Input list complete.'
+!print *,'Building input list...'
+!call FFmakeDuetInputs
+!print *,'Input list complete.'
 
 
 !-----Initialize

@@ -7,7 +7,6 @@
 ! will get.
 !
 ! Author: Jenna McDanold (2/21)
-! Last Modified: 4/22 (AJJ)
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! © 2022. Triad National Security, LLC. All rights reserved.  This
 ! program was produced under U.S. Government contract 89233218CNA000001
@@ -70,6 +69,9 @@ real,dimension(3) :: lmoistsum,lsizesum
 
 ! Executable code
 
+print*,'ngrass =',ngrass
+
+if(inputprogram.eq.1) specarray = FIA
 
 if(inputprogram.eq.2) then
   !trhof(1,:,:,:) = FFrhof
@@ -77,6 +79,8 @@ if(inputprogram.eq.2) then
   !tmoist(1,:,:,:) = FFmoist
   !if(any(isNaN(tmoist))) print*,'Reading in NaNs for FF Data moisture'
   fuels = size(specarray)!+ngrass
+  !print*,'fuels =',fuels
+  !print*,'ngrass =',ngrass
   fueltotal = fuels
 
   deallocate(fuelSA,leafdropfreq,decay, &
@@ -166,7 +170,7 @@ else
 endif
 
 print*,'fueltotal =',fueltotal
-print*,'fuels =',fuels
+!print*,'fuels =',fuels
 
 !allocate(fueldepth(fueltotal+ngrass,nx,ny,nz)); fueldepth = 0.0
 !print*,'Shape of fueldepth:',shape(fueldepth)
@@ -179,12 +183,13 @@ if(any(isNaN(lrhofT))) print*,'lrhofT is NaN on line 84'
 !if(inputprogram.eq.2) print*,'Dispersing litter'
 do ift=1,fueltotal
   print*,'Dispersing litter for species',ift
-  if(any(isNaN(lrhofT))) print*,'lrhofT is NaN in line 90'
+  !if(any(isNaN(lrhofT))) print*,'lrhofT is NaN in line 90'
   do i=1,nx
     do j=1,ny
       do k=1,nz-1
         if(trhof(ift,i,j,k).gt.0) then
           foliage = trhof(ift,i,j,k)
+          !print*,'foliage =',foliage
           zmid = 0.5*(zheight(i,j,k+1)-zheight(i,j,k))+zheight(i,j,k)
           !litsums(ift) = litsums(ift) + foliage
           !if (inputprogram.eq.2) then
@@ -202,19 +207,23 @@ do ift=1,fueltotal
           !print*,'ift=',ift
           !if(any(isNaN(lrhofT))) print*,'lrhofT is NaN in line 156'
           tfall = zmid/vterminal(ift)  ! Time for leaf to hit ground
+          !if (tfall.eq.0) print*,'tfall is 0!!'
           !if(isNaN(tfall)) then
           !  print*,'tfall is Nan'
           !  print*,'zmid = ',zmid
           !  print*,'vterminal = ',vterminal(ift)
           !endif
           WalkHorz = 0.1*sqrt(fuelSA(ift))/Froude(ift) !! FIXME
+          !if (WalkHorz.eq.0) print*,'WalkHorz is 0!!'
           !if(isNan(WalkHorz)) then
           !  print*,'WalkHorz is Nan'
           !  print*,'fuelSA = ',fuelSA(ift)
           !  print*,'Froude = ',Froude(ift)
           !endif
           WalkSteps = ceiling(0.5*tfall)
+          !if (WalkSteps.eq.0) print*,'WalkSteps is 0!!'
           groundradius = sqrt(dx*dy/PI)+WalkSteps*WalkHorz
+          !if (groundradius.eq.0) print*,'groundradius is 0!!'
           !For each year since the last burn...
           yt=1
           do yr=1,YearsSinceBurn
@@ -347,7 +356,10 @@ enddo
 
 !print*,'Litsums:',litsums
 
-!print*,'Sum of lrhofT per species:'
+print*,'Sum of lrhofT per species:'
+do ift=1,fueltotal
+  print*,'Species ',ift,'rhof = ',sum(lrhofT(ift,:,:,1))
+enddo
 
 if(inputprogram.eq.2) then
 !  do h=1,fuels
@@ -421,21 +433,29 @@ do j=1,ny
         ct=0
         do jj=j-1,j+1
           do ii=i-1,i+1
-            if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
-              ct=ct+1
+            if(jj.ge.1.and.jj.le.ny) then
+              if(ii.ge.1.and.ii.le.nx) then
+                if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
+                  ct=ct+1
+                endif
+              endif
             endif
           enddo
         enddo
         if(ct.gt.0) then
-          do jj=j-3,j+3
-            do ii=i-3,i+3
-            !if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
-                do ift=1,fueltotal
-                  lrhofT(ift,ii,jj,yt) = lrhofT(ift,ii,jj,yt) + &
-                     0.5/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
-                  lrhofT(ift,i,j,yt) = lrhofT(ift,i,j,yt) - &
-                     0.5/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
-                enddo
+          do jj=j-10,j+10
+            do ii=i-10,i+10
+              if(jj.ge.1.and.jj.le.ny) then
+                if(ii.ge.1.and.ii.le.nx) then
+                  !if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
+                  do ift=1,fueltotal
+                    lrhofT(ift,ii,jj,yt) = lrhofT(ift,ii,jj,yt) + &
+                       0.9/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
+                    lrhofT(ift,i,j,yt) = lrhofT(ift,i,j,yt) - &
+                       0.9/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
+                  enddo
+                endif
+              endif
             !endif
             enddo
           enddo
@@ -497,9 +517,10 @@ if (litout.eq.1) then
   write (12) lrhofT
   close (12)
 endif
+print*,'Litter max and min:',maxval(lrhofT),minval(lrhofT)
 !if(any(isNaN(lrhofT))) print*,'The Problem is in LrhofT in Decay and Compaction'
 print*,'Grass growing...'
-print*,'grass info = '
+!print*,'grass info = '
 print*,'grassconstant = ',grassconstant
 ! Add grass
 do ift=1,ngrass
@@ -565,9 +586,9 @@ do i=1,nx
     do ift=1,ngrass
       !if(inputprogram.eq.1) then
         rhof(ift,i,j,1)=grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        fueldepth(ift,i,j,1)=gdepth(ift)
-        moist(ift,i,j,1)=gmoisture(ift)
-        sizescale(ift,i,j,1)=gss(ift)
+        fueldepth(ift,i,j,1)=gdepth(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        moist(ift,i,j,1)=gmoisture(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        sizescale(ift,i,j,1)=gss(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift,i,j) = surfrhof(ift,i,j) + grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         !if(any(isnan(surfrhof))) print*,'NaNs in grhofT'
@@ -589,10 +610,11 @@ do i=1,nx
     !fill litter!
     do ift=1,fueltotal
       !if(inputprogram.eq.1) then
-        rhof(ift+ngrass+fueltotal,i,j,1)     =lrhof(ift,i,j,1)
-        fueldepth(ift+ngrass+fueltotal,i,j,1)=lfueldepth(ift,i,j)
-        moist(ift+ngrass+fueltotal,i,j,1)    =lmoist(ift,i,j,1)
-        sizescale(ift+ngrass+fueltotal,i,j,1)=lsizescale(ift,i,j,1)
+      !print*,'iteration:',ift+ngrass
+        rhof(ift+ngrass,i,j,1)     =lrhof(ift,i,j,1)
+        fueldepth(ift+ngrass,i,j,1)=lfueldepth(ift,i,j)
+        moist(ift+ngrass,i,j,1)    =lmoist(ift,i,j,1)
+        sizescale(ift+ngrass,i,j,1)=lsizescale(ift,i,j,1)
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift+ngrass,i,j) = surfrhof(ift+ngrass,i,j) + lrhof(ift,i,j,1)
         !if(any(isnan(lrhof))) print*,'NaNs in lrhof'
@@ -608,6 +630,7 @@ surfrhof = rhof(:,:,:,1)
 print*,'Shape of surfrhof:',shape(surfrhof)
 surfdepth = fueldepth(:,:,:,1)
 print*,'Shape of surfdepth:',shape(surfdepth)
+print*,'Max and Min of surfdepth:',maxval(surfdepth),minval(surfdepth)
 
 if (gmoistoverride.ne.0) then
   print*,'gmoistoverride = ',gmoistoverride
@@ -617,6 +640,26 @@ if (gmoistoverride.ne.0) then
     moist(ngrass+fueltotal:,:,:,1)) * moist(ngrass+fueltotal:,:,:,1)
   print*,'max value of moisture after adjustment = ',maxval(lmoist(:,:,:,1)+moist(ngrass+fueltotal:,:,:,1))
 endif
+!print*,'1'
+open (12,file='surface_rhof.dat',form='unformatted',status='unknown')
+write (12) surfrhof
+close (12)
+!print*,'2'
+open (12,file='surface_depth.dat',form='unformatted',status='unknown')
+write (12) surfdepth
+close (12)
+!print*,'3'
+open (12,file='alltrees.dat',form='unformatted',status='unknown')
+write (12) trhof
+close (12)
+!print*,'4'
+!print*,'specarray = ',specarray
+open (1111,file='surface_species.dat',form='formatted',status='unknown')
+  do s=1,size(specarray)
+    !print*,'Verifying specarray:',specarray(s)
+    write (1111,'(I16)') specarray(s)
+  enddo
+close(1111)
 
 print*,"Finished DUET litter"
 if(inputprogram.eq.1) then

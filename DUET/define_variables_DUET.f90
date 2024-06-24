@@ -43,9 +43,9 @@ integer :: i,j,k
 
   ntreefueltypes = istem*2+tfuelbins
   !fueltotal = fueltotal !infuel+ntspecies*tfuelbins
-  allocate(rhof(2*fueltotal+ngrass,nx,ny,nz)); rhof(:,:,:,:)=0.0
-  allocate(sizescale(2*fueltotal+ngrass,nx,ny,nz)); sizescale(:,:,:,:)=0.0
-  allocate(moist(2*fueltotal+ngrass,nx,ny,nz)); moist(:,:,:,:)=0.0
+  allocate(rhof(fueltotal+ngrass,nx,ny,nz)); rhof(:,:,:,:)=0.0
+  allocate(sizescale(fueltotal+ngrass,nx,ny,nz)); sizescale(:,:,:,:)=0.0
+  allocate(moist(fueltotal+ngrass,nx,ny,nz)); moist(:,:,:,:)=0.0
   allocate(zheight(nx,ny,nz)); zheight(:,:,:)=0.0
 
   allocate(trhof(fueltotal,nx,ny,nz)); trhof(:,:,:,:)=0.0

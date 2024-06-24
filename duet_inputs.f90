@@ -149,7 +149,7 @@ write(10,*) '      ntspecies = ',ntspecies
 write(10,*) '      tfuelbins = ',tfuelbins
 write(10,*) '      grassconstant = ',grassconstant
 write(10,*) '      litterconstant = ',litterconstant
-write(10,*) '      ngrass = ',duet_ngrass
+write(10,*) '      ngrass = ',ngrass
 write(10,*) '      grassstep = ',grassstep
 write(10,*) '      gmoistoverride = ',gmoistoverride
 write(10,*) '                                '
