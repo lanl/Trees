@@ -45,7 +45,7 @@ use duet_variables, only : vterminal,StepsPerYear,YearsSinceBurn, &
   lssT,gssT,lafdT,gafdT,compact,moistspec,ssspec,dragco,relhum, &
   periodTotal,litout,inputprogram
 use species_variables
-use FF_variables, only : FFrhof,FFmoist,FFspec,surfrhof,surfdepth,specarray
+use FF_variables, only : FFrhof,FFmoist,FFspec,surfrhof,surfdepth,surfmoist,specarray
 
 implicit none
 
@@ -155,14 +155,21 @@ if(inputprogram.eq.2) then
 
   print*,'leafdropfreq:',leafdropfreq
 
-  allocate(surfrhof(fuels+ngrass,nx,ny),surfdepth(fuels+ngrass,nx,ny))
+  allocate(surfrhof(fuels+ngrass,nx,ny),surfdepth(fuels+ngrass,nx,ny),surfmoist(fuels+ngrass,nx,ny))
+  surfrhof = 0.0
+  surfdepth = 0.0
+  surfmoist = 0.0
   print*,'Shape of surfrhof and surfdepth:',shape(surfrhof),shape(surfdepth)
   !fueltotal = fuels
   !allocate(fueldepth(fuels+ngrass,nx,ny,nz)); fueldepth = 0.0
   !print*,'Shape of fueldepth:',shape(fueldepth)
 
 else
-  allocate(fueldepth(fueltotal+ngrass,nx,ny,nz)); fueldepth = 0.0
+  allocate(surfrhof(fuels+ngrass,nx,ny),surfdepth(fuels+ngrass,nx,ny),surfmoist(fuels+ngrass,nx,ny))
+  surfrhof = 0.0
+  surfdepth = 0.0
+  surfmoist = 0.0
+  allocate(fueldepth(2*fueltotal+ngrass,nx,ny,nz)); fueldepth = 0.0
   print*,'Shape of fueldepth:',shape(fueldepth) 
   !fuels = size(specarray)!+ngrass
   !fueltotal = fuels
@@ -615,10 +622,10 @@ do i=1,nx
     do ift=1,fueltotal
       !if(inputprogram.eq.1) then
       !print*,'iteration:',ift+ngrass
-        rhof(ift+ngrass,i,j,1)     =lrhof(ift,i,j,1)
-        fueldepth(ift+ngrass,i,j,1)=lfueldepth(ift,i,j)
-        moist(ift+ngrass,i,j,1)    =lmoist(ift,i,j,1)
-        sizescale(ift+ngrass,i,j,1)=lsizescale(ift,i,j,1)
+        rhof(ift+ngrass+fueltotal,i,j,1)     =lrhof(ift,i,j,1)
+        fueldepth(ift+ngrass+fueltotal,i,j,1)=lfueldepth(ift,i,j)
+        moist(ift+ngrass+fueltotal,i,j,1)    =lmoist(ift,i,j,1)
+        sizescale(ift+ngrass+fueltotal,i,j,1)=lsizescale(ift,i,j,1)
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift+ngrass,i,j) = surfrhof(ift+ngrass,i,j) + lrhof(ift,i,j,1)
         !if(any(isnan(lrhof))) print*,'NaNs in lrhof'
@@ -634,7 +641,11 @@ surfrhof = rhof(:,:,:,1)
 print*,'Shape of surfrhof:',shape(surfrhof)
 surfdepth = fueldepth(:,:,:,1)
 print*,'Shape of surfdepth:',shape(surfdepth)
+surfmoist = moist(:,:,:,1)
+print*,'Max and Min of surfrhof:',maxval(surfrhof),minval(surfrhof)
 print*,'Max and Min of surfdepth:',maxval(surfdepth),minval(surfdepth)
+print*,'Max and Min of surfmoist:',maxval(surfmoist),minval(surfmoist)
+
 
 if (gmoistoverride.ne.0) then
   print*,'gmoistoverride = ',gmoistoverride
@@ -644,6 +655,7 @@ if (gmoistoverride.ne.0) then
     moist(ngrass+fueltotal:,:,:,1)) * moist(ngrass+fueltotal:,:,:,1)
   print*,'max value of moisture after adjustment = ',maxval(lmoist(:,:,:,1)+moist(ngrass+fueltotal:,:,:,1))
 endif
+
 !print*,'1'
 open (12,file='surface_rhof.dat',form='unformatted',status='unknown')
 write (12) surfrhof
@@ -656,6 +668,11 @@ close (12)
 open (12,file='alltrees.dat',form='unformatted',status='unknown')
 write (12) trhof
 close (12)
+
+open (12,file='surface_moist.dat',form='unformatted',status='unknown')
+write (12) surfmoist
+close (12)
+
 !print*,'4'
 !print*,'specarray = ',specarray
 open (1111,file='surface_species.dat',form='formatted',status='unknown')
