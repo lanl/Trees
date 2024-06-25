@@ -422,7 +422,7 @@ endif
 
 
 print*,'Beginning diffusion...'
-!print*,'Sum before diffusion = ',sum(lrhofT)
+print*,'Sum before diffusion = ',sum(lrhofT)
 ! Diffusion from each cell to the surrounding cells provided the density is less
 ! than that within the center cell
 do j=1,ny
@@ -430,29 +430,32 @@ do j=1,ny
     yt=1
     do yr=1,YearsSinceBurn
       do spy=1,StepsPerYear
-        ct=0
-        do jj=j-1,j+1
-          do ii=i-1,i+1
-            if(jj.ge.1.and.jj.le.ny) then
-              if(ii.ge.1.and.ii.le.nx) then
-                if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
-                  ct=ct+1
-                endif
-              endif
-            endif
-          enddo
-        enddo
-        if(ct.gt.0) then
-          do jj=j-10,j+10
-            do ii=i-10,i+10
+        ct=5
+        !do jj=j-1,j+1
+        !  do ii=i-1,i+1
+        !    if(jj.ge.1.and.jj.le.ny) then
+        !      if(ii.ge.1.and.ii.le.nx) then
+        if(sum(lrhofT(:,i,j,1:yt)).gt.1.5) then
+          !  ct = ct+1
+          !endif
+                !if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
+                !  ct=ct+1
+                !endif
+          !      endif
+          !    endif
+          !  enddo
+          !enddo
+          !if(ct.gt.0) then
+          do jj=j-ct,j+ct
+            do ii=i-ct,i+ct
               if(jj.ge.1.and.jj.le.ny) then
                 if(ii.ge.1.and.ii.le.nx) then
                   !if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
                   do ift=1,fueltotal
                     lrhofT(ift,ii,jj,yt) = lrhofT(ift,ii,jj,yt) + &
-                       0.9/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
+                       0.5/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
                     lrhofT(ift,i,j,yt) = lrhofT(ift,i,j,yt) - &
-                       0.9/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
+                       0.5/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
                   enddo
                 endif
               endif
@@ -466,7 +469,7 @@ do j=1,ny
 enddo
 !if(any(isNaN(lrhofT))) print*,'The Problem is in LrhofT In Diffusion'
 print*,'Diffusion complete'
-!print*,'Sum after diffusion = ',sum(lrhofT)
+print*,'Sum after diffusion = ',sum(lrhofT)
 
 if (litout.eq.1) then
   open  (1,file='afterdiff.dat',  form='unformatted',status='unknown')
@@ -546,8 +549,9 @@ do ift=1,ngrass
             call random_number(g)
             if(g.lt.0.75) g = g+0.75
             if(g.gt.1) g = 1
-            grhofT(ift,i,j,yt)=grhofT(ift,i,j,yt)+ &
-              g*grho(ift)*shadeFactor*litterFactor*exp(-decay(ift)*(yt3-1))
+            grhofT(ift,i,j,yt)=g*grho(ift)*shadeFactor*litterFactor*exp(-decay(ift)*(yt3-1))
+            !grhofT(ift,i,j,yt)=grhofT(ift,i,j,yt)+ &
+            !  g*grho(ift)*shadeFactor*litterFactor*exp(-decay(ift)*(yt3-1))
           enddo
           yt=yt+1
         enddo
