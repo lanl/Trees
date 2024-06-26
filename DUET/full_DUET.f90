@@ -587,19 +587,22 @@ do i=1,nx
       lrhof(ift,i,j,1)=sum(lrhofT(ift,i,j,:))
       if(sum(lrhofT(:,i,j,:)).eq.0) then
         lfueldepth(ift,i,j) = 0
+        lmoist(ift,i,j,1) = 0
+        lsizescale(ift,i,j,1) = 0
       else
         lfueldepth(ift,i,j) = maxval(lafdT(ift,i,j,:))*sum(lrhofT(ift,i,j,:))/sum(lrhofT(:,i,j,:))
+        lmoist(ift,i,j,1)=sum(lmoistT(ift,i,j,:))*sum(lrhofT(ift,i,j,:))/sum(lrhofT(:,i,j,:))
+        lsizescale(ift,i,j,1)=sum(lssT(ift,i,j,:))*sum(lrhofT(ift,i,j,:))/sum(lrhofT(:,i,j,:))
       endif
-      lmoist(ift,i,j,1)=sum(lmoistT(ift,i,j,:))*sum(lrhofT(ift,i,j,:))/sum(lrhofT(:,i,j,:))
-      lsizescale(ift,i,j,1)=sum(lssT(ift,i,j,:))*sum(lrhofT(ift,i,j,:))/sum(lrhofT(:,i,j,:))
     enddo
     !fill grass!
     do ift=1,ngrass
       !if(inputprogram.eq.1) then
-        rhof(ift,i,j,1)=grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        rhof(ift,i,j,1)     =grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         fueldepth(ift,i,j,1)=gdepth(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        moist(ift,i,j,1)=gmoisture(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        moist(ift,i,j,1)    =gmoisture(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         sizescale(ift,i,j,1)=gss(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        if(isnan(moist(ift,i,j,1))) print*,'moist is Nan in grass... ift,i,j',ift,i,j
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift,i,j) = surfrhof(ift,i,j) + grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         !if(any(isnan(surfrhof))) print*,'NaNs in grhofT'
@@ -615,6 +618,7 @@ do i=1,nx
           fueldepth(ift+ngrass,i,j,k) = tfueldepth(ift,i,j,k)
           moist(ift+ngrass,i,j,k)     = tmoist(ift,i,j,k)    
           sizescale(ift+ngrass,i,j,k) = tsizescale(ift,i,j,k)
+          if(isnan(moist(ift+ngrass,i,j,1))) print*,'moist is Nan in trees... ift,i,j',ift,i,j
         enddo
       enddo
     !endif
@@ -626,6 +630,7 @@ do i=1,nx
         fueldepth(ift+ngrass+fueltotal,i,j,1)=lfueldepth(ift,i,j)
         moist(ift+ngrass+fueltotal,i,j,1)    =lmoist(ift,i,j,1)
         sizescale(ift+ngrass+fueltotal,i,j,1)=lsizescale(ift,i,j,1)
+        if(isnan(moist(ift+ngrass+fueltotal,i,j,1))) print*,'moist is Nan in litter... ift,i,j',ift,i,j
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift+ngrass,i,j) = surfrhof(ift+ngrass,i,j) + lrhof(ift,i,j,1)
         !if(any(isnan(lrhof))) print*,'NaNs in lrhof'
@@ -645,6 +650,10 @@ surfmoist = moist(:,:,:,1)
 print*,'Max and Min of surfrhof:',maxval(surfrhof),minval(surfrhof)
 print*,'Max and Min of surfdepth:',maxval(surfdepth),minval(surfdepth)
 print*,'Max and Min of surfmoist:',maxval(surfmoist),minval(surfmoist)
+print*,'Sum of surfrhof:',sum(surfrhof)
+print*,'Sum of surfdepth:',sum(surfdepth)
+print*,'Sum of surfmoist:',sum(surfmoist)
+print*,'Sum of moist:',sum(moist(:,:,:,1))
 
 
 if (gmoistoverride.ne.0) then
