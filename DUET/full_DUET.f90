@@ -65,6 +65,7 @@ real :: untransformedx,untransformedy,inell
 real :: rhocolumn,shadefactor,litterFactor
 real :: g,foliage
 real,allocatable :: ellarea(:,:),litdecex(:,:,:),litsums(:),litprop(:),litprop2(:),specsum(:)
+real, allocatable :: surfrhof2(:,:,:),surfdepth2(:,:,:),surfmoist2(:,:,:)
 real,dimension(3) :: lmoistsum,lsizesum
 
 ! Executable code
@@ -72,6 +73,7 @@ real,dimension(3) :: lmoistsum,lsizesum
 print*,'ngrass =',ngrass
 
 if(inputprogram.eq.1) specarray = FIA
+
 
 if(inputprogram.eq.2) then
   !trhof(1,:,:,:) = FFrhof
@@ -97,10 +99,10 @@ if(inputprogram.eq.2) then
   moistspec(fuels),dragco(fuels),ssspec(fuels),compact(fuels),litprop2(fuels), &
   specsum(fuels))
 
-  allocate(rhof(fuels+ngrass,nx,ny,nz)); rhof(:,:,:,:)=0.0
-  allocate(sizescale(fuels+ngrass,nx,ny,nz)); sizescale(:,:,:,:)=0.0
-  allocate(moist(fuels+ngrass,nx,ny,nz)); moist(:,:,:,:)=0.0
-  allocate(fueldepth(fuels+ngrass,nx,ny,nz)); fueldepth(:,:,:,:) = 0.0
+  allocate(rhof(2*fuels+ngrass,nx,ny,nz)); rhof(:,:,:,:)=0.0
+  allocate(sizescale(2*fuels+ngrass,nx,ny,nz)); sizescale(:,:,:,:)=0.0
+  allocate(moist(2*fuels+ngrass,nx,ny,nz)); moist(:,:,:,:)=0.0
+  allocate(fueldepth(2*fuels+ngrass,nx,ny,nz)); fueldepth(:,:,:,:) = 0.0
 
   allocate(trhof(fuels+ngrass,nx,ny,nz)); trhof(:,:,:,:)=0.0
   allocate(tsizescale(fuels+ngrass,nx,ny,nz)); tsizescale(:,:,:,:)=0.0
@@ -165,11 +167,13 @@ if(inputprogram.eq.2) then
   !print*,'Shape of fueldepth:',shape(fueldepth)
 
 else
+  fuels = fueltotal
+
   allocate(surfrhof(fuels+ngrass,nx,ny),surfdepth(fuels+ngrass,nx,ny),surfmoist(fuels+ngrass,nx,ny))
   surfrhof = 0.0
   surfdepth = 0.0
   surfmoist = 0.0
-  allocate(fueldepth(2*fueltotal+ngrass,nx,ny,nz)); fueldepth = 0.0
+  allocate(fueldepth(2*fuels+ngrass,nx,ny,nz)); fueldepth = 0.0
   print*,'Shape of fueldepth:',shape(fueldepth) 
   !fuels = size(specarray)!+ngrass
   !fueltotal = fuels
@@ -429,7 +433,7 @@ endif
 
 
 print*,'Beginning diffusion...'
-print*,'Sum before diffusion = ',sum(lrhofT)
+!print*,'Sum before diffusion = ',sum(lrhofT)
 ! Diffusion from each cell to the surrounding cells provided the density is less
 ! than that within the center cell
 do j=1,ny
@@ -437,35 +441,24 @@ do j=1,ny
     yt=1
     do yr=1,YearsSinceBurn
       do spy=1,StepsPerYear
-        ct=5
-        !do jj=j-1,j+1
-        !  do ii=i-1,i+1
-        !    if(jj.ge.1.and.jj.le.ny) then
-        !      if(ii.ge.1.and.ii.le.nx) then
-        if(sum(lrhofT(:,i,j,1:yt)).gt.1.5) then
-          !  ct = ct+1
-          !endif
-                !if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
-                !  ct=ct+1
-                !endif
-          !      endif
-          !    endif
-          !  enddo
-          !enddo
-          !if(ct.gt.0) then
-          do jj=j-ct,j+ct
-            do ii=i-ct,i+ct
-              if(jj.ge.1.and.jj.le.ny) then
-                if(ii.ge.1.and.ii.le.nx) then
-                  !if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
-                  do ift=1,fueltotal
-                    lrhofT(ift,ii,jj,yt) = lrhofT(ift,ii,jj,yt) + &
-                       0.5/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
-                    lrhofT(ift,i,j,yt) = lrhofT(ift,i,j,yt) - &
-                       0.5/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
-                  enddo
-                endif
-              endif
+        ct=0
+        do jj=j-1,j+1
+          do ii=i-1,i+1
+            if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
+              ct=ct+1
+            endif
+          enddo
+        enddo
+        if(ct.gt.0) then
+          do jj=j-3,j+3
+            do ii=i-3,i+3
+            !if(sum(lrhofT(:,ii,jj,1:yt))-sum(lrhofT(:,i,j,1:yt)).lt.0) then
+                do ift=1,fueltotal
+                  lrhofT(ift,ii,jj,yt) = lrhofT(ift,ii,jj,yt) + &
+                     0.5/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
+                  lrhofT(ift,i,j,yt) = lrhofT(ift,i,j,yt) - &
+                     0.5/StepsPerYear*1/ct*sum(lrhofT(ift,i,j,1:yt))
+                enddo
             !endif
             enddo
           enddo
@@ -473,8 +466,7 @@ do j=1,ny
       enddo
     enddo
   enddo
-enddo
-!if(any(isNaN(lrhofT))) print*,'The Problem is in LrhofT In Diffusion'
+enddo!if(any(isNaN(lrhofT))) print*,'The Problem is in LrhofT In Diffusion'
 print*,'Diffusion complete'
 print*,'Sum after diffusion = ',sum(lrhofT)
 
@@ -602,7 +594,7 @@ do i=1,nx
         fueldepth(ift,i,j,1)=gdepth(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         moist(ift,i,j,1)    =gmoisture(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         sizescale(ift,i,j,1)=gss(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        if(isnan(moist(ift,i,j,1))) print*,'moist is Nan in grass... ift,i,j',ift,i,j
+        !if(isnan(moist(ift,i,j,1))) print*,'moist is Nan in grass... ift,i,j',ift,i,j
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift,i,j) = surfrhof(ift,i,j) + grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         !if(any(isnan(surfrhof))) print*,'NaNs in grhofT'
@@ -618,7 +610,7 @@ do i=1,nx
           fueldepth(ift+ngrass,i,j,k) = tfueldepth(ift,i,j,k)
           moist(ift+ngrass,i,j,k)     = tmoist(ift,i,j,k)    
           sizescale(ift+ngrass,i,j,k) = tsizescale(ift,i,j,k)
-          if(isnan(moist(ift+ngrass,i,j,1))) print*,'moist is Nan in trees... ift,i,j',ift,i,j
+          !if(isnan(moist(ift+ngrass,i,j,1))) print*,'moist is Nan in trees... ift,i,j',ift,i,j
         enddo
       enddo
     !endif
@@ -630,7 +622,7 @@ do i=1,nx
         fueldepth(ift+ngrass+fueltotal,i,j,1)=lfueldepth(ift,i,j)
         moist(ift+ngrass+fueltotal,i,j,1)    =lmoist(ift,i,j,1)
         sizescale(ift+ngrass+fueltotal,i,j,1)=lsizescale(ift,i,j,1)
-        if(isnan(moist(ift+ngrass+fueltotal,i,j,1))) print*,'moist is Nan in litter... ift,i,j',ift,i,j
+        !if(isnan(moist(ift+ngrass+fueltotal,i,j,1))) print*,'moist is Nan in litter... ift,i,j',ift,i,j
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift+ngrass,i,j) = surfrhof(ift+ngrass,i,j) + lrhof(ift,i,j,1)
         !if(any(isnan(lrhof))) print*,'NaNs in lrhof'
@@ -640,20 +632,55 @@ do i=1,nx
     enddo
   enddo
 enddo
+!print*,'moisture sum of grass in writing:',sum(moist(1,:,:,1))
+!print*,'moisture sum of tree1 in writing:',sum(moist(2,:,:,1))
+!print*,'moisture sum of tree2 in writing:',sum(moist(3,:,:,1))
+!print*,'moisture sum of litt1 in writing:',sum(moist(4,:,:,1))
+!print*,'moisture sum of litt2 in writing:',sum(moist(5,:,:,1))
+!print*,'moisture sum of litt1 in lrhof:',sum(lmoist(1,:,:,1))
+!print*,'moisture sum of litt2 in lrhof:',sum(lmoist(2,:,:,1))
+!print*,'sum of rhof2 in lrhof:',sum(lrhof(3,:,:,1))
+
 !print*,'lrhof max =',maxval(lrhof)
 !print*,'grhofT max = ',maxval(grhofT)
-surfrhof = rhof(:,:,:,1)
+surfrhof(1,:,:) = rhof(1,:,:,1)
+surfdepth(1,:,:) = fueldepth(1,:,:,1)
+surfmoist(1,:,:) = moist(1,:,:,1)
+print*,'Sum of surface fuel in layer 1 is ',sum(surfrhof(1,:,:))
+
+do s=ngrass+1,ngrass+fuels
+  surfrhof(s,:,:) = rhof(fuels+s,:,:,1)
+  surfdepth(s,:,:) = fueldepth(fuels+s,:,:,1)
+  surfmoist(s,:,:) = moist(fuels+s,:,:,1)
+  print*,'Sum of surface fuel in layer ',s,' is ',sum(surfrhof(s,:,:))
+enddo
 print*,'Shape of surfrhof:',shape(surfrhof)
-surfdepth = fueldepth(:,:,:,1)
 print*,'Shape of surfdepth:',shape(surfdepth)
-surfmoist = moist(:,:,:,1)
-print*,'Max and Min of surfrhof:',maxval(surfrhof),minval(surfrhof)
-print*,'Max and Min of surfdepth:',maxval(surfdepth),minval(surfdepth)
-print*,'Max and Min of surfmoist:',maxval(surfmoist),minval(surfmoist)
-print*,'Sum of surfrhof:',sum(surfrhof)
-print*,'Sum of surfdepth:',sum(surfdepth)
-print*,'Sum of surfmoist:',sum(surfmoist)
-print*,'Sum of moist:',sum(moist(:,:,:,1))
+
+allocate(surfrhof2(2,nx,ny),surfdepth2(2,nx,ny),surfmoist2(2,nx,ny))
+
+surfrhof2  = 0.0
+surfdepth2 = 0.0
+surfmoist2 = 0.0
+
+surfrhof2(1,:,:) = surfrhof(1,:,:)
+surfdepth2(1,:,:) = surfdepth(1,:,:)
+surfmoist2(1,:,:) = surfmoist(1,:,:)
+
+do s=1,fuels
+  surfrhof2(2,:,:) = surfrhof2(2,:,:) + surfrhof(s+ngrass,:,:)
+  surfdepth2(2,:,:) = surfdepth2(2,:,:) + surfdepth(s+ngrass,:,:)
+  surfmoist2(2,:,:) = surfmoist2(2,:,:) + surfmoist(s+ngrass,:,:)
+enddo
+
+print*,'Sum of each layer of surfrhof2 =',sum(surfrhof2(1,:,:)),sum(surfrhof2(2,:,:))
+!print*,'Max and Min of surfrhof:',maxval(surfrhof),minval(surfrhof)
+!print*,'Max and Min of surfdepth:',maxval(surfdepth),minval(surfdepth)
+!print*,'Max and Min of surfmoist:',maxval(surfmoist),minval(surfmoist)
+!print*,'Sum of surfrhof:',sum(surfrhof)
+!print*,'Sum of surfdepth:',sum(surfdepth)
+!print*,'Sum of surfmoist:',sum(surfmoist)
+!print*,'Sum of moist:',sum(moist(:,:,:,1))
 
 
 if (gmoistoverride.ne.0) then
@@ -665,21 +692,33 @@ if (gmoistoverride.ne.0) then
   print*,'max value of moisture after adjustment = ',maxval(lmoist(:,:,:,1)+moist(ngrass+fueltotal:,:,:,1))
 endif
 
-!print*,'1'
-open (12,file='surface_rhof.dat',form='unformatted',status='unknown')
-write (12) surfrhof
-close (12)
-!print*,'2'
-open (12,file='surface_depth.dat',form='unformatted',status='unknown')
-write (12) surfdepth
-close (12)
-!print*,'3'
+!!print*,'1'
+!open (12,file='surface_rhof.dat',form='unformatted',status='unknown')
+!write (12) surfrhof
+!close (12)
+!!print*,'2'
+!open (12,file='surface_depth.dat',form='unformatted',status='unknown')
+!write (12) surfdepth
+!close (12)
+!!print*,'3'
 open (12,file='alltrees.dat',form='unformatted',status='unknown')
 write (12) trhof
 close (12)
 
+!open (12,file='surface_moist.dat',form='unformatted',status='unknown')
+!write (12) surfmoist
+!close (12)
+
+open (12,file='surface_rhof.dat',form='unformatted',status='unknown')
+write (12) surfrhof2
+close (12)
+!print*,'2'
+open (12,file='surface_depth.dat',form='unformatted',status='unknown')
+write (12) surfdepth2
+close (12)
+!print*,'3'
 open (12,file='surface_moist.dat',form='unformatted',status='unknown')
-write (12) surfmoist
+write (12) surfmoist2
 close (12)
 
 !print*,'4'
