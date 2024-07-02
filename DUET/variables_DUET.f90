@@ -82,7 +82,7 @@ character :: speciesfile*100,winddatafile*100
 integer :: windprofile=0,randomwinds=0
 integer :: grassstep=1,periodTotal,litout
 integer :: StepsPerYear=1,YearsSinceBurn=4,inputprogram=1
-real :: relhum
+real :: relhum,densitythresh
 real,allocatable:: vterminal(:),fuelSA(:),Froude(:),droptime(:)
 real,allocatable:: leafdropfreq(:),decay(:),dragco(:),moistspec(:)
 real,allocatable:: uavg(:),vavg(:),VAR(:,:),ustd(:),vstd(:)

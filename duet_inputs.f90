@@ -45,7 +45,7 @@ use duet_variables, only : vterminal,StepsPerYear,YearsSinceBurn, &
   Froude,droptime,windprofile,lrhofT,leafdropfreq,decay,grhofT, &
   uavg,vavg,VAR,ustd,vstd,Umean,Vmean,Uvar,Vvar,fuelSA,lmoistT,gmoistT, &
   lssT,gssT,lafdT,gafdT,compact,moistspec,ssspec,dragco,relhum, &
-  periodTotal,litout,grassstep,randomwinds,inputprogram
+  periodTotal,litout,grassstep,randomwinds,inputprogram,densitythresh
 use species_variables
 
 implicit none
@@ -152,6 +152,7 @@ write(10,*) '      litterconstant = ',litterconstant
 write(10,*) '      ngrass = ',ngrass
 write(10,*) '      grassstep = ',grassstep
 write(10,*) '      gmoistoverride = ',gmoistoverride
+write(10,*) '      densitythresh = ',densitythresh
 write(10,*) '                                '
 write(10,*) '      iFIA = ',iFIA
 write(10,*) '      iFIAspecies = ',iFIAspecies

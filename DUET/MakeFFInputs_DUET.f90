@@ -12,7 +12,7 @@ integer :: randomwinds=3,YearsSinceBurn=5,StepsPerYear=1,zmax
 real :: PI=3.14159265,grassconstant=5.,litterconstant=5.
 integer :: fueltotal=1,infuel=0,singlefuel=1,ntspecies=1
 integer :: tfuelbins=1,ngrass=1,grassstep=1
-real :: gmoistoverride=0,relhum=0.1
+real :: gmoistoverride=0,relhum=0.1,densitythresh=0.5
 integer :: litout=0,controlseed=1
 
 real :: grho=1.1766,gmoisture=0.06,gss=0.0005,gdepth=0.27
@@ -61,6 +61,7 @@ write(10,*) '      litterconstant = ',litterconstant
 write(10,*) '      ngrass = ',ngrass
 write(10,*) '      grassstep = ',grassstep
 write(10,*) '      gmoistoverride = ',gmoistoverride
+write(10,*) '      densitythresh = ',densitythresh
 write(10,*) '                                '
 write(10,*) '      iFIA = ',iFIA
 write(10,*) '      iFIAspecies = ',iFIAspecies
