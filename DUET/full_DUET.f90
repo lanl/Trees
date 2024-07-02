@@ -503,7 +503,8 @@ do ift=1,ngrass
             call random_number(g)
             if(g.lt.0.75) g = g+0.75
             if(g.gt.1) g = 1
-            grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)=g*grho(ift)*shadeFactor*litterFactor*exp(-decay(ift)*(YearsSinceBurn*StepsPerYear-1))
+            grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)=g*grho(ift)*shadeFactor* &
+              litterFactor*exp(-decay(ift)*(YearsSinceBurn*StepsPerYear-1))
             !grhofT(ift,i,j,yt)=grhofT(ift,i,j,yt)+ &
             !  g*grho(ift)*shadeFactor*litterFactor*exp(-decay(ift)*(yt3-1))
       !    enddo
