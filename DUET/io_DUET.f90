@@ -25,7 +25,7 @@ use io_variables
 use baseline_variables
 use duet_variables, only : windprofile, &
   grassstep,YearsSinceBurn,StepsPerYear,randomwinds,relhum, &
-  litout,inputprogram
+  litout,inputprogram,densitythresh
 use species_variables
 use FF_variables
 implicit none
@@ -40,6 +40,7 @@ namelist/duetlist/ &
    ntspecies,tfuelbins, &
    grassconstant,litterconstant, &
    ngrass,grassstep,gmoistoverride, &
+   densitythresh,&
    iFIA,iFIAspecies, &
    windprofile,randomwinds, &
    winddirection,windvary, &

@@ -26,7 +26,7 @@ use infile_variables
 use fuels_create_variables
 use duet_variables, only : speciesfile,winddatafile,windprofile, &
   grassstep,YearsSinceBurn,StepsPerYear,randomwinds,relhum, &
-  ustd,vstd,uavg,vavg,periodTotal,litout
+  ustd,vstd,uavg,vavg,periodTotal,litout,densitythresh
 use species_variables
 implicit none
 
@@ -116,6 +116,7 @@ elseif(ilitter.eq.2)then  ! DUET
   call QueryFuellist_integer('iFIAspecies',iFIAspecies,48,1)
   call QueryFuellist_integer('litout',litout,48,0)
   call QueryFuellist_real('gmoistoverride',gmoistoverride,48,0.0)
+  call QueryFuellist_real('densitythresh',densitythresh,48,0.5)
   if(windprofile.eq.0)then
     periodTotal=YearsSinceBurn*StepsPerYear
     allocate(uavg(periodTotal))
