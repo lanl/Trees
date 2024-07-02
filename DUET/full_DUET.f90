@@ -400,7 +400,7 @@ print*,'Density threshold is:',densitythresh
 if((sum(lrhofT)/(nx*ny)).ge.densitythresh) then
   if(inputprogram.eq.1) then
     print*,'DANGER WILL ROBINSON!'
-    print*,'DENSITYTHRESH IS TOO LOW!!!  MUST BE GREATER THAN ',sum(lrhofT)/(nx*ny)
+    print*,'DENSITYTHRESH IS TOO LOW!!!  MUST BE GREATER THAN ',(1.1)*sum(lrhofT)/(nx*ny)
     print*,'If using TREES, adjust in Fuellist.'
     print*,'STOPPING PROGRAM'
     stop
