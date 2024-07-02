@@ -528,14 +528,14 @@ do i=1,nx
   do j=1,ny
     do ift=1,fueltotal
       !lrhof(ift,i,j,1)=TEMP(ift,i,j)!sum(lrhofT(ift,i,j,:))
-      if(sum(lrhofT(:,i,j,1)).eq.0) then
+      if(sum(lrhof(:,i,j,1)).eq.0) then
         lfueldepth(ift,i,j) = 0
         lmoist(ift,i,j,1) = 0
         lsizescale(ift,i,j,1) = 0
       else
-        lfueldepth(ift,i,j) = maxval(lafdT(ift,i,j,:))*(lrhofT(ift,i,j,1))/sum(lrhofT(:,i,j,1))
-        lmoist(ift,i,j,1)=maxval(lmoistT(ift,i,j,:))*(lrhofT(ift,i,j,1))/sum(lrhofT(:,i,j,1))
-        lsizescale(ift,i,j,1)=maxval(lssT(ift,i,j,:))*(lrhofT(ift,i,j,1))/sum(lrhofT(:,i,j,1))
+        lfueldepth(ift,i,j) = maxval(lafdT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
+        lmoist(ift,i,j,1) = maxval(lmoistT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
+        lsizescale(ift,i,j,1) = maxval(lssT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
       endif
     enddo
     !fill grass!
