@@ -398,9 +398,15 @@ print*,'Minimum possible thresh value:',sum(lrhofT)/(nx*ny)
 print*,'Density threshold is:',densitythresh
 
 if((sum(lrhofT)/(nx*ny)).ge.densitythresh) then
-  print*,'WARNING: DENSITYTHRESH IS TOO LOW!!!  NEED TO CHANGE SO IT IS GREATER THAN ',sum(lrhofT)/(nx*ny)
-  print*,'STOPPING PROGRAM'
-  stop
+  if(inputprogram.eq.1) then
+    print*,'DANGER WILL ROBINSON!'
+    print*,'DENSITYTHRESH IS TOO LOW!!!  MUST BE GREATER THAN ',sum(lrhofT)/(nx*ny)
+    print*,'If using TREES, adjust in Fuellist.'
+    print*,'STOPPING PROGRAM'
+    stop
+  else
+    densitythresh = sum(lrhofT)/(nx*ny)*2
+  endif
 endif
 
 !thresh = 0.5
