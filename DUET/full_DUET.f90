@@ -498,13 +498,14 @@ do ift=1,ngrass
       !do yr=1,YearsSinceBurn
       !  do spy=1,StepsPerYear
       !    do yt3=1,yt
-            litterFactor=exp(-litterconstant*sum(TEMP(:,i,j))/0.6)
-            !litterFactor=exp(-litterconstant*sum(lrhofT(:,i,j,1:yt3))/0.6)
-            call random_number(g)
-            if(g.lt.0.75) g = g+0.75
-            if(g.gt.1) g = 1
-            grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)=g*grho(ift)*shadeFactor* &
-              litterFactor*exp(-decay(ift)*(YearsSinceBurn*StepsPerYear-1))
+      litterFactor=exp(-litterconstant*sum(TEMP(:,i,j))/0.6)
+      !litterFactor=exp(-litterconstant*sum(lrhofT(:,i,j,1:yt3))/0.6)
+      !print*,'Litterfactor',litterFactor
+      !print*,''
+      call random_number(g)
+      if(g.lt.0.75) g = g+0.75
+      if(g.gt.1) g = 1
+      grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)=g*grho(ift)*shadeFactor*litterFactor
             !grhofT(ift,i,j,yt)=grhofT(ift,i,j,yt)+ &
             !  g*grho(ift)*shadeFactor*litterFactor*exp(-decay(ift)*(yt3-1))
       !    enddo
