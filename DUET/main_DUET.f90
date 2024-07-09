@@ -32,7 +32,7 @@ logical :: DUETexists
 
 ! Executable Code
 
-inquire(file='DUETInputs', exist=DUETexists)
+inquire(file='../define_variables.f90', exist=DUETexists)
 if (DUETexists) then
   print *, "Using FIRETEC Trees."
 else

@@ -412,11 +412,12 @@ endif
 !thresh = 0.5
 div = 5
 
-a = 1
-deltat = 1
+a = (dx**2)/2
+deltat = (dy**2)/2
 
 allocate(tmp(fuels,nx,ny),TEMP(fuels,nx,ny))
 tmp = 0.0
+TEMP = 0.0
 
 print*,'Beginning diffusion...'
 !print*,'Sum before diffusion = ',sum(lrhofT)
@@ -435,7 +436,11 @@ print*,'Maxval of tmp:',maxval(tmp)
 
 if(maxval(tmp).gt.densitythresh) then
   do while (maxval(tmp).gt.densitythresh)
-    !print*,'Max of lrhofT',maxval(tmp)
+    !print*,'Max of tmp',maxval(tmp)
+    !if(any(isNaN(tmp))) then
+    !  print*,'We have a problem...' 
+    !  stop
+    !endif
     do j=1,ny
       do i=1,nx
         do ift=1,fuels
@@ -454,7 +459,10 @@ if(maxval(tmp).gt.densitythresh) then
             TEMP(ift,i,j) = a*deltat*((tmp(ift,iplus,j)-2*tmp(ift,i,j)+tmp(ift,iminus,j))/dx**2 &
               + (tmp(ift,i,jplus)-2*tmp(ift,i,j)+tmp(ift,i,jminus))/dy**2) &
               + tmp(ift,i,j)
-
+            !if((isNaN(TEMP(ift,i,j)))) then
+            !  print*,'The problem is here: ift,i,j',ift,i,j 
+            !  stop
+            !endif
           enddo
         enddo
       enddo
@@ -471,8 +479,10 @@ if(maxval(tmp).gt.densitythresh) then
 else
   TEMP = tmp
 endif
+!lrhofT(:,:,:,1) = TEMP
 print*,'Diffusion complete'
 print*,'Sum after diffusion = ',sum(TEMP)
+print*,'Sum of lrhofT after diffusion = ',sum(lrhofT)
 
 
 print*,'Grass growing...'
