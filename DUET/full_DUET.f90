@@ -412,8 +412,8 @@ endif
 !thresh = 0.5
 div = 5
 
-a = (dx**2)/2
-deltat = (dy**2)/2
+a = (dx**2)/4
+deltat = (dy**2)/4
 
 allocate(tmp(fuels,nx,ny),TEMP(fuels,nx,ny))
 tmp = 0.0
@@ -436,11 +436,11 @@ print*,'Maxval of tmp:',maxval(tmp)
 
 if(maxval(tmp).gt.densitythresh) then
   do while (maxval(tmp).gt.densitythresh)
-    !print*,'Max of tmp',maxval(tmp)
-    !if(any(isNaN(tmp))) then
-    !  print*,'We have a problem...' 
-    !  stop
-    !endif
+    print*,'Max of tmp',maxval(tmp)
+    if(any(isNaN(tmp))) then
+      print*,'We have a problem in the diffusion...' 
+      stop
+    endif
     do j=1,ny
       do i=1,nx
         do ift=1,fuels
@@ -459,10 +459,10 @@ if(maxval(tmp).gt.densitythresh) then
             TEMP(ift,i,j) = a*deltat*((tmp(ift,iplus,j)-2*tmp(ift,i,j)+tmp(ift,iminus,j))/dx**2 &
               + (tmp(ift,i,jplus)-2*tmp(ift,i,j)+tmp(ift,i,jminus))/dy**2) &
               + tmp(ift,i,j)
-            !if((isNaN(TEMP(ift,i,j)))) then
-            !  print*,'The problem is here: ift,i,j',ift,i,j 
-            !  stop
-            !endif
+            if((isNaN(TEMP(ift,i,j)))) then
+              print*,'The problem is here: ift,i,j',ift,i,j 
+              stop
+            endif
           enddo
         enddo
       enddo
@@ -551,18 +551,18 @@ do i=1,nx
         lmoist(ift,i,j,1) = 0
         lsizescale(ift,i,j,1) = 0
       else
-        lfueldepth(ift,i,j) = maxval(lafdT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
-        lmoist(ift,i,j,1) = maxval(lmoistT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
+        lfueldepth(ift,i,j)   = maxval(lafdT(ift,i,j,:))!*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
+        lmoist(ift,i,j,1)     = maxval(lmoistT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
         lsizescale(ift,i,j,1) = maxval(lssT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
       endif
     enddo
     !fill grass!
     do ift=1,ngrass
       !if(inputprogram.eq.1) then
-        rhof(ift,i,j,1)     =grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        fueldepth(ift,i,j,1)=gdepth(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        moist(ift,i,j,1)    =gmoisture(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        sizescale(ift,i,j,1)=gss(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        rhof(ift,i,j,1)      = grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        fueldepth(ift,i,j,1) = gdepth(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        moist(ift,i,j,1)     = gmoisture(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        sizescale(ift,i,j,1) = gss(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         !if(isnan(moist(ift,i,j,1))) print*,'moist is Nan in grass... ift,i,j',ift,i,j
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift,i,j) = surfrhof(ift,i,j) + grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
@@ -587,10 +587,10 @@ do i=1,nx
     do ift=1,fueltotal
       !if(inputprogram.eq.1) then
       !print*,'iteration:',ift+ngrass
-        rhof(ift+ngrass+fueltotal,i,j,1)     =lrhof(ift,i,j,1)
-        fueldepth(ift+ngrass+fueltotal,i,j,1)=lfueldepth(ift,i,j)
-        moist(ift+ngrass+fueltotal,i,j,1)    =lmoist(ift,i,j,1)
-        sizescale(ift+ngrass+fueltotal,i,j,1)=lsizescale(ift,i,j,1)
+        rhof(ift+ngrass+fueltotal,i,j,1)      = lrhof(ift,i,j,1)
+        fueldepth(ift+ngrass+fueltotal,i,j,1) = lfueldepth(ift,i,j)
+        moist(ift+ngrass+fueltotal,i,j,1)     = lmoist(ift,i,j,1)
+        sizescale(ift+ngrass+fueltotal,i,j,1) = lsizescale(ift,i,j,1)
         !if(isnan(moist(ift+ngrass+fueltotal,i,j,1))) print*,'moist is Nan in litter... ift,i,j',ift,i,j
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift+ngrass,i,j) = surfrhof(ift+ngrass,i,j) + lrhof(ift,i,j,1)
@@ -649,9 +649,13 @@ do j=1,ny
 enddo
 
 print*,'Sum of each layer of surfrhof2 =',sum(surfrhof2(1,:,:)),sum(surfrhof2(2,:,:))
-!print*,'Max and Min of surfrhof:',maxval(surfrhof),minval(surfrhof)
-!print*,'Max and Min of surfdepth:',maxval(surfdepth),minval(surfdepth)
-!print*,'Max and Min of surfmoist:',maxval(surfmoist),minval(surfmoist)
+print*,'Max and Min of surfrhof:',maxval(surfrhof),minval(surfrhof)
+print*,'Max and Min of surfdepth:',maxval(surfdepth),minval(surfdepth)
+print*,'Max and Min of surfmoist:',maxval(surfmoist),minval(surfmoist)
+print*,'Max and Min of rhof:',maxval(rhof(:,:,:,1)),minval(rhof(:,:,:,1))
+print*,'Max and Min of depth:',maxval(fueldepth(:,:,:,1)),minval(fueldepth(:,:,:,1))
+print*,'Max and Min of moist:',maxval(moist(:,:,:,1)),minval(moist(:,:,:,1))
+
 !print*,'Sum of surfrhof:',sum(surfrhof)
 !print*,'Sum of surfdepth:',sum(surfdepth)
 !print*,'Sum of surfmoist:',sum(surfmoist)
