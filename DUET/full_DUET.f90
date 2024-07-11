@@ -58,7 +58,7 @@ integer :: iii,jjj,fuels,div,nums,iplus,iminus,jplus,jminus
 real :: zmid,tfall,totalsum
 real :: WalkHorz,WalkSteps,groundradius
 real :: xdisp,ydisp,Varx,Vary
-real :: cenx,ceny
+real :: cenx,ceny,maxss
 real :: ellrotation,dispradius
 real :: magv,magh,xloc,yloc
 real :: untransformedx,untransformedy,inell
@@ -373,7 +373,8 @@ do ift=1,fueltotal
           !lafdT(ift,i,j,yt) = min((lrhofT(ift,i,j,yt)/(dx*dy)*exp(compact(ift)*(yt-1))),zheight(i,j,2)-zheight(i,j,1))
           !lmoistT(ift,i,j,yt) = lrhofT(ift,i,j,yt)*moistspec(ift)/100*exp(-2.0*yt-1)
           lrhofT(ift,i,j,yt) = lrhofT(ift,i,j,yt)*exp(-decay(ift)*(yt))
-          lafdT(ift,i,j,yt) = min((lrhofT(ift,i,j,yt)/(dx*dy)*exp(compact(ift)*(yt))),zheight(i,j,2)-zheight(i,j,1))
+          lafdT(ift,i,j,yt) = max((lrhofT(ift,i,j,yt)/(dx*dy) &
+            *exp(compact(ift)*(yt))),zheight(i,j,2)-zheight(i,j,1))
           lmoistT(ift,i,j,yt) = lrhofT(ift,i,j,yt)*moistspec(ift)/100*exp(-2.0*yt)
           if (lmoistT(ift,i,j,yt).lt.relhum) lmoistT(ift,i,j,yt)=relhum
           if (lrhofT(ift,i,j,yt).gt.0) lssT(ift,i,j,yt) = ssspec(ift) 
@@ -541,7 +542,8 @@ if(any(isNaN(grhofT))) print*,'The Problem is in GrhofT in Grass'
 !if(any(isnan(surfdepth))) print*,'NaNs in surfdepth before any values have been placed'
 
 lrhof(:,:,:,1)=TEMP
-
+maxss = 100
+print*,'Min value of sizescale set to 100'
 do i=1,nx
   do j=1,ny
     do ift=1,fueltotal
@@ -551,18 +553,24 @@ do i=1,nx
         lmoist(ift,i,j,1) = 0
         lsizescale(ift,i,j,1) = 0
       else
-        lfueldepth(ift,i,j)   = maxval(lafdT(ift,i,j,:))!*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
+        lfueldepth(ift,i,j)   = maxval(lafdT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
         lmoist(ift,i,j,1)     = maxval(lmoistT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
-        lsizescale(ift,i,j,1) = maxval(lssT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
+        lsizescale(ift,i,j,1) = maxval(lssT(ift,i,j,:))!*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
+        if(lsizescale(ift,i,j,1).lt.maxss.and.lsizescale(ift,i,j,1).ne.0) then
+          maxss = lsizescale(ift,i,j,1)
+          print*,'new minss:',maxss
+        endif
+
       endif
     enddo
     !fill grass!
     do ift=1,ngrass
       !if(inputprogram.eq.1) then
         rhof(ift,i,j,1)      = grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        fueldepth(ift,i,j,1) = gdepth(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        if(rhof(ift,i,j,1).ne.0) fueldepth(ift,i,j,1) = gdepth(ift)
+        !fueldepth(ift,i,j,1) = gdepth(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         moist(ift,i,j,1)     = gmoisture(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        sizescale(ift,i,j,1) = gss(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        sizescale(ift,i,j,1) = gss(ift)!*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         !if(isnan(moist(ift,i,j,1))) print*,'moist is Nan in grass... ift,i,j',ift,i,j
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift,i,j) = surfrhof(ift,i,j) + grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
@@ -601,6 +609,7 @@ do i=1,nx
     enddo
   enddo
 enddo
+print*,'Min value of sizescale for litter is:',maxss
 !print*,'moisture sum of grass in writing:',sum(moist(1,:,:,1))
 !print*,'moisture sum of tree1 in writing:',sum(moist(2,:,:,1))
 !print*,'moisture sum of tree2 in writing:',sum(moist(3,:,:,1))
