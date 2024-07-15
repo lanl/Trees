@@ -58,7 +58,7 @@ integer :: iii,jjj,fuels,div,nums,iplus,iminus,jplus,jminus
 real :: zmid,tfall,totalsum
 real :: WalkHorz,WalkSteps,groundradius
 real :: xdisp,ydisp,Varx,Vary
-real :: cenx,ceny,maxss
+real :: cenx,ceny,maxss,premax
 real :: ellrotation,dispradius
 real :: magv,magh,xloc,yloc
 real :: untransformedx,untransformedy,inell
@@ -435,9 +435,23 @@ enddo
 print*,'Sum before diffusion:',sum(tmp)
 print*,'Maxval of tmp:',maxval(tmp)
 
+premax = maxval(tmp)
+
 if(maxval(tmp).gt.densitythresh) then
   do while (maxval(tmp).gt.densitythresh)
     print*,'Max of tmp',maxval(tmp)
+    if(maxval(tmp).gt.premax) then
+      print*,'Diffusion failed.  Continuing without diffusing.'
+      TEMP = 0.0
+      do j=1,ny
+        do i=1,nx
+          do ift=1,fuels
+            TEMP(ift,i,j) = TEMP(ift,i,j) + sum(lrhofT(ift,i,j,:))
+          enddo
+        enddo
+      enddo      
+      continue
+    endif
     if(any(isNaN(tmp))) then
       print*,'We have a problem in the diffusion...' 
       stop
@@ -553,8 +567,8 @@ do i=1,nx
         lmoist(ift,i,j,1) = 0
         lsizescale(ift,i,j,1) = 0
       else
-        lfueldepth(ift,i,j)   = maxval(lafdT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
-        lmoist(ift,i,j,1)     = maxval(lmoistT(ift,i,j,:))*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
+        lfueldepth(ift,i,j)   = maxval(lafdT(ift,i,j,:))*(lrhof(ift,i,j,1))/(sum(grhofT(:,i,j,:))+sum(lrhof(:,i,j,1)))
+        lmoist(ift,i,j,1)     = maxval(lmoistT(ift,i,j,:))*(lrhof(ift,i,j,1))/(sum(grhofT(:,i,j,:))+sum(lrhof(:,i,j,1)))
         lsizescale(ift,i,j,1) = maxval(lssT(ift,i,j,:))!*(lrhof(ift,i,j,1))/sum(lrhof(:,i,j,1))
         if(lsizescale(ift,i,j,1).lt.maxss.and.lsizescale(ift,i,j,1).ne.0) then
           maxss = lsizescale(ift,i,j,1)
@@ -567,10 +581,12 @@ do i=1,nx
     do ift=1,ngrass
       !if(inputprogram.eq.1) then
         rhof(ift,i,j,1)      = grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        if(rhof(ift,i,j,1).ne.0) fueldepth(ift,i,j,1) = gdepth(ift)
+        if(rhof(ift,i,j,1).ne.0) then
+          fueldepth(ift,i,j,1) = gdepth(ift)*(grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)/(sum(grhofT(:,i,j,:))+sum(lrhof(:,i,j,1))))
         !fueldepth(ift,i,j,1) = gdepth(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        moist(ift,i,j,1)     = gmoisture(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
-        sizescale(ift,i,j,1) = gss(ift)!*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+          moist(ift,i,j,1)     = gmoisture(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+          sizescale(ift,i,j,1) = gss(ift)!*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
+        endif
         !if(isnan(moist(ift,i,j,1))) print*,'moist is Nan in grass... ift,i,j',ift,i,j
       !elseif(inputprogram.eq.2) then
         !surfrhof(ift,i,j) = surfrhof(ift,i,j) + grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
