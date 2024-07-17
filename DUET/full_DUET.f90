@@ -709,6 +709,10 @@ open (12,file='alltrees.dat',form='unformatted',status='unknown')
 write (12) flattrees
 close (12)
 
+open (12,file='canopy.dat',form='unformatted',status='unknown')
+write (12) trhof
+close (12)
+
 open (12,file='surface_moist_layered.dat',form='unformatted',status='unknown')
 write (12) surfmoist
 close (12)
