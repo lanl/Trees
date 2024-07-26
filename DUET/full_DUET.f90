@@ -582,7 +582,8 @@ do i=1,nx
       !if(inputprogram.eq.1) then
         rhof(ift,i,j,1)      = grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
         if(rhof(ift,i,j,1).ne.0) then
-          fueldepth(ift,i,j,1) = gdepth(ift)*(grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)/(sum(grhofT(:,i,j,:))+sum(lrhof(:,i,j,1))))
+          fueldepth(ift,i,j,1) = gdepth(ift)*(grhofT(ift,i,j,YearsSinceBurn*StepsPerYear) &
+            /(sum(grhofT(:,i,j,:))+sum(lrhof(:,i,j,1))))
         !fueldepth(ift,i,j,1) = gdepth(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
           moist(ift,i,j,1)     = gmoisture(ift)*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
           sizescale(ift,i,j,1) = gss(ift)!*grhofT(ift,i,j,YearsSinceBurn*StepsPerYear)
