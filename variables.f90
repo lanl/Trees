@@ -81,6 +81,7 @@ implicit none
 
 integer:: igrass=0,itrees=0,ilitter=0
 integer:: ngrass=0,duet_ngrass=0
+integer :: iFIA,iFIAspecies
 real:: grassconstant=5.,litterconstant=5.,gmoistoverride=0.
 real,allocatable:: grhof(:,:,:,:),gsizescale(:,:,:,:),gmoist(:,:,:,:),gfueldepth(:,:,:)
 real,allocatable:: trhof(:,:,:,:),tsizescale(:,:,:,:),tmoist(:,:,:,:),tfueldepth(:,:,:)
@@ -103,63 +104,63 @@ character :: command*50
 
 end module fuels_create_variables
 
-module duet_variables
-!-----------------------------------------------------------------
-! Surface fuel variables
-!-----------------------------------------------------------------
-implicit none
-
-character :: speciesfile*100,winddatafile*100
-integer :: windprofile=0,randomwinds=0
-integer :: grassstep=1,periodTotal,litout
-integer :: StepsPerYear=1,YearsSinceBurn=4,inputprogram=1
-real :: relhum,densitythresh
-real,allocatable:: vterminal(:),fuelSA(:),Froude(:),droptime(:)
-real,allocatable:: leafdropfreq(:),decay(:),dragco(:),moistspec(:)
-real,allocatable:: uavg(:),vavg(:),VAR(:,:),ustd(:),vstd(:)
-real,allocatable:: ssspec(:),compact(:)
-real,allocatable:: Umean(:,:,:),Vmean(:,:,:),Uvar(:,:,:),Vvar(:,:,:)
-real,allocatable:: lrhofT(:,:,:,:),grhofT(:,:,:,:)
-real,allocatable:: lafdT(:,:,:,:),gafdT(:,:,:,:)
-real,allocatable:: lmoistT(:,:,:,:),gmoistT(:,:,:,:)
-real,allocatable:: lssT(:,:,:,:),gssT(:,:,:,:)
-
-end module duet_variables
-
-module species_variables
-
-!-----------------------------------------------------------------
-! Variables for species database
-!-----------------------------------------------------------------
-implicit none
-
-type :: read_species
-  integer :: FIA_code
-  character(len=8) :: sp_grp
-  integer :: sp_grp_num
-  character(len=30) :: species, genus, common_name
-  real :: mass_avg,mass,surfarea_avg,surfarea
-  integer :: dropperyear
-  real :: decay,moist
-  integer :: stepperyear
-  real :: dragco,vterminal,froude,compact,sizescale
-end type read_species
-
-type :: read_species_grp
-  real :: mass,surfarea
-  integer :: dropperyear
-  real :: decay,moist
-  integer :: stepperyear
-  real :: dragco,vterminal,froude,compact,sizescale
-end type read_species_grp
-
-type(read_species),dimension(290) :: SPECINFO
-type(read_species_grp),dimension(10) :: SPECgroups
-integer :: iFIA,iFIAspecies
-integer,allocatable :: FIA(:)
-integer,allocatable :: final_uni_sp(:)
-
-end module species_variables
+!module duet_variables
+!!-----------------------------------------------------------------
+!! Surface fuel variables
+!!-----------------------------------------------------------------
+!implicit none
+!
+!character :: speciesfile*100,winddatafile*100
+!integer :: windprofile=0,randomwinds=0
+!integer :: grassstep=1,periodTotal,litout
+!integer :: StepsPerYear=1,YearsSinceBurn=4,inputprogram=1
+!real :: relhum,densitythresh
+!real,allocatable:: vterminal(:),fuelSA(:),Froude(:),droptime(:)
+!real,allocatable:: leafdropfreq(:),decay(:),dragco(:),moistspec(:)
+!real,allocatable:: uavg(:),vavg(:),VAR(:,:),ustd(:),vstd(:)
+!real,allocatable:: ssspec(:),compact(:)
+!real,allocatable:: Umean(:,:,:),Vmean(:,:,:),Uvar(:,:,:),Vvar(:,:,:)
+!real,allocatable:: lrhofT(:,:,:,:),grhofT(:,:,:,:)
+!real,allocatable:: lafdT(:,:,:,:),gafdT(:,:,:,:)
+!real,allocatable:: lmoistT(:,:,:,:),gmoistT(:,:,:,:)
+!real,allocatable:: lssT(:,:,:,:),gssT(:,:,:,:)
+!
+!end module duet_variables
+!
+!module species_variables
+!
+!!-----------------------------------------------------------------
+!! Variables for species database
+!!-----------------------------------------------------------------
+!implicit none
+!
+!type :: read_species
+!  integer :: FIA_code
+!  character(len=8) :: sp_grp
+!  integer :: sp_grp_num
+!  character(len=30) :: species, genus, common_name
+!  real :: mass_avg,mass,surfarea_avg,surfarea
+!  integer :: dropperyear
+!  real :: decay,moist
+!  integer :: stepperyear
+!  real :: dragco,vterminal,froude,compact,sizescale
+!end type read_species
+!
+!type :: read_species_grp
+!  real :: mass,surfarea
+!  integer :: dropperyear
+!  real :: decay,moist
+!  integer :: stepperyear
+!  real :: dragco,vterminal,froude,compact,sizescale
+!end type read_species_grp
+!
+!type(read_species),dimension(290) :: SPECINFO
+!type(read_species_grp),dimension(10) :: SPECgroups
+!integer :: iFIA,iFIAspecies
+!integer,allocatable :: FIA(:)
+!integer,allocatable :: final_uni_sp(:)
+!
+!end module species_variables
 
 
 

@@ -19,14 +19,14 @@ endif()
 #include_directories(${MPI_Fortran_INCLUDE_PATH})
 
 # Module dependecies
-add_subdirectory(DUET)
+add_subdirectory(ModularDUET)
 
 # Build
 set(Trees_SRCS
   variables.f90 main.f90 define_variables.f90
   power_parser.f90 io.f90 metryc.f90 shapes.f90
   distribution.f90 fuels_create.f90
-  fuel_read.f90 trees_read.f90 duet_inputs.f90)
+  fuel_read.f90 trees_read.f90)
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/opt)
 add_executable(trees.exe ${Trees_SRCS})

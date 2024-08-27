@@ -21,13 +21,13 @@ program fuel_maps
 use grid_variables
 use io_variables
 use infile_variables
-use species_variables
-use fuels_create_variables, only : ilitter,command
+!use species_variables
+use fuels_create_variables!, only : ilitter!,command
 
 implicit none
 
 ! Local Variables
-logical :: DUETexists
+!logical :: DUETexists
 
 ! Executable Code
 print *,'===================================='
@@ -50,15 +50,6 @@ call fuels_create
 call output_fuel
 
 !-----Check for and run DUET
-if(ilitter.eq.2) then
-  inquire(file='../DUET', exist=DUETexists)
-  if (DUETexists) then
-    print *, "Found DUET"
-    call system(command)
-  else
-    print *, "DUET is not included in this release of Trees! Please use ilitter=1 or 0. See README"
-  endif
-endif
 
 if (verbose.eq.1) call output_fuellist
 

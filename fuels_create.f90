@@ -33,24 +33,6 @@ real,external:: zcart
 ! Executable code
 call define_fuels_create_variables 
 
-! Fill grass arrays
-if (igrass.ne.0) then     
-  print*,'Filling Grass fuels_create'
-  call grass_fuels_create
-  do ift=1,ngrass
-    do i=1,nx
-      do j=1,ny
-        do k=1,nz
-          rhof(ift+infuel,i,j,k)      = grhof(ift,i,j,k)
-          sizescale(ift+infuel,i,j,k) = gsizescale(ift,i,j,k)
-          moist(ift+infuel,i,j,k)     = gmoist(ift,i,j,k)
-        enddo
-        fueldepth(ift+infuel,i,j,1) = gfueldepth(ift,i,j)
-      enddo
-    enddo
-  enddo 
-endif
-
 ! Fill tree arrays
 if (itrees.ne.0) then
   print*,'Filling Trees fuels_create'
@@ -69,6 +51,47 @@ if (itrees.ne.0) then
   enddo
 endif
 
+if(ilitter.eq.2) then
+  !print*,'Using DUET to create litter and grass...'
+  !print*,'Min and Max in trees of trhof: ',minval(trhof),maxval(trhof)
+  !print*,'Min and Max in trees of tmoist: ',minval(tmoist),maxval(tmoist)
+  !print*,'Min and Max in trees of tfueldepth: ',minval(tfueldepth),maxval(tfueldepth)
+  !print*,'Min and Max in trees of tsizescale: ',minval(tsizescale),maxval(tsizescale)
+!call define_fuels_create_variables
+  call TR_RunDUET(nx,ny,nz,ntspecies,zheight,trhof,tmoist,tfueldepth,tsizescale,grhof,lrhof, &
+  gmoist,lmoist,gsizescale,lsizescale,gfueldepth,lfueldepth)
+
+!  inquire(file='../DUET', exist=DUETexists)
+!  if (DUETexists) then
+!    print *, "Found DUET"
+!    call system(command)
+!  else
+!    print *, "DUET is not included in this release of Trees! Please use ilitter=1 or 0. See README"
+!  endif
+  print*,'DUET complete.'
+endif
+
+! Fill grass arrays
+if (igrass.ne.0) then     
+  if (ilitter.ne.2) then
+    print*,'Filling Grass fuels_create'
+    call grass_fuels_create
+  endif
+  do ift=1,ngrass
+    do i=1,nx
+      do j=1,ny
+        do k=1,nz
+          rhof(ift+infuel,i,j,k)      = grhof(ift,i,j,k)
+          sizescale(ift+infuel,i,j,k) = gsizescale(ift,i,j,k)
+          moist(ift+infuel,i,j,k)     = gmoist(ift,i,j,k)
+        enddo
+        fueldepth(ift+infuel,i,j,1) = gfueldepth(ift,i,j)
+      enddo
+    enddo
+  enddo 
+endif
+
+
 ! Fill litter arrays
 if (ilitter.ne.0) then
   if (ilitter.eq.1) then
@@ -78,9 +101,9 @@ if (ilitter.ne.0) then
     else if (itrees.eq.0) then
       print*,'Warning: itrees=0, no litter placed'
     end if
-  else if (ilitter.eq.2) then
-    print*,'Filling Litter fuels_create for Duet'
-    call Duet_Inputs
+  !else if (ilitter.eq.2) then
+  !  print*,'Filling Litter fuels_create for Duet'
+  !  call Duet_Inputs
   endif
   do ift=1,ntspecies
     if (sum(trhof(ift,:,:,1)).lt.sum(trhof(ift,:,:,:))*0.01) then
@@ -123,7 +146,7 @@ implicit none
 ! Local variables
 integer i,j,k,ift
 real target_mass,actual_mass
-real x
+!real x
 
 ! Executable code
 do ift=1,ngrass
@@ -180,7 +203,7 @@ implicit none
 integer ift,it,i,j,k,ii,jj,kk,iii,jjj,kkk
 integer ii_real,jj_real
 integer ift_index
-real totarea
+!real totarea
 real ztest,xloc,yloc
 integer xcor,ycor
 integer xtop,xbot,ybot,ytop,zbot,ztop
@@ -191,7 +214,7 @@ real tot,add,prt
 real target_mass,actual_mass
 real,allocatable:: rhoftemp(:)
 real,external:: paraboloid,normal 
-real x
+!real x
 
 ! Executable Code
 !-----Determine the number of trees for each species
@@ -406,7 +429,7 @@ implicit none
 ! Local variables
 integer i,j,k,ift,ift_grass
 real target_mass,actual_mass
-real rhoftemp,rhocolumn,coverfactor,shadefactor
+real rhocolumn,coverfactor,shadefactor !,rhoftemp
 
 ! Executable code
 !----- Place litter on ground and remove grass to account for shading
