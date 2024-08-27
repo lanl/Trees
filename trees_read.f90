@@ -641,13 +641,14 @@ subroutine find_numspecies
 !-----------------------------------------------------------------
 use grid_variables
 use fuels_create_variables
-use species_variables
+!use species_variables
 
 implicit none
 
 !Local Variables
 integer i,numtrees,numspec,min_val_sp, max_val_sp
 integer,allocatable :: uni_sp(:)
+integer,allocatable :: final_uni_sp(:)
 integer,allocatable :: temp_array(:)
 real,dimension(19) :: read_array
 

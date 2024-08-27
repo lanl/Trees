@@ -24,10 +24,10 @@ use grid_variables
 use io_variables
 use infile_variables
 use fuels_create_variables
-use duet_variables, only : speciesfile,winddatafile,windprofile, &
-  grassstep,YearsSinceBurn,StepsPerYear,randomwinds,relhum, &
-  ustd,vstd,uavg,vavg,periodTotal,litout,densitythresh
-use species_variables
+!use duet_variables, only : speciesfile,winddatafile,windprofile, &
+!  grassstep,YearsSinceBurn,StepsPerYear,randomwinds,relhum, &
+!  ustd,vstd,uavg,vavg,periodTotal,litout,densitythresh
+!use species_variables
 implicit none
 
 !Local Variables
@@ -64,9 +64,13 @@ if(ifuelin.eq.1) then
   call QueryFuellist_string('moistfile',moistfile,48,'treesmoist.dat.orig')
   call QueryFuellist_string('afdfile',afdfile,48,'treesfueldepth.dat.orig')
 endif
-     
-! Grass
+    
+call QueryFuellist_integer('ilitter',ilitter,48,0)
 call QueryFuellist_integer('igrass',igrass,48,0)
+if(ilitter.eq.2) igrass = 1
+
+! Grass
+
 if(igrass.eq.1)then
   call QueryFuellist_integer('ngrass',ngrass,48,1)
   call QueryFuellist_real('grassconstant',grassconstant,48,5.)
@@ -95,7 +99,7 @@ if(itrees.ge.1)then
 endif
 
 ! Litter
-call QueryFuellist_integer('ilitter',ilitter,48,0)
+
 if(ilitter.eq.1) then
   call QueryFuellist_real('litterconstant',litterconstant,48,0.0)
   allocate(lrho(ntspecies*tfuelbins))
@@ -106,37 +110,37 @@ if(ilitter.eq.1) then
   call QueryFuellist_real_array('lss',lss,ntspecies*tfuelbins,48,0.0005)
   allocate(ldepth(ntspecies*tfuelbins))
   call QueryFuellist_real_array('ldepth',ldepth,ntspecies*tfuelbins,48,0.05)
-elseif(ilitter.eq.2)then  ! DUET
-  call QueryFuellist_integer('windprofile',windprofile,48,2)
-  call QueryFuellist_integer('YearsSinceBurn',YearsSinceBurn,48,1)
-  call QueryFuellist_integer('StepsPerYear',StepsPerYear,48,1)
-  call QueryFuellist_real('relhum',relhum,48,0.1)
-  call QueryFuellist_integer('grassstep',grassstep,48,1)
-  call QueryFuellist_integer('iFIA',iFIA,48,1)
-  call QueryFuellist_integer('iFIAspecies',iFIAspecies,48,1)
-  call QueryFuellist_integer('litout',litout,48,0)
-  call QueryFuellist_real('gmoistoverride',gmoistoverride,48,0.0)
-  call QueryFuellist_real('densitythresh',densitythresh,48,0.5)
-  if(windprofile.eq.0)then
-    periodTotal=YearsSinceBurn*StepsPerYear
-    allocate(uavg(periodTotal))
-    call QueryFuellist_real_array('uavg',uavg,periodTotal,48,0.)
-    allocate(vavg(periodTotal))
-    call QueryFuellist_real_array('vavg',vavg,periodTotal,48,0.)
-    allocate(ustd(periodTotal))
-    call QueryFuellist_real_array('ustd',ustd,periodTotal,48,0.)
-    allocate(vstd(periodTotal))
-    call QueryFuellist_real_array('vstd',vstd,periodTotal,48,0.)
-  elseif(windprofile.eq.2)then
-    call QueryFuellist_integer('randomwinds',randomwinds,48,2)
-  endif
-  if(iFIA.eq.0)then
-    call QueryFuellist_string('speciesfile',speciesfile,48,'speciesfile.dat')
-  elseif(iFIA.eq.1)then 
-    allocate(FIA(infuel+ntspecies*tfuelbins))
-    call QueryFuellist_integer_array('FIA',FIA,infuel+ntspecies*tfuelbins,48,1)
-    call define_species_variables
-  endif
+!elseif(ilitter.eq.2)then  ! DUET
+!  call QueryFuellist_integer('windprofile',windprofile,48,2)
+!  call QueryFuellist_integer('YearsSinceBurn',YearsSinceBurn,48,1)
+!  call QueryFuellist_integer('StepsPerYear',StepsPerYear,48,1)
+!  call QueryFuellist_real('relhum',relhum,48,0.1)
+!  call QueryFuellist_integer('grassstep',grassstep,48,1)
+!  call QueryFuellist_integer('iFIA',iFIA,48,1)
+!  call QueryFuellist_integer('iFIAspecies',iFIAspecies,48,1)
+!  call QueryFuellist_integer('litout',litout,48,0)
+!  call QueryFuellist_real('gmoistoverride',gmoistoverride,48,0.0)
+!  call QueryFuellist_real('densitythresh',densitythresh,48,0.5)
+!  if(windprofile.eq.0)then
+!    periodTotal=YearsSinceBurn*StepsPerYear
+!    allocate(uavg(periodTotal))
+!    call QueryFuellist_real_array('uavg',uavg,periodTotal,48,0.)
+!    allocate(vavg(periodTotal))
+!    call QueryFuellist_real_array('vavg',vavg,periodTotal,48,0.)
+!    allocate(ustd(periodTotal))
+!    call QueryFuellist_real_array('ustd',ustd,periodTotal,48,0.)
+!    allocate(vstd(periodTotal))
+!    call QueryFuellist_real_array('vstd',vstd,periodTotal,48,0.)
+!  elseif(windprofile.eq.2)then
+!    call QueryFuellist_integer('randomwinds',randomwinds,48,2)
+!  endif
+!  if(iFIA.eq.0)then
+!    call QueryFuellist_string('speciesfile',speciesfile,48,'speciesfile.dat')
+!  elseif(iFIA.eq.1)then 
+!    allocate(FIA(infuel+ntspecies*tfuelbins))
+!    call QueryFuellist_integer_array('FIA',FIA,infuel+ntspecies*tfuelbins,48,1)
+!    call define_species_variables
+!  endif
 endif
 
 ! Verbose
@@ -237,8 +241,8 @@ use grid_variables
 use io_variables
 use infile_variables
 use fuels_create_variables
-use duet_variables
-use species_variables
+!use duet_variables
+!use species_variables
 
 !stuff for writing new treelist
 character(len=100) :: newtreelistname
@@ -327,52 +331,52 @@ if(ilitter.eq.1) then
       if (ii.ne.ntspecies*tfuelbins) write(2222,'(A1)', Advance = 'No') ','
     end do
     
-elseif(ilitter.eq.2)then  ! DUET
-    write(2222,'(A35)')'!ilitter eq 2 (DUET) info  '
-    write(2222,'(A25,I1)')'windprofile = ',windprofile
-    write(2222,'(A25,I4.1)')'YearsSinceBurn = ',YearsSinceBurn
-    write(2222,'(A25,I4.1)')'StepsPerYear = ',StepsPerYear
-    write(2222,'(A25,F6.2)')'relhum = ',relhum
-    write(2222,'(A25,I3.1)')'grassstep = ',grassstep
-    write(2222,'(A25,I3.1)')'iFIA = ',iFIA
-    write(2222,'(A25,I3.1)')'iFIAspecies = ',iFIAspecies
-    write(2222,'(A25,I4.1)')'litout = ',litout
-    write(2222,'(A25,F3.1)') 'gmoistoverride = ',gmoistoverride
-    if(windprofile.eq.0)then
-        periodTotal=YearsSinceBurn*StepsPerYear
-        write(2222,'(A10)', Advance = 'No' ) 'uavg = '
-        do ii = 1, periodTotal
-          write(2222, '( F4.3, A1 )', Advance = 'No' ) uavg(ii) 
-          if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
-        end do
-            write(2222,'(/,A10)', Advance = 'No' ) 'vavg = '
-        do ii = 1, periodTotal
-          write(2222, '( F4.3, A1 )', Advance = 'No' ) vavg(ii) 
-          if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
-        end do
-            write(2222,'(/,A10)', Advance = 'No' ) 'ustd = '
-        do ii = 1, periodTotal
-          write(2222, '( F4.3, A1 )', Advance = 'No' ) ustd(ii)  
-          if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
-        end do
-            write(2222,'(/,A10)', Advance = 'No' ) 'vstd = '
-        do ii = 1, periodTotal
-          write(2222, '( F4.3, A1 )', Advance = 'No' ) vstd(ii)  
-          if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
-        end do
-    elseif(windprofile.eq.2)then
-        write(2222,'(A25,I2.1)')'randomwinds = ',randomwinds
-    endif
-
-    if (iFIA.eq.0)then
-        write(2222,*) "speciesfile = '",TRIM(speciesfile),"'"
-    elseif(iFIA.eq.1)then
-        write(2222,'(A5)', Advance = 'No' )'FIA = '
-        do ii = 1, ntspecies
-          write(2222, '( I4.3, A1 )', Advance = 'No' ) FIA(ii)
-          if (ii.ne.ntspecies) write(2222,'(A1)', Advance = 'No') ','
-        end do
-    endif
+!elseif(ilitter.eq.2)then  ! DUET
+!    write(2222,'(A35)')'!ilitter eq 2 (DUET) info  '
+!    write(2222,'(A25,I1)')'windprofile = ',windprofile
+!    write(2222,'(A25,I4.1)')'YearsSinceBurn = ',YearsSinceBurn
+!    write(2222,'(A25,I4.1)')'StepsPerYear = ',StepsPerYear
+!    write(2222,'(A25,F6.2)')'relhum = ',relhum
+!    write(2222,'(A25,I3.1)')'grassstep = ',grassstep
+!    write(2222,'(A25,I3.1)')'iFIA = ',iFIA
+!    write(2222,'(A25,I3.1)')'iFIAspecies = ',iFIAspecies
+!    write(2222,'(A25,I4.1)')'litout = ',litout
+!    write(2222,'(A25,F3.1)') 'gmoistoverride = ',gmoistoverride
+!    if(windprofile.eq.0)then
+!        periodTotal=YearsSinceBurn*StepsPerYear
+!        write(2222,'(A10)', Advance = 'No' ) 'uavg = '
+!        do ii = 1, periodTotal
+!          write(2222, '( F4.3, A1 )', Advance = 'No' ) uavg(ii) 
+!          if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
+!        end do
+!            write(2222,'(/,A10)', Advance = 'No' ) 'vavg = '
+!        do ii = 1, periodTotal
+!          write(2222, '( F4.3, A1 )', Advance = 'No' ) vavg(ii) 
+!          if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
+!        end do
+!            write(2222,'(/,A10)', Advance = 'No' ) 'ustd = '
+!        do ii = 1, periodTotal
+!          write(2222, '( F4.3, A1 )', Advance = 'No' ) ustd(ii)  
+!          if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
+!        end do
+!            write(2222,'(/,A10)', Advance = 'No' ) 'vstd = '
+!        do ii = 1, periodTotal
+!          write(2222, '( F4.3, A1 )', Advance = 'No' ) vstd(ii)  
+!          if (ii.ne.periodTotal) write(2222,'(A1)', Advance = 'No') ','
+!        end do
+!    elseif(windprofile.eq.2)then
+!        write(2222,'(A25,I2.1)')'randomwinds = ',randomwinds
+!    endif
+!
+!    if (iFIA.eq.0)then
+!        write(2222,*) "speciesfile = '",TRIM(speciesfile),"'"
+!    elseif(iFIA.eq.1)then
+!        write(2222,'(A5)', Advance = 'No' )'FIA = '
+!        do ii = 1, ntspecies
+!          write(2222, '( I4.3, A1 )', Advance = 'No' ) FIA(ii)
+!          if (ii.ne.ntspecies) write(2222,'(A1)', Advance = 'No') ','
+!        end do
+!    endif
 endif
 
 write(2222,'(/,A35)')'! ----------------------------------'

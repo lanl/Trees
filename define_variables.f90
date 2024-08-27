@@ -189,7 +189,7 @@ allocate(tsizescale(ntspecies*ntreefueltypes,nx,ny,nz)); tsizescale(:,:,:,:)=0.0
 allocate(tmoist(ntspecies*ntreefueltypes,nx,ny,nz)); tmoist(:,:,:,:)=0.0
 allocate(tfueldepth(ntspecies*ntreefueltypes,nx,ny)); tfueldepth(:,:,:)=0.0
 
-command = 'cd ../DUET; make;  cd ../Inputs; ../DUET/duet.exe'
+!command = 'cd ../DUET; make;  cd ../Inputs; ../DUET/duet.exe'
 
 !-----------------------------------------------------------------
 ! Groundfuel variables unique to the ground fuels fuels_create
@@ -246,274 +246,274 @@ endif
 
 end subroutine define_fuels_create_variables
 
-subroutine define_species_variables
-!-----------------------------------------------------------------
-! Imports the species database for FIA codes
-!-----------------------------------------------------------------
-
-use species_variables
-use fuels_create_variables, only:ntspecies
-
-
-integer :: i,j,ct,fdrop=0,fstep=0
-real :: fsa=0,fdecay=0,fmoist=0,fss=0
-real :: fdrag=0,fvterm=0,ffrou=0,fcomp=0
-open(unit=5, file='FIA_FastFuels_fin_fulllist_populated.txt', &
-  status='old', access='sequential', form='formatted')
-  do i=1,290
-    read(5,*) SPECINFO(i)
-  enddo
-close(5)
-if (iFIAspecies.eq.0) then
-  do j=1,maxval(SPECINFO%sp_grp_num)
-    ct=0
-    fsa=0
-    fdrop=0
-    fdecay=0
-    fmoist=0
-    fstep=0
-    fdrag=0
-    fvterm=0
-    ffrou=0
-    fcomp=0
-    fss=0
-    do i=1,290
-      if(SPECINFO(i)%sp_grp_num.eq.j) then
-        ct=ct+1
-        fsa=fsa+SPECINFO(i)%surfarea
-        fdrop=fdrop+SPECINFO(i)%dropperyear
-        fdecay=fdecay+SPECINFO(i)%decay
-        fmoist=fmoist+SPECINFO(i)%moist
-        fstep=fstep+SPECINFO(i)%stepperyear
-        fdrag=fdrag+SPECINFO(i)%dragco
-        fvterm=fvterm+SPECINFO(i)%vterminal
-        ffrou=ffrou+SPECINFO(i)%froude
-        fcomp=fcomp+SPECINFO(i)%compact
-        fss=fss+SPECINFO(i)%sizescale
-      endif
-    enddo
-    SPECgroups(j)%surfarea=fsa/real(ct)
-    SPECgroups(j)%dropperyear=int(fdrop/ct)
-    SPECgroups(j)%decay=fdecay/real(ct)
-    SPECgroups(j)%moist=fmoist/real(ct)
-    SPECgroups(j)%stepperyear=int(fstep/ct)
-    SPECgroups(j)%dragco=fdrag/real(ct)
-    SPECgroups(j)%vterminal=fvterm/real(ct)
-    SPECgroups(j)%froude=ffrou/real(ct)
-    SPECgroups(j)%compact=fcomp/real(ct)
-    SPECgroups(j)%sizescale=fss/real(ct)
-  enddo
-endif
-
-end subroutine define_species_variables
-
-subroutine define_duet_variables
-!-----------------------------------------------------------------
-! Variables unique to the duet
-!-----------------------------------------------------------------
-use grid_variables, only : nx,ny,nz
-use infile_variables, only : infuel
-use fuels_create_variables, only : ntspecies,tfuelbins
-use duet_variables, only : windprofile,StepsPerYear, &
-  YearsSinceBurn,uavg,vavg,VAR,ustd,vstd,Umean,Vmean,Uvar,Vvar,vterminal, &
-  fuelSA,Froude,droptime,leafdropfreq,decay,speciesfile,lrhofT, &
-  grhofT,dragco,lafdT,gafdT,lmoistT,gmoistT,lssT,gssT,randomwinds, &
-  moistspec,ssspec,compact,periodTotal
-use species_variables
-implicit none
-
-! Local Variables
-integer :: yt,ift,s,low,high,loc
-integer :: specTotal
-real :: fuelMass,dragslope,dragb,a,monstep
-real,dimension(6) :: temp_array 
-
-! Executable Code
-periodTotal=YearsSinceBurn*StepsPerYear
-if(windprofile.eq.0) then
-  print*,'!----!----!----!----!----!----!----!----!----!----!----!'
-  print*,'Windprofile is taken from a user provided in fuellist'
-  allocate(VAR(periodTotal,2))
-  do yt=1,periodTotal
-    VAR(yt,1)=ustd(yt)
-    VAR(yt,2)=vstd(yt)
-  enddo
-  close(100)
-elseif(windprofile.eq.1)then
-  print*,'!----!----!----!----!----!----!----!----!----!----!----!'
-  print*,'Windprofile is generated from higrad and averaged within each cell'
-  allocate(Umean(nx,ny,nz),Vmean(nx,ny,nz),Uvar(nx,ny,nz),VVar(nx,ny,nz))
-  open (105,file='Umean.dat', form='unformatted', status='old')
-  read (105) Umean
-  close(105)
-
-  open (106,file='Vmean.dat', form='unformatted', status='old')
-  read (106) Vmean
-  close(106)
-
-  open (107,file='Uvar.dat', form='unformatted', status='old')
-  read (107) Uvar
-  close(107)
-
-  open (108,file='Vvar.dat', form='unformatted', status='old')
-  read (108) Vvar
-  close(108)
-
-elseif(windprofile.eq.2) then
-  print*,'!----!----!----!----!----!----!----!----!----!----!----!' 
-  print*,'Windprofile is randomly generated averages over whole domain' 
-  print*,'multiplication factor for winds = ',randomwinds
-  low=1*randomwinds
-  high=3*randomwinds
-
-  allocate(uavg(periodTotal),vavg(periodTotal),VAR(periodTotal,2))
-
-  do yt=1,periodTotal
-    a = rand()
-    a = 2.0*a - 1.0
-    if (a.gt.0) then
-      uavg(yt) = (a*real(low+high))-real(low)
-    else 
-      uavg(yt) = (a*real(low+high))+real(low)
-    endif
-    a = rand()
-    a = 2.0*a - 1.0
-    if (a.gt.0) then
-      vavg(yt) = (a*real(low+high))-real(low)
-    else
-      vavg(yt) = (a*real(low+high))+real(low)
-    endif
-    a = rand()    
-    a = 2.0*a - 1.0
-    if (a.gt.0) then
-      VAR(yt,1) = (a*real(low+high))-real(low)
-    else
-      VAR(yt,1) = (a*real(low+high))+real(low)
-    endif
-    a = rand()     
-    a = 2.0*a - 1.0
-    if (a.gt.0) then
-      VAR(yt,2) = (a*real(low+high))-real(low)
-    else
-      VAR(yt,2) = (a*real(low+high))+real(low)
-    endif
-  enddo
-
-endif
-print*,'uavg = ',uavg
-print*,'vavg = ',vavg
-print*,'uvar = ',VAR(:,1)
-print*,'vvar = ',VAR(:,2)
-print*,'Each column is a year'
-print*,'!----!----!----!----!----!----!----!----!----!----!----!' 
-
-specTotal=infuel+ntspecies*tfuelbins
-allocate(fuelSA(specTotal),leafdropfreq(specTotal),decay(specTotal), &
-droptime(specTotal),vterminal(specTotal),Froude(specTotal), &
-moistspec(specTotal),dragco(specTotal),ssspec(specTotal),compact(specTotal))
-
-! Species data
-if (iFIA.eq.1) then
-  ift=1
-  if(iFIAspecies.eq.0) then
-    print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
-    print*,'USING SPECIES GROUPS... check below to make sure you have inputted groups'
-    print*,'FIA = ',FIA
-    print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
-    do ift=1,specTotal
-      do s=1,10
-        if(s.eq.FIA(ift)) then
-          fuelSA(ift)=SPECgroups(s)%surfarea
-          leafdropfreq(ift)=SPECgroups(s)%dropperyear
-          decay(ift)=SPECgroups(s)%decay
-          droptime(ift)=SPECgroups(s)%stepperyear
-          vterminal(ift)=SPECgroups(s)%vterminal
-          Froude(ift)=SPECgroups(s)%froude
-          dragco(ift)=SPECgroups(s)%dragco
-          moistspec(ift)=SPECgroups(s)%moist
-          ssspec(ift)=SPECgroups(s)%sizescale
-          compact(ift)=SPECgroups(s)%compact
-          loc=s
-          exit
-        endif
-      enddo
-    enddo
-  elseif (iFIAspecies.eq.1) then
-    print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
-    print*,'USING SPECIFIC SPECIES CODES... check below to make sure you have inputted species'
-    print*,'FIA = ',FIA
-    print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
-    do ift=1,specTotal
-      do s=1,290
-        loc=0
-        if(SPECINFO(s)%FIA_code.eq.FIA(ift)) then
-          fuelSA(ift)=SPECINFO(s)%surfarea
-          leafdropfreq(ift)=SPECINFO(s)%dropperyear
-          decay(ift)=SPECINFO(s)%decay
-          droptime(ift)=SPECINFO(s)%stepperyear
-          vterminal(ift)=SPECINFO(s)%vterminal
-          Froude(ift)=SPECINFO(s)%froude
-          dragco(ift)=SPECINFO(s)%dragco
-          moistspec(ift)=SPECINFO(s)%moist
-          ssspec(ift)=SPECINFO(s)%sizescale
-          compact(ift)=SPECINFO(s)%compact
-          loc=s
-          exit
-        endif
-      enddo
-      !print*,'ift = ',ift
-      !print*,'loc = ',loc
-      !print*,'fuelSA(ift) = ',fuelSA(ift-1)
-      !print*,'SPECINFO(s)%surfarea = ',SPECINFO(loc)%surfarea
-    enddo
-  endif  
-elseif (iFIA.eq.0) then
-  print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
-  print*,'YOU ARE NOT USING THE FIA DATABASE - SPECIES FILE PROVIDED SEPARATELY'
-  print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
-
-    dragslope = 1.4/(sqrt(70.0) - 1.0)
-    dragb = 0.6 - dragslope
-  open (99,file=speciesfile)
-  do ift=1,specTotal
-    read(99,*) fuelMass,fuelSA(ift),leafdropfreq(ift),decay(ift),droptime(ift)
-    fuelMass=fuelMass/1000.
-    fuelSA(ift)=fuelSA(ift)/10000.
-    dragco(ift)=dragslope*fuelSA(ift) + dragb !JSM
-    ! Terminal velocity
-    vterminal(ift)=sqrt((2.*fuelMass*9.81)/(dragco(ift)*1.225*fuelSA(ift)))
-    ! 9.81 is acceleration of gravity
-    ! 1.225 is density of air at STP
-    Froude(ift) = 0.01/(sqrt(9.81*sqrt(fuelSA(ift))))
-    moistspec(ift)=100
-    compact(ift) = 0.5
-  enddo
-  close(99)
-endif
-
-droptime = ceiling(droptime/(12/StepsPerYear))
-
-!print*,'Variable definitions:'
-!print*,'fuelSA = ',fuelSA
-!print*,'leafdropfreq = ',leafdropfreq
-!print*,'decay = ',decay
-!print*,'droptime = ',droptime
-!print*,'vterminal = ',vterminal
-!print*,'Froude = ',Froude
-!print*,'dragco = ',dragco
-!print*,'moistspec = ',moistspec
-!print*,'ssspec = ',ssspec
-
-allocate(lrhofT(specTotal,nx,ny,periodTotal)); lrhofT(:,:,:,:)=0.0
-allocate(grhofT(specTotal,nx,ny,periodTotal)); grhofT(:,:,:,:)=0.0
-allocate(lafdT(specTotal,nx,ny,periodTotal)); lafdT(:,:,:,:)=0.0
-allocate(gafdT(specTotal,nx,ny,periodTotal)); gafdT(:,:,:,:)=0.0
-allocate(lmoistT(specTotal,nx,ny,periodTotal)); lmoistT(:,:,:,:)=0.0
-allocate(gmoistT(specTotal,nx,ny,periodTotal)); gmoistT(:,:,:,:)=0.0
-allocate(lssT(specTotal,nx,ny,periodTotal)); lssT(:,:,:,:)=0.0
-allocate(gssT(specTotal,nx,ny,periodTotal)); gssT(:,:,:,:)=0.0
-
-end subroutine define_duet_variables
+!subroutine define_species_variables
+!!-----------------------------------------------------------------
+!! Imports the species database for FIA codes
+!!-----------------------------------------------------------------
+!
+!use species_variables
+!use fuels_create_variables, only:ntspecies
+!
+!
+!integer :: i,j,ct,fdrop=0,fstep=0
+!real :: fsa=0,fdecay=0,fmoist=0,fss=0
+!real :: fdrag=0,fvterm=0,ffrou=0,fcomp=0
+!open(unit=5, file='FIA_FastFuels_fin_fulllist_populated.txt', &
+!  status='old', access='sequential', form='formatted')
+!  do i=1,290
+!    read(5,*) SPECINFO(i)
+!  enddo
+!close(5)
+!if (iFIAspecies.eq.0) then
+!  do j=1,maxval(SPECINFO%sp_grp_num)
+!    ct=0
+!    fsa=0
+!    fdrop=0
+!    fdecay=0
+!    fmoist=0
+!    fstep=0
+!    fdrag=0
+!    fvterm=0
+!    ffrou=0
+!    fcomp=0
+!    fss=0
+!    do i=1,290
+!      if(SPECINFO(i)%sp_grp_num.eq.j) then
+!        ct=ct+1
+!        fsa=fsa+SPECINFO(i)%surfarea
+!        fdrop=fdrop+SPECINFO(i)%dropperyear
+!        fdecay=fdecay+SPECINFO(i)%decay
+!        fmoist=fmoist+SPECINFO(i)%moist
+!        fstep=fstep+SPECINFO(i)%stepperyear
+!        fdrag=fdrag+SPECINFO(i)%dragco
+!        fvterm=fvterm+SPECINFO(i)%vterminal
+!        ffrou=ffrou+SPECINFO(i)%froude
+!        fcomp=fcomp+SPECINFO(i)%compact
+!        fss=fss+SPECINFO(i)%sizescale
+!      endif
+!    enddo
+!    SPECgroups(j)%surfarea=fsa/real(ct)
+!    SPECgroups(j)%dropperyear=int(fdrop/ct)
+!    SPECgroups(j)%decay=fdecay/real(ct)
+!    SPECgroups(j)%moist=fmoist/real(ct)
+!    SPECgroups(j)%stepperyear=int(fstep/ct)
+!    SPECgroups(j)%dragco=fdrag/real(ct)
+!    SPECgroups(j)%vterminal=fvterm/real(ct)
+!    SPECgroups(j)%froude=ffrou/real(ct)
+!    SPECgroups(j)%compact=fcomp/real(ct)
+!    SPECgroups(j)%sizescale=fss/real(ct)
+!  enddo
+!endif
+!
+!end subroutine define_species_variables
+!
+!subroutine define_duet_variables
+!!-----------------------------------------------------------------
+!! Variables unique to the duet
+!!-----------------------------------------------------------------
+!use grid_variables, only : nx,ny,nz
+!use infile_variables, only : infuel
+!use fuels_create_variables, only : ntspecies,tfuelbins
+!use duet_variables, only : windprofile,StepsPerYear, &
+!  YearsSinceBurn,uavg,vavg,VAR,ustd,vstd,Umean,Vmean,Uvar,Vvar,vterminal, &
+!  fuelSA,Froude,droptime,leafdropfreq,decay,speciesfile,lrhofT, &
+!  grhofT,dragco,lafdT,gafdT,lmoistT,gmoistT,lssT,gssT,randomwinds, &
+!  moistspec,ssspec,compact,periodTotal
+!use species_variables
+!implicit none
+!
+!! Local Variables
+!integer :: yt,ift,s,low,high,loc
+!integer :: specTotal
+!real :: fuelMass,dragslope,dragb,a,monstep
+!real,dimension(6) :: temp_array 
+!
+!! Executable Code
+!periodTotal=YearsSinceBurn*StepsPerYear
+!if(windprofile.eq.0) then
+!  print*,'!----!----!----!----!----!----!----!----!----!----!----!'
+!  print*,'Windprofile is taken from a user provided in fuellist'
+!  allocate(VAR(periodTotal,2))
+!  do yt=1,periodTotal
+!    VAR(yt,1)=ustd(yt)
+!    VAR(yt,2)=vstd(yt)
+!  enddo
+!  close(100)
+!elseif(windprofile.eq.1)then
+!  print*,'!----!----!----!----!----!----!----!----!----!----!----!'
+!  print*,'Windprofile is generated from higrad and averaged within each cell'
+!  allocate(Umean(nx,ny,nz),Vmean(nx,ny,nz),Uvar(nx,ny,nz),VVar(nx,ny,nz))
+!  open (105,file='Umean.dat', form='unformatted', status='old')
+!  read (105) Umean
+!  close(105)
+!
+!  open (106,file='Vmean.dat', form='unformatted', status='old')
+!  read (106) Vmean
+!  close(106)
+!
+!  open (107,file='Uvar.dat', form='unformatted', status='old')
+!  read (107) Uvar
+!  close(107)
+!
+!  open (108,file='Vvar.dat', form='unformatted', status='old')
+!  read (108) Vvar
+!  close(108)
+!
+!elseif(windprofile.eq.2) then
+!  print*,'!----!----!----!----!----!----!----!----!----!----!----!' 
+!  print*,'Windprofile is randomly generated averages over whole domain' 
+!  print*,'multiplication factor for winds = ',randomwinds
+!  low=1*randomwinds
+!  high=3*randomwinds
+!
+!  allocate(uavg(periodTotal),vavg(periodTotal),VAR(periodTotal,2))
+!
+!  do yt=1,periodTotal
+!    a = rand()
+!    a = 2.0*a - 1.0
+!    if (a.gt.0) then
+!      uavg(yt) = (a*real(low+high))-real(low)
+!    else 
+!      uavg(yt) = (a*real(low+high))+real(low)
+!    endif
+!    a = rand()
+!    a = 2.0*a - 1.0
+!    if (a.gt.0) then
+!      vavg(yt) = (a*real(low+high))-real(low)
+!    else
+!      vavg(yt) = (a*real(low+high))+real(low)
+!    endif
+!    a = rand()    
+!    a = 2.0*a - 1.0
+!    if (a.gt.0) then
+!      VAR(yt,1) = (a*real(low+high))-real(low)
+!    else
+!      VAR(yt,1) = (a*real(low+high))+real(low)
+!    endif
+!    a = rand()     
+!    a = 2.0*a - 1.0
+!    if (a.gt.0) then
+!      VAR(yt,2) = (a*real(low+high))-real(low)
+!    else
+!      VAR(yt,2) = (a*real(low+high))+real(low)
+!    endif
+!  enddo
+!
+!endif
+!print*,'uavg = ',uavg
+!print*,'vavg = ',vavg
+!print*,'uvar = ',VAR(:,1)
+!print*,'vvar = ',VAR(:,2)
+!print*,'Each column is a year'
+!print*,'!----!----!----!----!----!----!----!----!----!----!----!' 
+!
+!specTotal=infuel+ntspecies*tfuelbins
+!allocate(fuelSA(specTotal),leafdropfreq(specTotal),decay(specTotal), &
+!droptime(specTotal),vterminal(specTotal),Froude(specTotal), &
+!moistspec(specTotal),dragco(specTotal),ssspec(specTotal),compact(specTotal))
+!
+!! Species data
+!if (iFIA.eq.1) then
+!  ift=1
+!  if(iFIAspecies.eq.0) then
+!    print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
+!    print*,'USING SPECIES GROUPS... check below to make sure you have inputted groups'
+!    print*,'FIA = ',FIA
+!    print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
+!    do ift=1,specTotal
+!      do s=1,10
+!        if(s.eq.FIA(ift)) then
+!          fuelSA(ift)=SPECgroups(s)%surfarea
+!          leafdropfreq(ift)=SPECgroups(s)%dropperyear
+!          decay(ift)=SPECgroups(s)%decay
+!          droptime(ift)=SPECgroups(s)%stepperyear
+!          vterminal(ift)=SPECgroups(s)%vterminal
+!          Froude(ift)=SPECgroups(s)%froude
+!          dragco(ift)=SPECgroups(s)%dragco
+!          moistspec(ift)=SPECgroups(s)%moist
+!          ssspec(ift)=SPECgroups(s)%sizescale
+!          compact(ift)=SPECgroups(s)%compact
+!          loc=s
+!          exit
+!        endif
+!      enddo
+!    enddo
+!  elseif (iFIAspecies.eq.1) then
+!    print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
+!    print*,'USING SPECIFIC SPECIES CODES... check below to make sure you have inputted species'
+!    print*,'FIA = ',FIA
+!    print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
+!    do ift=1,specTotal
+!      do s=1,290
+!        loc=0
+!        if(SPECINFO(s)%FIA_code.eq.FIA(ift)) then
+!          fuelSA(ift)=SPECINFO(s)%surfarea
+!          leafdropfreq(ift)=SPECINFO(s)%dropperyear
+!          decay(ift)=SPECINFO(s)%decay
+!          droptime(ift)=SPECINFO(s)%stepperyear
+!          vterminal(ift)=SPECINFO(s)%vterminal
+!          Froude(ift)=SPECINFO(s)%froude
+!          dragco(ift)=SPECINFO(s)%dragco
+!          moistspec(ift)=SPECINFO(s)%moist
+!          ssspec(ift)=SPECINFO(s)%sizescale
+!          compact(ift)=SPECINFO(s)%compact
+!          loc=s
+!          exit
+!        endif
+!      enddo
+!      !print*,'ift = ',ift
+!      !print*,'loc = ',loc
+!      !print*,'fuelSA(ift) = ',fuelSA(ift-1)
+!      !print*,'SPECINFO(s)%surfarea = ',SPECINFO(loc)%surfarea
+!    enddo
+!  endif  
+!elseif (iFIA.eq.0) then
+!  print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
+!  print*,'YOU ARE NOT USING THE FIA DATABASE - SPECIES FILE PROVIDED SEPARATELY'
+!  print*,'!----!----!----!----!----!----!----!----!----!----!----!----!----!----!'
+!
+!    dragslope = 1.4/(sqrt(70.0) - 1.0)
+!    dragb = 0.6 - dragslope
+!  open (99,file=speciesfile)
+!  do ift=1,specTotal
+!    read(99,*) fuelMass,fuelSA(ift),leafdropfreq(ift),decay(ift),droptime(ift)
+!    fuelMass=fuelMass/1000.
+!    fuelSA(ift)=fuelSA(ift)/10000.
+!    dragco(ift)=dragslope*fuelSA(ift) + dragb !JSM
+!    ! Terminal velocity
+!    vterminal(ift)=sqrt((2.*fuelMass*9.81)/(dragco(ift)*1.225*fuelSA(ift)))
+!    ! 9.81 is acceleration of gravity
+!    ! 1.225 is density of air at STP
+!    Froude(ift) = 0.01/(sqrt(9.81*sqrt(fuelSA(ift))))
+!    moistspec(ift)=100
+!    compact(ift) = 0.5
+!  enddo
+!  close(99)
+!endif
+!
+!droptime = ceiling(droptime/(12/StepsPerYear))
+!
+!!print*,'Variable definitions:'
+!!print*,'fuelSA = ',fuelSA
+!!print*,'leafdropfreq = ',leafdropfreq
+!!print*,'decay = ',decay
+!!print*,'droptime = ',droptime
+!!print*,'vterminal = ',vterminal
+!!print*,'Froude = ',Froude
+!!print*,'dragco = ',dragco
+!!print*,'moistspec = ',moistspec
+!!print*,'ssspec = ',ssspec
+!
+!allocate(lrhofT(specTotal,nx,ny,periodTotal)); lrhofT(:,:,:,:)=0.0
+!allocate(grhofT(specTotal,nx,ny,periodTotal)); grhofT(:,:,:,:)=0.0
+!allocate(lafdT(specTotal,nx,ny,periodTotal)); lafdT(:,:,:,:)=0.0
+!allocate(gafdT(specTotal,nx,ny,periodTotal)); gafdT(:,:,:,:)=0.0
+!allocate(lmoistT(specTotal,nx,ny,periodTotal)); lmoistT(:,:,:,:)=0.0
+!allocate(gmoistT(specTotal,nx,ny,periodTotal)); gmoistT(:,:,:,:)=0.0
+!allocate(lssT(specTotal,nx,ny,periodTotal)); lssT(:,:,:,:)=0.0
+!allocate(gssT(specTotal,nx,ny,periodTotal)); gssT(:,:,:,:)=0.0
+!
+!end subroutine define_duet_variables
 
 subroutine define_newtreefile
   use fuels_create_variables, only: newtreefile, itrees, treefile
@@ -521,7 +521,7 @@ subroutine define_newtreefile
     integer(8) :: timeit
     character(len=30) :: dateit
     character(len=24) :: resultit
-    character(len=30) :: treelistformat
+    !character(len=30) :: treelistformat
     integer :: n
 
     if (itrees.eq.0) then 
