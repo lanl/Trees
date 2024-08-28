@@ -112,7 +112,7 @@ contains
 
     !character :: name
 
-    print*,'Subroutine TR_filldomain running...'
+    print*,'DUET begun...'
 
     open(unit=48,file='../Inputs/fuellist',form= 'formatted',status= 'old')
 
@@ -165,7 +165,7 @@ contains
 
     close(48)
 
-    print*,'Subroutine TR_filldomain complete.'
+    !print*,'Subroutine TR_filldomain complete.'
 
   end subroutine TR_filldomain
 
@@ -177,7 +177,7 @@ contains
 
     integer :: nx,ny,nt,ng,YSB
 
-    print*,'Subroutine alloc_init running...'
+    !print*,'Subroutine alloc_init running...'
 
     nz = domain%nz
     nx = domain%nx
@@ -301,7 +301,7 @@ contains
 
     call makeFIAfile
 
-    print*,'Subroutine alloc_init complete.'
+    !print*,'Subroutine alloc_init complete.'
     
   end subroutine alloc_init
 
@@ -314,7 +314,7 @@ contains
     real :: fsa=0,fdecay=0,fmoist=0,fss=0
     real :: fdrag=0,fvterm=0,ffrou=0,fcomp=0
 
-    print*,'Subroutine makeFIAfile running...'
+    !print*,'Subroutine makeFIAfile running...'
 
     open(unit=5, file='FIA_FastFuels_fin_fulllist_populated.txt', &
       status='old', access='sequential', form='formatted')
@@ -362,7 +362,7 @@ contains
       SPECgroups(j)%sizescale=fss/real(ct)
     enddo
 
-    print*,'Subroutine makeFIAfile complete.'
+    !print*,'Subroutine makeFIAfile complete.'
     
   end subroutine makeFIAfile
 

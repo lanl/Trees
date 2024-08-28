@@ -41,7 +41,7 @@ module FastFuels
         !integer :: seedchange,winddirection,windvary
         integer,allocatable :: seed(:)
         
-        print*,'Subroutine ReadFFfiles running...'
+        !print*,'Subroutine ReadFFfiles running...'
         
         open(unit=1,file='duet.in',form='formatted',status='old')
         read(1,*) domain%nx
@@ -83,7 +83,7 @@ module FastFuels
         close(1)
 
 
-        print*,'Subroutine ReadFFfiles complete.'
+        !print*,'Subroutine ReadFFfiles complete.'
         
     end subroutine FF_Readfiles
 
@@ -102,7 +102,7 @@ module FastFuels
         integer,dimension(290) :: FIA
         integer,dimension(290) :: vals
 
-        print*,'Subroutine FF_Species running...'
+        !print*,'Subroutine FF_Species running...'
     
         FIA = 0
         vals = 0
@@ -147,7 +147,7 @@ module FastFuels
         grasses%dept  = 0.27
         grasses%ssss  = 0.0005
 
-        print*,'Subroutine FF_Species complete.'
+        !print*,'Subroutine FF_Species complete.'
     
         !print*,'specarray: ',specarray, vals, n
       
@@ -162,7 +162,7 @@ module FastFuels
     
       integer :: s,k,j,i,z
 
-      print*,'Subroutine FF_trhof running...'
+      !print*,'Subroutine FF_trhof running...'
       !print*,'domain',domain%ns,domain%nz,domain%ny,domain%nx
       !print*,'Shape of FFinarray%FFspec',shape(FFinarray%FFspec)
       !print*,'Shape of specarray',shape(specarray)
@@ -192,10 +192,10 @@ module FastFuels
         do z = 1,domain%nz
           inarray%zheight(:,:,z) = domain%dz*(z-1)
         enddo
-        
+        print*,'Arrays imported.'
         print*,'Max and Min of trhof:',maxval(inarray%trhof),minval(inarray%trhof)
 
-        print*,'Subroutine FF_trhof complete.'
+        !print*,'Subroutine FF_trhof complete.'
     
     end subroutine FF_trhof
     

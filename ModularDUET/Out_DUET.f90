@@ -21,7 +21,7 @@ subroutine writearrays
 
     integer :: s,g
 
-    print*,'Subroutine writearrays running...'
+    !print*,'Subroutine writearrays running...'
 
     do g = 1,domain%ng
         outarray%frho(g,:,:,1) = outarray%srho(g,:,:) 
@@ -47,7 +47,7 @@ subroutine writearrays
         outarray%fh20(domain%ng+s,:,:,1) = outarray%sh20(domain%ng+s,:,:) 
     enddo
     
-    print*,'Subroutine writearrays complete.'
+    !print*,'Subroutine writearrays complete.'
 
 end subroutine writearrays
 
@@ -71,7 +71,7 @@ subroutine FF_writefiles
     surfsss = outarray%ssss
     surfafd = outarray%safd
 
-    print*,'Subroutine FF_writefiles running...'
+    !print*,'Subroutine FF_writefiles running...'
 
     open (12,file='surface_rhof_layered.dat',form='unformatted',status='unknown')
     write (12) surfrho !outarray%srho
@@ -179,7 +179,7 @@ subroutine FF_writefiles
     write (12) inarray%trhof
     close (12)
 
-    print*,'Subroutine FF_writefiles complete.'
+    !print*,'Subroutine FF_writefiles complete.'
 
     
 end subroutine FF_writefiles
@@ -209,6 +209,8 @@ subroutine TR_RunDUET(nx,ny,nz,ns,zheight,trhof,tmoist,tfueldepth,tsizescale,grh
 
     integer :: g,l
 
+    print*,'DUET running...'
+
     domain%nx = nx
     domain%ny = ny
     domain%nz = nz
@@ -226,7 +228,7 @@ subroutine TR_RunDUET(nx,ny,nz,ns,zheight,trhof,tmoist,tfueldepth,tsizescale,grh
     inarray%depth(:,:,:)     = tfueldepth(:,:,:)
     inarray%sscale(:,:,:,:)  = tsizescale(:,:,:,:)
 
-    call TR_filldomain!(ntspecies,nx,ny,nz)
+    call TR_filldomain
     call BuildSpeciesArray
     call makewinds
     call disperseLitter
@@ -250,6 +252,15 @@ subroutine TR_RunDUET(nx,ny,nz,ns,zheight,trhof,tmoist,tfueldepth,tsizescale,grh
         lsizescale(l,:,:,1) = outarray%lsss(l,:,:)
         lfueldepth(l,:,:) = outarray%lafd(l,:,:)
     enddo
+    print*,'Min and Max of litter density:'  ,minval(outarray%lrho),maxval(outarray%lrho)
+    print*,'Min and Max of litter moisture:' ,minval(outarray%lh20),maxval(outarray%lh20)
+    print*,'Min and Max of litter sizescale:',minval(outarray%lsss),maxval(outarray%lsss)
+    print*,'Min and Max of litter depth:'    ,minval(outarray%lafd),maxval(outarray%lafd)
+    print*,''
+    print*,'Min and Max of grass density:'  ,minval(grhof),     maxval(grhof)    
+    print*,'Min and Max of grass moisture:' ,minval(gmoist),    maxval(gmoist)  
+    print*,'Min and Max of grass sizescale:',minval(gsizescale),maxval(gsizescale)
+    print*,'Min and Max of grass depth:'    ,minval(gfueldepth),maxval(gfueldepth)
 
 end subroutine TR_RunDUET
 

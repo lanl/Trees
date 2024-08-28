@@ -25,7 +25,7 @@ contains
 
     integer :: s,f
 
-    print*,'Subroutine BuildSpeciesArray running...'
+    !print*,'Subroutine BuildSpeciesArray running...'
 
     if(duetvars%iFIA.eq.1) then
       if(duetvars%iFIAspecies.eq.1) then
@@ -67,7 +67,7 @@ contains
       endif
     endif
 
-    print*,'Subroutine BuildSpeciesArray complete.'
+    !print*,'Subroutine BuildSpeciesArray complete.'
 
   end subroutine BuildSpeciesArray
 
@@ -80,7 +80,7 @@ contains
 
     integer,dimension(4) :: trhofshape
 
-    print*,'Subroutine TR_species running...'
+    !print*,'Subroutine TR_species running...'
 
     trhofshape = shape(inarray%trhof)
 
@@ -90,7 +90,7 @@ contains
       outarray%frho(domain%ng+domain%ns+s,:,:,:) = inarray%trhof(s,:,:,:)
     enddo
 
-    print*,'Subroutine TR_species complete.'
+    !print*,'Subroutine TR_species complete.'
   end subroutine TR_species
 
 end module species
@@ -109,7 +109,7 @@ module winds
     real :: low,high,a
     real,allocatable :: Umean(:,:,:),Vmean(:,:,:),Uvar(:,:,:),Vvar(:,:,:)
 
-    print*,'Subroutine makewinds running...'
+    !print*,'Subroutine makewinds running...'
 
     if(duetvars%windprofile.eq.0) then
     
@@ -190,7 +190,7 @@ module winds
     print*,'Each column is a year'
     print*,'!----!----!----!----!----!----!----!----!----!----!----!' 
     
-    print*,'Subroutine makewinds complete.'
+    !print*,'Subroutine makewinds complete.'
 
   end subroutine makewinds
 

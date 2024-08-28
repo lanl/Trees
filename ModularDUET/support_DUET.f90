@@ -47,7 +47,7 @@ module support
           enddo
         enddo
         print*,'max and min of lrho after decay: ',maxval(litter%lrho),minval(litter%lrho)
-        print*,'Decay and compaction complete'
+        !print*,'Decay and compaction complete'
         
       !call printfiles(name)
 
@@ -87,7 +87,7 @@ module support
       tmp = 0.0
       TEMP = 0.0
       
-      print*,'Beginning diffusion...'
+      !print*,'Beginning diffusion...'
       !print*,'Sum before diffusion = ',sum(lrhofT)
       ! Diffusion from each cell to the surrounding cells provided the density is less
       ! than that within the center cell
@@ -99,8 +99,8 @@ module support
         enddo
       enddo
       
-      print*,'Sum before diffusion:',sum(tmp)
-      print*,'Maxval of tmp:',maxval(sum(tmp,DIM=1))
+      !print*,'Sum before diffusion:',sum(tmp)
+      !print*,'Maxval of tmp:',maxval(sum(tmp,DIM=1))
       
       if(maxval(sum(tmp,DIM=1)).gt.duetvars%densitythresh) then
         do while (maxval(sum(tmp,DIM=1)).gt.duetvars%densitythresh)
@@ -142,7 +142,7 @@ module support
       endif
       print*,'Diffusion complete'
       print*,'Sum after diffusion = ',sum(TEMP)
-      print*,'Sum of lrho after diffusion = ',sum(litter%lrho)
+      !print*,'Sum of lrho after diffusion = ',sum(litter%lrho)
 
       outarray%lrho = TEMP
       do s=domain%ng+1,domain%ng+domain%ns+1
@@ -170,7 +170,7 @@ module support
 
       !DMS = 'DMS'
 
-      print*,'Subroutine depthMoistSs running...'
+      !print*,'Subroutine depthMoistSs running...'
 
       do s=1,domain%ns
         do i=1,domain%nx
@@ -197,7 +197,7 @@ module support
 
       !call printfiles(name)
     
-      print*,'Subroutine depthMoistSs complete.'
+      !print*,'Subroutine depthMoistSs complete.'
 
     end subroutine depthMoistSs
 
@@ -212,7 +212,7 @@ module support
         real :: litterfactor,shadefactor,rhocolumn
         real,allocatable :: grhof(:,:,:,:)
 
-        print*,'Subroutine growGrass running...'
+        !print*,'Subroutine growGrass running...'
 
         allocate(grhof(domain%ng,domain%nx,domain%ny,domain%nt))
 
@@ -220,7 +220,7 @@ module support
 
         print*,'Grass growing...'
         print*,'grho = ',grasses%grho
-        print*,'decy = ',grasses%decy
+        print*,'decay = ',grasses%decy
         !print*,'trhofshape = ',shape(trhof)
 
 
@@ -257,7 +257,7 @@ module support
             enddo
           enddo
         enddo      
-        print*,'Grass complete'
+        !print*,'Grass complete'
         print*,'Max, min of grass = ',maxval(grhof(1,:,:,:)),minval(grhof(1,:,:,:))
         print*,'Total grass = ',sum(grhof(1,:,:,:))
 
@@ -280,7 +280,7 @@ module support
         print*,'Max, min of grass moisture = ',maxval(outarray%sh20),minval(outarray%sh20)
         deallocate(grhof)
 
-        print*,'Subroutine growGrass complete.'
+        !print*,'Subroutine growGrass complete.'
       
     end subroutine growGrass
 
