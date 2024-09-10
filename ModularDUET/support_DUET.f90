@@ -49,6 +49,15 @@ module support
         print*,'max and min of lrho after decay: ',maxval(litter%lrho),minval(litter%lrho)
         !print*,'Decay and compaction complete'
         
+        do j=1,domain%ny
+          do i=1,domain%nx
+            do s=1,domain%ns
+              outarray%lrho(s,i,j) = outarray%lrho(s,i,j) + sum(litter%lrho(s,i,j,:))
+            enddo
+          enddo
+        enddo
+        
+
       !call printfiles(name)
 
     end subroutine decay
@@ -59,9 +68,9 @@ module support
 
       use DUETio
 
-      integer :: i,j,s,yt
+      integer :: i,j,s,yt,ct
       integer :: iplus,iminus,jplus,jminus
-      real :: a,deltat !,densitythresh
+      real :: a,deltat,mval !,densitythresh
       real,allocatable :: tmp(:,:,:), TEMP(:,:,:)
 
       !character*5 :: name = 'diffu'
@@ -102,9 +111,11 @@ module support
       !print*,'Sum before diffusion:',sum(tmp)
       !print*,'Maxval of tmp:',maxval(sum(tmp,DIM=1))
       
+      ct = 0
       if(maxval(sum(tmp,DIM=1)).gt.duetvars%densitythresh) then
         do while (maxval(sum(tmp,DIM=1)).gt.duetvars%densitythresh)
-          print*,'Max of tmp',maxval(sum(tmp,DIM=1))
+          !print*,'Max of tmp',maxval(sum(tmp,DIM=1))
+          mval = maxval(sum(tmp,DIM=1))
           !if(any(isNaN(tmp))) then
           !  print*,'We have a problem in the diffusion...' 
           !  stop
@@ -124,9 +135,11 @@ module support
                   if (j.eq.domain%ny) jplus = 1
       
                       ! 2D diffusion equation
-                  TEMP(s,i,j) = a*deltat*((tmp(s,iplus,j)-2*tmp(s,i,j)+tmp(s,iminus,j))/domain%dx**2 &
-                    + (tmp(s,i,jplus)-2*tmp(s,i,j)+tmp(s,i,jminus))/domain%dy**2) &
-                    + tmp(s,i,j)
+                  !if(sum(tmp(:,i,j)).gt.duetvars%densitythresh) then !!!!!!!!!!!!!!!!!!!!!!!!!!
+                    TEMP(s,i,j) = a*deltat*((tmp(s,iplus,j)-2*tmp(s,i,j)+tmp(s,iminus,j))/domain%dx**2 &
+                      + (tmp(s,i,jplus)-2*tmp(s,i,j)+tmp(s,i,jminus))/domain%dy**2) &
+                      + tmp(s,i,j)
+                  !endif !!!!!!!!!!!!!!!!!!!!!!!!!!
                   if((isNaN(TEMP(s,i,j)))) then
                     print*,'The problem is here: s,i,j',s,i,j 
                     stop
@@ -135,18 +148,27 @@ module support
               enddo
             enddo
           enddo
+          
           tmp = TEMP
+          ct = ct+1
+          !if(mod(ct,10).eq.0) print*,'Diffusing, round',ct
+          if(mval-maxval(sum(TEMP,DIM=1)).lt.0.0001) then
+            print*,'Reached steady state with litter diffusion.'
+            print*,'Max of litter =',mval
+            exit
+          endif
         enddo
       else
         TEMP = tmp
       endif
       print*,'Diffusion complete'
+      print*,'Diffusion ran for',ct,'rounds'
       print*,'Sum after diffusion = ',sum(TEMP)
       !print*,'Sum of lrho after diffusion = ',sum(litter%lrho)
 
       outarray%lrho = TEMP
       do s=domain%ng+1,domain%ng+domain%ns+1
-        outarray%srho(s,:,:) = TEMP(s,:,:)
+        outarray%lrho(s,:,:) = TEMP(s,:,:)
       enddo
 
       !call printfiles(name)
