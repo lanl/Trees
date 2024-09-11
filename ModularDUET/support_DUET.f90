@@ -71,7 +71,7 @@ module support
       integer :: i,j,s,yt,ct
       integer :: iplus,iminus,jplus,jminus
       real :: a,deltat,mval !,densitythresh
-      real,allocatable :: tmp(:,:,:), TEMP(:,:,:)
+      real,allocatable :: tmp(:,:,:,:), TEMP(:,:,:,:)
 
       !character*5 :: name = 'diffu'
       
@@ -92,7 +92,8 @@ module support
       a = (domain%dx**2)/4
       deltat = (domain%dy**2)/4
       
-      allocate(tmp(domain%ns,domain%nx,domain%ny),TEMP(domain%ns,domain%nx,domain%ny))
+      allocate(tmp(domain%ns,domain%nx,domain%ny,domain%nt))
+      allocate(TEMP(domain%ns,domain%nx,domain%ny,domain%nt))
       tmp = 0.0
       TEMP = 0.0
       
@@ -100,13 +101,17 @@ module support
       !print*,'Sum before diffusion = ',sum(lrhofT)
       ! Diffusion from each cell to the surrounding cells provided the density is less
       ! than that within the center cell
-      do j=1,domain%ny
-        do i=1,domain%nx
-          do s=1,domain%ns
-            tmp(s,i,j) = tmp(s,i,j) + sum(litter%lrho(s,i,j,:))
-          enddo
-        enddo
-      enddo
+      
+      tmp = litter%lrho
+      !do j=1,domain%ny
+      !  do i=1,domain%nx
+      !    do s=1,domain%ns
+      !      do yt=1,domain%nt
+      !        tmp(s,i,j,yt) = litter%lrho(s,i,j,yt)
+      !      enddo
+      !    enddo
+      !  enddo
+      !enddo
       
       !print*,'Sum before diffusion:',sum(tmp)
       !print*,'Maxval of tmp:',maxval(sum(tmp,DIM=1))
@@ -136,12 +141,12 @@ module support
       
                       ! 2D diffusion equation
                   !if(sum(tmp(:,i,j)).gt.duetvars%densitythresh) then !!!!!!!!!!!!!!!!!!!!!!!!!!
-                    TEMP(s,i,j) = a*deltat*((tmp(s,iplus,j)-2*tmp(s,i,j)+tmp(s,iminus,j))/domain%dx**2 &
-                      + (tmp(s,i,jplus)-2*tmp(s,i,j)+tmp(s,i,jminus))/domain%dy**2) &
-                      + tmp(s,i,j)
+                    TEMP(s,i,j,yt) = a*deltat*((tmp(s,iplus,j,yt)-2*tmp(s,i,j,yt)+tmp(s,iminus,j,yt))/domain%dx**2 &
+                      + (tmp(s,i,jplus,yt)-2*tmp(s,i,j,yt)+tmp(s,i,jminus,yt))/domain%dy**2) &
+                      + tmp(s,i,j,yt)
                   !endif !!!!!!!!!!!!!!!!!!!!!!!!!!
-                  if((isNaN(TEMP(s,i,j)))) then
-                    print*,'The problem is here: s,i,j',s,i,j 
+                  if((isNaN(TEMP(s,i,j,yt)))) then
+                    print*,'The problem is here: s,i,j',s,i,j,yt
                     stop
                   endif
                 enddo
@@ -166,10 +171,10 @@ module support
       print*,'Sum after diffusion = ',sum(TEMP)
       !print*,'Sum of lrho after diffusion = ',sum(litter%lrho)
 
-      outarray%lrho = TEMP
-      do s=domain%ng+1,domain%ng+domain%ns+1
-        outarray%lrho(s,:,:) = TEMP(s,:,:)
-      enddo
+      !outarray%lrho = TEMP
+      !do s=domain%ng+1,domain%ng+domain%ns+1
+      litter%lrho = TEMP
+      !enddo
 
       !call printfiles(name)
 

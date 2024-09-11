@@ -22,6 +22,9 @@ subroutine writearrays
     integer :: s,g
 
     !print*,'Subroutine writearrays running...'
+    do s=1,domain%ns
+        outarray%lrho(s,:,:) = sum(litter%lrho(s,:,:,:),DIM=3)
+    enddo
 
     do g = 1,domain%ng
         outarray%frho(g,:,:,1) = outarray%srho(g,:,:) 
