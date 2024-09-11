@@ -38,11 +38,8 @@ module FastFuels
         use DUETio, only : domain,duetvars
         use FFio
 
-        !integer :: seedchange,winddirection,windvary
         integer,allocatable :: seed(:)
-        
-        !print*,'Subroutine ReadFFfiles running...'
-        
+                
         open(unit=1,file='duet.in',form='formatted',status='old')
         read(1,*) domain%nx
         read(1,*) domain%ny
@@ -82,8 +79,6 @@ module FastFuels
         read(1) FFinarray%FFSpec
         close(1)
 
-
-        !print*,'Subroutine ReadFFfiles complete.'
         
     end subroutine FF_Readfiles
 
@@ -97,12 +92,9 @@ module FastFuels
     
         integer :: k,j,i,n
         integer*2,allocatable :: specs(:)
-        !integer(2),intent(inout) :: FFinarray%FFSpec(domain%nx,domain%ny,domain%nz)
     
         integer,dimension(290) :: FIA
         integer,dimension(290) :: vals
-
-        !print*,'Subroutine FF_Species running...'
     
         FIA = 0
         vals = 0
@@ -146,10 +138,6 @@ module FastFuels
         grasses%grho  = 1.1766
         grasses%dept  = 0.27
         grasses%ssss  = 0.0005
-
-        !print*,'Subroutine FF_Species complete.'
-    
-        !print*,'specarray: ',specarray, vals, n
       
     end subroutine FF_Species
 
@@ -161,15 +149,6 @@ module FastFuels
       use FFio
     
       integer :: s,k,j,i,z
-
-      !print*,'Subroutine FF_trhof running...'
-      !print*,'domain',domain%ns,domain%nz,domain%ny,domain%nx
-      !print*,'Shape of FFinarray%FFspec',shape(FFinarray%FFspec)
-      !print*,'Shape of specarray',shape(specarray)
-      !print*,'Shape of FFinarray%FFrhof',shape(FFinarray%FFrhof)
-      !print*,'Shape of FFinarray%FFmoist',shape(FFinarray%FFmoist)
-      !print*,'Shape of inarray%trhof',shape(inarray%trhof)
-      !print*,'Shape of inarray%moist',shape(inarray%moist)
     
         do s = 1,domain%ns
           do k = 1,domain%nz
@@ -188,14 +167,12 @@ module FastFuels
             enddo
           enddo
         enddo
-        !print*,'WE GOT TO THIS POINT...'
         do z = 1,domain%nz
           inarray%zheight(:,:,z) = domain%dz*(z-1)
         enddo
         print*,'Arrays imported.'
         print*,'Max and Min of trhof:',maxval(inarray%trhof),minval(inarray%trhof)
 
-        !print*,'Subroutine FF_trhof complete.'
     
     end subroutine FF_trhof
     

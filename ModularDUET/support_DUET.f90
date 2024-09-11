@@ -24,11 +24,6 @@ module support
 
         integer :: s,i,j,yt,yr,spy
 
-        !character*5 :: name = 'decay'
-
-        !decay = 'decay'
-        !real :: relhum
-
         print*,'Decay and compaction occurring...'
         print*,'max and min of lrho: ',maxval(litter%lrho),minval(litter%lrho)
         ! Decay and compact the litter
@@ -47,19 +42,7 @@ module support
           enddo
         enddo
         print*,'max and min of lrho after decay: ',maxval(litter%lrho),minval(litter%lrho)
-        !print*,'Decay and compaction complete'
-        
-        do j=1,domain%ny
-          do i=1,domain%nx
-            do s=1,domain%ns
-              outarray%lrho(s,i,j) = outarray%lrho(s,i,j) + sum(litter%lrho(s,i,j,:))
-            enddo
-          enddo
-        enddo
-        
-
-      !call printfiles(name)
-
+                
     end subroutine decay
 
     !---------------------------------------------------------------------------------------------------
@@ -72,10 +55,6 @@ module support
       integer :: iplus,iminus,jplus,jminus
       real :: a,deltat,mval !,densitythresh
       real,allocatable :: tmp(:,:,:,:), TEMP(:,:,:,:)
-
-      !character*5 :: name = 'diffu'
-      
-      !diffu = 'diffu'
       
       print*,'Sum of litter before diffusion: ',sum(litter%lrho)
       print*,'Minimum possible thresh value:',sum(litter%lrho)/(domain%nx*domain%ny)
@@ -97,34 +76,15 @@ module support
       tmp = 0.0
       TEMP = 0.0
       
-      !print*,'Beginning diffusion...'
-      !print*,'Sum before diffusion = ',sum(lrhofT)
       ! Diffusion from each cell to the surrounding cells provided the density is less
       ! than that within the center cell
       
       tmp = litter%lrho
-      !do j=1,domain%ny
-      !  do i=1,domain%nx
-      !    do s=1,domain%ns
-      !      do yt=1,domain%nt
-      !        tmp(s,i,j,yt) = litter%lrho(s,i,j,yt)
-      !      enddo
-      !    enddo
-      !  enddo
-      !enddo
-      
-      !print*,'Sum before diffusion:',sum(tmp)
-      !print*,'Maxval of tmp:',maxval(sum(tmp,DIM=1))
       
       ct = 0
       if(maxval(sum(tmp,DIM=1)).gt.duetvars%densitythresh) then
         do while (maxval(sum(tmp,DIM=1)).gt.duetvars%densitythresh)
-          !print*,'Max of tmp',maxval(sum(tmp,DIM=1))
           mval = maxval(sum(tmp,DIM=1))
-          !if(any(isNaN(tmp))) then
-          !  print*,'We have a problem in the diffusion...' 
-          !  stop
-          !endif
           do j=1,domain%ny
             do i=1,domain%nx
               do s=1,domain%ns
@@ -140,15 +100,9 @@ module support
                   if (j.eq.domain%ny) jplus = 1
       
                       ! 2D diffusion equation
-                  !if(sum(tmp(:,i,j)).gt.duetvars%densitythresh) then !!!!!!!!!!!!!!!!!!!!!!!!!!
                     TEMP(s,i,j,yt) = a*deltat*((tmp(s,iplus,j,yt)-2*tmp(s,i,j,yt)+tmp(s,iminus,j,yt))/domain%dx**2 &
                       + (tmp(s,i,jplus,yt)-2*tmp(s,i,j,yt)+tmp(s,i,jminus,yt))/domain%dy**2) &
                       + tmp(s,i,j,yt)
-                  !endif !!!!!!!!!!!!!!!!!!!!!!!!!!
-                  if((isNaN(TEMP(s,i,j,yt)))) then
-                    print*,'The problem is here: s,i,j',s,i,j,yt
-                    stop
-                  endif
                 enddo
               enddo
             enddo
@@ -156,7 +110,6 @@ module support
           
           tmp = TEMP
           ct = ct+1
-          !if(mod(ct,10).eq.0) print*,'Diffusing, round',ct
           if(mval-maxval(sum(TEMP,DIM=1)).lt.0.0001) then
             print*,'Reached steady state with litter diffusion.'
             print*,'Max of litter =',mval
@@ -169,19 +122,8 @@ module support
       print*,'Diffusion complete'
       print*,'Diffusion ran for',ct,'rounds'
       print*,'Sum after diffusion = ',sum(TEMP)
-      !print*,'Sum of lrho after diffusion = ',sum(litter%lrho)
 
-      !outarray%lrho = TEMP
-      !do s=domain%ng+1,domain%ng+domain%ns+1
-      litter%lrho = TEMP
-      !enddo
-
-      !call printfiles(name)
-
-      !do s=1,domain%ns
-      !  outarray%frho(s+domain%ng,:,:,1) = sum(outarray%lrho(s,:,:,:),DIM=3)
-      !enddo
-        
+      litter%lrho = TEMP        
 
     end subroutine diffuse
 
@@ -192,12 +134,6 @@ module support
       use DUETio
 
       integer :: s,i,j,yt,yr,spy
-
-      !character*5 :: name = 'Depth'
-
-      !DMS = 'DMS'
-
-      !print*,'Subroutine depthMoistSs running...'
 
       do s=1,domain%ns
         do i=1,domain%nx
@@ -222,10 +158,6 @@ module support
         enddo
       enddo
 
-      !call printfiles(name)
-    
-      !print*,'Subroutine depthMoistSs complete.'
-
     end subroutine depthMoistSs
 
     !---------------------------------------------------------------------------------------------------
@@ -235,21 +167,15 @@ module support
         use DUETio
 
         integer :: i,j,k,s,zmax,ct,y,yt
-        real :: g !litterconstant,grassconstant
+        real :: g 
         real :: litterfactor,shadefactor,rhocolumn
         real,allocatable :: grhof(:,:,:,:)
-
-        !print*,'Subroutine growGrass running...'
 
         allocate(grhof(domain%ng,domain%nx,domain%ny,domain%nt))
 
         zmax = domain%nz-1
 
         print*,'Grass growing...'
-        print*,'grho = ',grasses%grho
-        print*,'decay = ',grasses%decy
-        !print*,'trhofshape = ',shape(trhof)
-
 
         ! Add grass
         do s=1,domain%ng
@@ -262,8 +188,6 @@ module support
               enddo
               shadeFactor = exp(-duetvars%grassconstant*rhocolumn/0.6)
               litterFactor=exp(-duetvars%litterconstant*sum(outarray%lrho(:,i,j))/0.6)
-              !print*,'shadeFactor  = ',shadeFactor 
-              !print*,'litterFactor = ',litterFactor              
               ct=1
               do y=1,domain%ysb
                   do yt=1,domain%spy
@@ -276,15 +200,12 @@ module support
                       if(g.gt.1) g = 1
                       grhof(s,i,j,ct)=g*grasses%grho(s)*shadeFactor*litterFactor &
                         *exp(-grasses%decy(s)*(ct-1))
-                      !print*,'grhof(s,i,j,ct)',s,i,j,ct,grhof(s,i,j,ct)
-                      !if (grhof(s,i,j,ct).gt.0) 
                       ct=ct+1
                   enddo
               enddo
             enddo
           enddo
         enddo      
-        !print*,'Grass complete'
         print*,'Max, min of grass = ',maxval(grhof(1,:,:,:)),minval(grhof(1,:,:,:))
         print*,'Total grass = ',sum(grhof(1,:,:,:))
 
@@ -307,7 +228,6 @@ module support
         print*,'Max, min of grass moisture = ',maxval(outarray%sh20),minval(outarray%sh20)
         deallocate(grhof)
 
-        !print*,'Subroutine growGrass complete.'
       
     end subroutine growGrass
 

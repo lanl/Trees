@@ -21,7 +21,6 @@ subroutine writearrays
 
     integer :: s,g
 
-    !print*,'Subroutine writearrays running...'
     do s=1,domain%ns
         outarray%lrho(s,:,:) = sum(litter%lrho(s,:,:,:),DIM=3)
     enddo
@@ -50,8 +49,6 @@ subroutine writearrays
         outarray%fh20(domain%ng+s,:,:,1) = outarray%sh20(domain%ng+s,:,:) 
     enddo
     
-    !print*,'Subroutine writearrays complete.'
-
 end subroutine writearrays
 
 !---------------------------------------------------------------------!
@@ -80,33 +77,23 @@ subroutine FF_writefiles
     write (12) surfrho !outarray%srho
     close (12)
 
-    !print*,'1'
-
     open (12,file='surface_moist_layered.dat',form='unformatted',status='unknown')
     write (12) surfh20 !outarray%sh20
     close (12)
-
-    !print*,'2'
 
     open (12,file='surface_ss_layered.dat',form='unformatted',status='unknown')
     write (12) surfsss !outarray%ssss
     close (12)
 
-    !print*,'3'
-
     open (12,file='surface_depth_layered.dat',form='unformatted',status='unknown')
     write (12) surfafd !outarray%safd
     close (12)
-
-    !print*,'4'
 
     open (12,file='surface_species.dat',form='formatted',status='unknown')
       do s=1,size(specarray)
         write (12,'(I16)') specarray(s)
       enddo
     close(12)
-
-    !print*,'5'
   
     deallocate(surfrho)
     deallocate(surfh20)
@@ -114,54 +101,20 @@ subroutine FF_writefiles
     deallocate(surfsss)
 
     allocate(surfrho(2,domain%nx,domain%ny))
-    !allocate(surfh20(2,domain%nx,domain%ny))
-    !allocate(surfafd(2,domain%nx,domain%ny))
-    !allocate(surfsss(2,domain%nx,domain%ny))
-
-    !print*,'6'
 
     surfrho = 0.0
-    !surfh20 = 0.0
-    !surfafd = 0.0
-    !surfsss = 0.0
-
-    !print*,'7'
 
     do g=1,domain%ng
         surfrho(1,:,:) = surfrho(1,:,:) + outarray%srho(g,:,:)
-        !surfh20(1,:,:) = surfh20(1,:,:) + outarray%sh20(g,:,:)
-        !surfafd(1,:,:) = surfafd(1,:,:) + outarray%safd(g,:,:)
-        !surfsss(1,:,:) = surfsss(1,:,:) + outarray%ssss(g,:,:)
     enddo
-
-    !print*,'8'
 
     do s=1,domain%ns
         surfrho(2,:,:) = surfrho(2,:,:) + outarray%srho(domain%ng+s,:,:)
-        !surfh20(2,:,:) = surfh20(2,:,:) + outarray%sh20(domain%ng+s,:,:)
-        !surfafd(2,:,:) = surfafd(2,:,:) + outarray%safd(domain%ng+s,:,:)
-        !surfsss(2,:,:) = surfsss(2,:,:) + outarray%ssss(domain%ng+s,:,:)
     enddo
-
-    !print*,'9'
 
     open (12,file='surface_rhof.dat',form='unformatted',status='unknown')
     write (12) surfrho
     close (12)
-
-    !open (12,file='surface_moist.dat',form='unformatted',status='unknown')
-    !write (12) surfh20
-    !close (12)
-!
-    !open (12,file='surface_ss.dat',form='unformatted',status='unknown')
-    !write (12) surfsss
-    !close (12)
-!
-    !open (12,file='surface_depth.dat',form='unformatted',status='unknown')
-    !write (12) surfafd
-    !close (12)
-
-    !print*,'10'
 
     allocate(trees(domain%nx,domain%ny))
 
@@ -181,9 +134,6 @@ subroutine FF_writefiles
     open (12,file='canopy.dat',form='unformatted',status='unknown')
     write (12) inarray%trhof
     close (12)
-
-    !print*,'Subroutine FF_writefiles complete.'
-
     
 end subroutine FF_writefiles
 

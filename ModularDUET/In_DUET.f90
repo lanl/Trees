@@ -103,18 +103,26 @@ end module DUETio
 module fillio
 
 contains 
-  subroutine TR_filldomain!(ntspecies,nx,ny,nz)
+  subroutine TR_filldomain
 
     use DUETio
 
-    !integer :: ntspecies
-    character*50 :: speciesfile
-
-    !character :: name
+    character*50 :: speciesfile,filepath
+    logical :: exists
 
     print*,'DUET begun...'
 
-    open(unit=48,file='../Inputs/fuellist',form= 'formatted',status= 'old')
+    inquire(file='../Inputs/fuellist', exist=exists)
+    if(exists) then
+      filepath = '../Inputs/fuellist'
+    else
+      inquire(file='fuellist', exist=exists)
+      if(exists) then
+        filepath = 'fuellist'
+      endif
+    endif
+
+    open(unit=48,file=filepath,form= 'formatted',status= 'old')
 
     call QueryFuellist_real('dx',domain%dx,48,2.0)
     call QueryFuellist_real('dy',domain%dy,48,2.0)
@@ -165,8 +173,6 @@ contains
 
     close(48)
 
-    !print*,'Subroutine TR_filldomain complete.'
-
   end subroutine TR_filldomain
 
   !---------------------------------------------------------------------!
@@ -177,8 +183,6 @@ contains
 
     integer :: nx,ny,nt,ng,YSB
 
-    !print*,'Subroutine alloc_init running...'
-
     nz = domain%nz
     nx = domain%nx
     ny = domain%ny
@@ -187,55 +191,40 @@ contains
     ns = domain%ns
     YSB = domain%ysb
 
-    !print*,'1'
-
     allocate(litter%lrho(ns,nx,ny,nt))
     allocate(litter%lsss(ns,nx,ny,nt))
     allocate(litter%lafd(ns,nx,ny,nt))
     allocate(litter%lh20(ns,nx,ny,nt))
-
-    !print*,'2'
 
     allocate(outarray%srho(ns+ng,nx,ny))
     allocate(outarray%ssss(ns+ng,nx,ny))
     allocate(outarray%safd(ns+ng,nx,ny))
     allocate(outarray%sh20(ns+ng,nx,ny))
 
-    !print*,'3'
-
     allocate(outarray%lrho(ns,nx,ny))
     allocate(outarray%lsss(ns,nx,ny))
     allocate(outarray%lafd(ns,nx,ny))
     allocate(outarray%lh20(ns,nx,ny))
-    !print*,'4'
 
     allocate(outarray%frho(2*ns+ng,nx,ny,nz))
     allocate(outarray%fsss(2*ns+ng,nx,ny,nz))
     allocate(outarray%fafd(2*ns+ng,nx,ny))
     allocate(outarray%fh20(2*ns+ng,nx,ny,nz))
 
-    !print*,'5'
-
     outarray%srho = 0.0 ! surface fuels = grass and litter
     outarray%ssss = 0.0 ! surface fuels = grass and litter
     outarray%safd = 0.0 ! surface fuels = grass and litter
     outarray%sh20 = 0.0 ! surface fuels = grass and litter
-
-    !print*,'6'
 
     outarray%lrho = 0.0 ! just litter
     outarray%lsss = 0.0 ! just litter
     outarray%lafd = 0.0 ! just litter
     outarray%lh20 = 0.0 ! just litter
 
-    !print*,'7'
-
     outarray%frho = 0.0 ! full arrays = grass, litter, and trees
     outarray%fsss = 0.0 ! full arrays = grass, litter, and trees
     outarray%fafd = 0.0 ! full arrays = grass, litter, and trees
     outarray%fh20 = 0.0 ! full arrays = grass, litter, and trees
-
-    !print*,'8'
 
     allocate(species%comp(ns))
     allocate(species%decy(ns))
@@ -248,7 +237,6 @@ contains
     allocate(species%step(ns))
     allocate(species%drag(ns))
     allocate(species%fuMA(ns))
-    !print*,'9'
 
     species%comp = 0.0
     species%decy = 0.0
@@ -261,7 +249,6 @@ contains
     species%step = 0.0
     species%drag = 0.0
     species%fuMA = 0.0
-    !print*,'10'
 
     allocate(grasses%decy(ng))
     allocate(grasses%fh20(ng))
@@ -270,8 +257,6 @@ contains
     allocate(grasses%dept(ng))
     allocate(grasses%ssss(ng))
 
-    !print*,'11'
-
     grasses%decy  = 1.0
     grasses%fh20  = 0.1
     grasses%step  = 1
@@ -279,29 +264,19 @@ contains
     grasses%dept  = 0.1
     grasses%ssss  = 0.0005
     
-    !print*,'12'
-
     allocate(windarray%uavg(YSB))
     allocate(windarray%vavg(YSB))
     allocate(windarray%uvar(YSB))
     allocate(windarray%vvar(YSB))
     
-    !print*,'13'
-
     windarray%uavg = 0.0
     windarray%vavg = 0.0
     windarray%uvar = 0.0
     windarray%vvar = 0.0
 
-    !print*,'14'
-
     allocate(specarray(ns))
 
-    !print*,'15'
-
     call makeFIAfile
-
-    !print*,'Subroutine alloc_init complete.'
     
   end subroutine alloc_init
 
@@ -313,8 +288,6 @@ contains
     integer :: i,j,ct,fdrop=0,fstep=0
     real :: fsa=0,fdecay=0,fmoist=0,fss=0
     real :: fdrag=0,fvterm=0,ffrou=0,fcomp=0
-
-    !print*,'Subroutine makeFIAfile running...'
 
     open(unit=5, file='FIA_FastFuels_fin_fulllist_populated.txt', &
       status='old', access='sequential', form='formatted')
@@ -361,8 +334,6 @@ contains
       SPECgroups(j)%compact=fcomp/real(ct)
       SPECgroups(j)%sizescale=fss/real(ct)
     enddo
-
-    !print*,'Subroutine makeFIAfile complete.'
     
   end subroutine makeFIAfile
 

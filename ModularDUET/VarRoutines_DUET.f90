@@ -25,8 +25,6 @@ contains
 
     integer :: s,f
 
-    !print*,'Subroutine BuildSpeciesArray running...'
-
     if(duetvars%iFIA.eq.1) then
       if(duetvars%iFIAspecies.eq.1) then
         do s=1,domain%ns
@@ -67,8 +65,6 @@ contains
       endif
     endif
 
-    !print*,'Subroutine BuildSpeciesArray complete.'
-
   end subroutine BuildSpeciesArray
 
   !---------------------------------------------------------------------!
@@ -80,8 +76,6 @@ contains
 
     integer,dimension(4) :: trhofshape
 
-    !print*,'Subroutine TR_species running...'
-
     trhofshape = shape(inarray%trhof)
 
     domain%ns = trhofshape(1)
@@ -90,7 +84,6 @@ contains
       outarray%frho(domain%ng+domain%ns+s,:,:,:) = inarray%trhof(s,:,:,:)
     enddo
 
-    !print*,'Subroutine TR_species complete.'
   end subroutine TR_species
 
 end module species
@@ -105,11 +98,8 @@ module winds
     use DUETio, only : windarray,duetvars,domain
 
     integer :: yt
-    !integer :: windprofile,randomwinds
     real :: low,high,a
     real,allocatable :: Umean(:,:,:),Vmean(:,:,:),Uvar(:,:,:),Vvar(:,:,:)
-
-    !print*,'Subroutine makewinds running...'
 
     if(duetvars%windprofile.eq.0) then
     
@@ -190,8 +180,6 @@ module winds
     print*,'Each column is a year'
     print*,'!----!----!----!----!----!----!----!----!----!----!----!' 
     
-    !print*,'Subroutine makewinds complete.'
-
   end subroutine makewinds
 
 end module winds
