@@ -102,7 +102,11 @@ module FastFuels
         do i=1,domain%nx
           do j=1,domain%ny
             do k=1,domain%nz
-              FIA(int(FFinarray%FFSpec(i,j,k))) = FIA(int(FFinarray%FFSpec(i,j,k))) + 1
+              do n=1,290
+                if(FFinarray%FFSpec(i,j,k).eq.SPECINFO(n)%FIA_code) then
+                  FIA(n) = FIA(n) + 1
+                endif
+              enddo
             enddo
           enddo
         enddo
@@ -110,15 +114,17 @@ module FastFuels
         n=1
         do i=1,290
           if (FIA(i).ne.0)  then 
-            vals(n) = i
+            vals(n) = SPECINFO(i)%FIA_code
             n = n+1
           endif
         enddo
         
-        allocate(specs(n-1))
-        specs(:) = vals(1:n-1)
+        allocate(specs(n-2))
+        specs(:) = vals(2:n-1)
+
+        print*,'specs = ',specs
     
-        domain%ns = int(n-1)
+        domain%ns = int(n-2)
 
         call alloc_init
         allocate(inarray%trhof(domain%ns,domain%nx,domain%ny,domain%nz))
@@ -128,9 +134,6 @@ module FastFuels
         allocate(inarray%zheight(domain%nx,domain%ny,domain%nz))
 
         specarray = specs
-
-        print*,'specarray = ',specarray
-        print*,'specs = ',specs
 
         grasses%decy  = 1.0
         grasses%fh20  = 0.06
