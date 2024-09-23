@@ -58,7 +58,7 @@ if(ilitter.eq.2) then
   !print*,'Min and Max in trees of tfueldepth: ',minval(tfueldepth),maxval(tfueldepth)
   !print*,'Min and Max in trees of tsizescale: ',minval(tsizescale),maxval(tsizescale)
 !call define_fuels_create_variables
-  call TR_RunDUET(nx,ny,nz,ntspecies,zheight,trhof,tmoist,tfueldepth,tsizescale,grhof,lrhof, &
+  call TR_RunDUET(nx,ny,nz,ntspecies,ngrass,zheight,trhof,tmoist,tfueldepth,tsizescale,grhof,lrhof, &
   gmoist,lmoist,gsizescale,lsizescale,gfueldepth,lfueldepth)
 
 !  inquire(file='../DUET', exist=DUETexists)
