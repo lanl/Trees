@@ -184,7 +184,7 @@ endif
 nonzero(:) = 1
 lfuel = 1
 do ift=1,nfuel
-  if (sum(rhof(ift,:,:,:)).le.0.001*sum(rhof)) then
+  if (sum(rhof(ift,:,:,:)).le.0.0001*sum(rhof)) then
     nonzero(ift) = 0
   else
     do k=1,nz

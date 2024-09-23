@@ -105,7 +105,10 @@ if (ilitter.ne.0) then
   !  print*,'Filling Litter fuels_create for Duet'
   !  call Duet_Inputs
   endif
+  print*,'ntspecies',ntspecies
   do ift=1,ntspecies
+    print*,'sp: ', ift
+    print*,minval(lrhof(ift,:,:,1)),maxval(lrhof(ift,:,:,1))
     if (sum(trhof(ift,:,:,1)).lt.sum(trhof(ift,:,:,:))*0.01) then
       print*,'Little to no fuel from tree type',ift,'in first cell combining with litter'
       do i=1,nx

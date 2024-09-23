@@ -139,7 +139,7 @@ end subroutine FF_writefiles
 
 !---------------------------------------------------------------------!
 
-subroutine TR_RunDUET(nx,ny,nz,ns,zheight,trhof,tmoist,tfueldepth,tsizescale,grhof,lrhof, &
+subroutine TR_RunDUET(nx,ny,nz,ns,ngrass,zheight,trhof,tmoist,tfueldepth,tsizescale,grhof,lrhof, &
     gmoist,lmoist,gsizescale,lsizescale,gfueldepth,lfueldepth)
 
     use DUETio
@@ -149,16 +149,16 @@ subroutine TR_RunDUET(nx,ny,nz,ns,zheight,trhof,tmoist,tfueldepth,tsizescale,grh
     use mainLoop
     use support
 
-    integer,intent(in) :: ns,nx,ny,nz
+    integer,intent(in) :: ns,nx,ny,nz,ngrass
 
     real,intent(in) :: zheight(nx,ny,nz),tfueldepth(nx,ny,nz)
     real,intent(in) :: trhof(ns,nx,ny,nz),tmoist(ns,nx,ny,nz)
     real,intent(in) :: tsizescale(ns,nx,ny,nz)
 
-    real,intent(inout) :: grhof(ns,nx,ny,nz),lrhof(ns,nx,ny,nz)
-    real,intent(inout) :: gmoist(ns,nx,ny,nz),lmoist(ns,nx,ny,nz)
-    real,intent(inout) :: gsizescale(ns,nx,ny,nz),lsizescale(ns,nx,ny,nz)
-    real,intent(inout) :: gfueldepth(ns,nx,ny),lfueldepth(ns,nx,ny)
+    real,intent(inout) :: grhof     (ngrass,nx,ny,nz),lrhof     (ns,nx,ny,nz)
+    real,intent(inout) :: gmoist    (ngrass,nx,ny,nz),lmoist    (ns,nx,ny,nz)
+    real,intent(inout) :: gsizescale(ngrass,nx,ny,nz),lsizescale(ns,nx,ny,nz)
+    real,intent(inout) :: gfueldepth(ngrass,nx,ny)   ,lfueldepth(ns,nx,ny)
 
     integer :: g,l
 
@@ -168,6 +168,7 @@ subroutine TR_RunDUET(nx,ny,nz,ns,zheight,trhof,tmoist,tfueldepth,tsizescale,grh
     domain%ny = ny
     domain%nz = nz
     domain%ns = ns
+    domain%ng = ngrass
 
     allocate(inarray%trhof(ns,nx,ny,nz))
     allocate(inarray%zheight(nx,ny,nz))
@@ -210,9 +211,9 @@ subroutine TR_RunDUET(nx,ny,nz,ns,zheight,trhof,tmoist,tfueldepth,tsizescale,grh
     print*,'Min and Max of litter sizescale:',minval(outarray%lsss),maxval(outarray%lsss)
     print*,'Min and Max of litter depth:'    ,minval(outarray%lafd),maxval(outarray%lafd)
     print*,''
-    print*,'Min and Max of grass density:'  ,minval(grhof),     maxval(grhof)    
-    print*,'Min and Max of grass moisture:' ,minval(gmoist),    maxval(gmoist)  
-    print*,'Min and Max of grass sizescale:',minval(gsizescale),maxval(gsizescale)
+    print*,'Min and Max of grass density:'  ,minval(grhof(:,:,:,1)),     maxval(grhof(:,:,:,1))    
+    print*,'Min and Max of grass moisture:' ,minval(gmoist(:,:,:,1)),    maxval(gmoist(:,:,:,1))  
+    print*,'Min and Max of grass sizescale:',minval(gsizescale(:,:,:,1)),maxval(gsizescale(:,:,:,1))
     print*,'Min and Max of grass depth:'    ,minval(gfueldepth),maxval(gfueldepth)
 
 end subroutine TR_RunDUET
