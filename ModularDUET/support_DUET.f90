@@ -151,6 +151,7 @@ module support
                 yt=yt+1
               enddo
             enddo
+            outarray%lrho(s,i,j) = sum(litter%lrho(s,i,j,:))
             outarray%lafd(s,i,j) = maxval(litter%lafd(s,i,j,:)/domain%ns)     
             outarray%lh20(s,i,j) = maxval(litter%lh20(s,i,j,:)/domain%ns)
             outarray%lsss(s,i,j) = maxval(litter%lsss(s,i,j,:))     
