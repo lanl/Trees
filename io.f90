@@ -46,6 +46,7 @@ call QueryFuellist_real('aa1',aa1,48,0.1)
 call QueryFuellist_integer('singlefuel',singlefuel,48,0)
 call QueryFuellist_integer('lreduced',lreduced,48,0)
 call QueryFuellist_string('topofile',topofile,48,'flat')
+call QueryFuellist_integer('doubleprec',doubleprec,48,0)
 
 ! Data import from existing files
 call QueryFuellist_integer('ifuelin',ifuelin,48,0)
@@ -163,6 +164,8 @@ implicit none
 ! Local Variables
 integer ift,i,j,k,lfuel,lz
 integer,dimension(nfuel):: nonzero
+real(8),allocatable :: rho(:,:,:,:),h20(:,:,:,:)
+real(8),allocatable :: sss(:,:,:,:),afd(:,:,:,:)
 
 ! Executable Code
 if (singlefuel.eq.1) then
@@ -198,11 +201,38 @@ else
   lz=nz
 endif
 
-print*,'Exporting data to .dat files'
-call write_file('treesrhof.dat',rhof(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
-call write_file('treesmoist.dat',moist(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
-call write_file('treesss.dat',sizescale(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
-call write_file('treesfueldepth.dat',fueldepth(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+if(doubleprec.eq.1) then
+  print*,'Converting to Double Precision'
+  allocate(rho(nfuel,nx,ny,nz))
+  allocate(h20(nfuel,nx,ny,nz))
+  allocate(sss(nfuel,nx,ny,nz))
+  allocate(afd(nfuel,nx,ny,nz))
+
+  rho = 0.
+  h20 = 0.
+  sss = 0.
+  afd = 0.
+
+  rho = dble(rhof)
+  h20 = dble(moist)
+  sss = dble(sizescale)
+  afd = dble(fueldepth)
+
+  print*,'Exporting data to .dat files'
+  call write_file_dbl('treesrhof.dat',rho(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file_dbl('treesmoist.dat',h20(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file_dbl('treesss.dat',sss(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file_dbl('treesfueldepth.dat',afd(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  
+else
+
+  print*,'Exporting data to .dat files'
+  call write_file('treesrhof.dat',rhof(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file('treesmoist.dat',moist(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file('treesss.dat',sizescale(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file('treesfueldepth.dat',fueldepth(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+
+endif
 
 print*,'Your nfuel is',int(sum(nonzero(:)))
 print*,'Your lfuel is',lfuel
@@ -232,6 +262,29 @@ close (1)
 
 end subroutine write_file
 
+subroutine write_file_dbl(filename,dataname,nfuel,nx,ny,nz,nonzero)
+  !-----------------------------------------------------------------
+  ! write_file writes data to specified file
+  !-----------------------------------------------------------------
+  implicit none
+  
+  ! Local Variables
+  character(len=*),intent(in) :: filename
+  integer,intent(in) :: nfuel,nx,ny,nz
+  integer,intent(in) :: nonzero(nfuel)
+  real(8),intent(in) :: dataname(nfuel,nx,ny,nz)
+  
+  integer :: ift
+  
+  ! Executable Code
+  open (1,file= filename,form= 'unformatted',status= 'unknown')
+  do ift=1,nfuel
+    if (nonzero(ift).ne.0)  write (1) dataname(ift,:,:,:)
+  enddo
+  close (1)
+  
+  end subroutine write_file_dbl
+  
 !-------------------------------------------
 ! Write New Fuellist based on old params
 !-------------------------------------------

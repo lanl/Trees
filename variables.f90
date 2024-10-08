@@ -38,7 +38,7 @@ integer nfuel,zmax
 real,allocatable:: rhof(:,:,:,:),sizescale(:,:,:,:),moist(:,:,:,:),fueldepth(:,:,:,:)
 real,allocatable:: zs(:,:),zheight(:,:,:)
 character:: topofile*50='flat'
-integer :: verbose=0
+integer :: verbose=0,doubleprec=0
 
 end module grid_variables
 
