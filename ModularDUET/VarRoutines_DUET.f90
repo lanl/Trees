@@ -142,28 +142,28 @@ module winds
       high=3*duetvars%randomwinds
       
       do yt=1,domain%nt
-        a = rand()
+        call random_number(a)
         a = 2.0*a - 1.0
         if (a.gt.0) then
           windarray%uavg(yt) = (a*real(low+high))-real(low)
         else 
           windarray%uavg(yt) = (a*real(low+high))+real(low)
         endif
-        a = rand()
+        call random_number(a)
         a = 2.0*a - 1.0
         if (a.gt.0) then
           windarray%vavg(yt) = (a*real(low+high))-real(low)
         else
           windarray%vavg(yt) = (a*real(low+high))+real(low)
         endif
-        a = rand()    
+        call random_number(a)    
         a = 2.0*a - 1.0
         if (a.gt.0) then
           windarray%uvar = (a*real(low+high))-real(low)
         else
           windarray%uvar = (a*real(low+high))+real(low)
         endif
-        a = rand()     
+        call random_number(a) 
         a = 2.0*a - 1.0
         if (a.gt.0) then
           windarray%vvar = (a*real(low+high))-real(low)
