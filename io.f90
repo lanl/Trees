@@ -232,6 +232,8 @@ else
   call write_file('treesss.dat',sizescale(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
   call write_file('treesfueldepth.dat',fueldepth(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
 
+  print*,'Min and Max of rhof layer 1:',minval(rhof(:,:,:,1)),maxval(rhof(:,:,:,1))
+
 endif
 
 print*,'Your nfuel is',int(sum(nonzero(:)))

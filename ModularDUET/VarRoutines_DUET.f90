@@ -16,7 +16,7 @@
 ! Author:  Jenna Sjunneson McDanold 7/2024
 
 
-module species
+module speciesvars
 contains
 
   subroutine BuildSpeciesArray
@@ -86,7 +86,7 @@ contains
 
   end subroutine TR_species
 
-end module species
+end module speciesvars
 
 !---------------------------------------------------------------------!
 

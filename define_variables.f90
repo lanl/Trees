@@ -40,7 +40,7 @@ implicit none
 integer i,j,k
 integer ii,jj
 integer xbot,xtop,ybot,ytop
-real    cells,xfrac,yfrac
+real  cells,xfrac,yfrac
 real,external:: zcart
 real,dimension(2):: xcor,ycor
       

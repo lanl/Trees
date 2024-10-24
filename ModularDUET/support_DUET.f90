@@ -233,6 +233,20 @@ module support
     end subroutine growGrass
 
 
+    !subroutine grassmoistureoverride
+    !  use duetio
+!
+    !  if (duetvars%gmoistoverride.ne.0) then
+    !    print*,'gmoistoverride = ',duetvars%gmoistoverride
+    !    print*,'max value of moisture = ',maxval(outarray%lh20(:,:,:)+moist(ngrass+fueltotal:,:,:,1))
+    !    outarray%lh20(:,:,:) = duetvars%gmoistoverride/maxval(outarray%lh20(:,:,:)+moist(ngrass+fueltotal:,:,:)) * outarray%lh20(:,:,:)
+    !    moist(ngrass+fueltotal:,:,:,1) = duetvars%gmoistoverride/maxval(outarray%lh20(:,:,:)+ &
+    !      moist(ngrass+fueltotal:,:,:,1)) * moist(ngrass+fueltotal:,:,:,1)
+    !    print*,'max value of moisture after adjustment = ',maxval(outarray%lh20(:,:,:)+moist(ngrass+fueltotal:,:,:,1))
+    !  endif
+    !  
+!
+    !end subroutine grassmoistureoverride  
 
 end module support
   

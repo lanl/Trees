@@ -72,6 +72,7 @@ subroutine FF_writefiles
     surfafd = outarray%safd
 
     !print*,'Subroutine FF_writefiles running...'
+    !print*,'Shape of surfrho =',shape(surfrho)
 
     open (12,file='surface_rhof_layered.dat',form='unformatted',status='unknown')
     write (12) surfrho !outarray%srho
@@ -144,7 +145,7 @@ subroutine TR_RunDUET(nx,ny,nz,ns,ngrass,zheight,trhof,tmoist,tfueldepth,tsizesc
 
     use DUETio
     use fillio
-    use species
+    use speciesvars
     use winds
     use mainLoop
     use support
