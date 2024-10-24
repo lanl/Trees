@@ -152,7 +152,7 @@ subroutine TR_RunDUET(nx,ny,nz,ns,ngrass,zheight,trhof,tmoist,tfueldepth,tsizesc
 
     integer,intent(in) :: ns,nx,ny,nz,ngrass
 
-    real,intent(in) :: zheight(nx,ny,nz),tfueldepth(nx,ny,nz)
+    real,intent(in) :: zheight(nx,ny,nz),tfueldepth(ns,nx,ny)
     real,intent(in) :: trhof(ns,nx,ny,nz),tmoist(ns,nx,ny,nz)
     real,intent(in) :: tsizescale(ns,nx,ny,nz)
 
