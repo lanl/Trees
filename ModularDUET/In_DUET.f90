@@ -164,10 +164,10 @@ contains
       call QueryFuellist_integer('randomwinds',duetvars%randomwinds,48,3)
     endif
 
-    if(iFIA.eq.0)then
+    if(duetvars%iFIA.eq.0)then
       call QueryFuellist_string('speciesfile',speciesfile,48,'speciesfile.dat')
       call usespeciesfile(speciesfile)
-    elseif(iFIA.eq.1)then 
+    elseif(duetvars%iFIA.eq.1)then 
       call QueryFuellist_integer_array('FIA',specarray,domain%ns,48,1)
     endif
 
