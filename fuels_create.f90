@@ -365,11 +365,11 @@ do i=1,nx
         add=sum(trhof(ift_index+1:ift_index+tfuelbins,i,j,k))
         if(tot+add.le.trhofmax(ift))then
           tot=tot+add
-        else
-          prt=max(0.,tot-trhofmax(ift))
+        elseif (add.gt.0)then
+          prt=max(0.,trhofmax(ift)-tot)
           trhof(ift_index+1:ift_index+tfuelbins,i,j,k)= &
-            trhof(ift_index+1:ift_index+tfuelbins,i,j,k)+prt/add
-          tot=tot+prt
+            trhof(ift_index+1:ift_index+tfuelbins,i,j,k)*(prt/add)
+          tot=tot+(prt)
         endif
       enddo
     enddo
