@@ -52,22 +52,9 @@ if (itrees.ne.0) then
 endif
 
 if(ilitter.eq.2) then
-  !print*,'Using DUET to create litter and grass...'
-  !print*,'Min and Max in trees of trhof: ',minval(trhof),maxval(trhof)
-  !print*,'Min and Max in trees of tmoist: ',minval(tmoist),maxval(tmoist)
-  !print*,'Min and Max in trees of tfueldepth: ',minval(tfueldepth),maxval(tfueldepth)
-  !print*,'Min and Max in trees of tsizescale: ',minval(tsizescale),maxval(tsizescale)
-!call define_fuels_create_variables
   call TR_RunDUET(nx,ny,nz,ntspecies,ngrass,zheight,trhof,tmoist,tfueldepth,tsizescale,grhof,lrhof, &
   gmoist,lmoist,gsizescale,lsizescale,gfueldepth,lfueldepth)
 
-!  inquire(file='../DUET', exist=DUETexists)
-!  if (DUETexists) then
-!    print *, "Found DUET"
-!    call system(command)
-!  else
-!    print *, "DUET is not included in this release of Trees! Please use ilitter=1 or 0. See README"
-!  endif
   print*,'DUET complete.'
 endif
 
