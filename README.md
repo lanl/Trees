@@ -1,16 +1,15 @@
-The Trees program is a pre-processing tool used to virtually build forest fuel arrays to be read into FIRETEC or QUIC-Fire. This is meant to be a living document to be updated as the program evolves and is modified.
-
+The Trees program is a pre-processing tool used to virtually build the forest fuel arrays used by FIRETEC and QUIC-Fire. This is meant to be a living document to be updated as the program evolves and is modified.
 
 ## Language and Compilers
 In its current form, the Trees program is written in fortran and has been tested/verified using the following compilers:
 - gfortran (9.2.0) with flags -O2 -ffixed-line-length=none
 - intel’s fortran compiler (19.0.4) with flags -g -extend_source
+- cray fortran compiler
 
 ## Getting Started
-The trees program is mirrored to the FIRETEC and QUIC-Fire repositories but is its own separate git remote repository available both on yellow (gitlab.lanl.gov) and open (github.com) networks. Included in the directory called trees is the source code for the program, a makefile to build, and a Inputs directory which contains example input files for a basic forest build.
+The trees program is mirrored to the FIRETEC and QUIC-Fire repositories but is its own separate git remote repository available both on yellow (gitlab.lanl.gov) and open (github.com) networks. Included in the directory called trees is the source code for the program, a both a default makefile and cmake files to build (chose one or the other), and an Inputs directory which contains example input files for a basic forest build.
 
-To run the program make adjustments to the makefile for the desired compiler and flags, then simply run ‘make’. This will create an executable file called ‘trees.exe’. Move this file to the location of your input files and execute to create the four fuel files: treesrhof.dat, treesss.dat, treesmoist.dat, and treesfueldepth.dat.
-
+To run the program one can either make adjustments to the makefile for the desired compiler and flags, then run ‘make’, or use cmake ('cmake .' at the top directory, followed by 'make'). This will create an executable file called ‘trees.exe’. Move this file to the location of your input files and execute to create the four fuel files -- treesrhof.dat, treesss.dat, treesmoist.dat, and treesfueldepth.dat -- needed by FIRETEC and/or QUIC-Fire.
 
 ## Inputs
 There is one main input file with an example found in the Inputs directory.
@@ -148,9 +147,6 @@ Main driver file for this program is located in main.f. From this file, all othe
 4. fuels_create (fuels_create.f) first fills the grass arrays, then the trees arrays, and finally the litter arrays while modifying the other arrays as needed
 5. output (io.f) writes the .dat files and finalizes any simulation variables
 
-## Modifications
-Under-development so modifications happening all the time and not recorded here for now.
-
 ## Building and Executing
-A makefile is provided for building this software. Simply execute 'make' from the commandline in the location where the makefile is located. Specific configurations unique to a users build should be specified there.
+A makefile is provided for building this software. Simply execute 'make' from the commandline in the location where the makefile is located. Specific configurations unique to a users build should be specified there. Alternatively, the program is set up for cmake as well. At the top level directory simply execute 'cmake .' followed by 'make'.
 There are a number of possible input configurations available to the user but in basic when executed, the program will look for a file called 'fuellist' in the location from which the executable is called. This fuellist contains input parameters are specified. Any additional input files (ie treefile or speciesfile) are specified within the fuellist. The four output tree files will be written to the location from which the exectuable is called.
