@@ -25,17 +25,6 @@ trigger:
 variables:
   BRANCH_NAME: "treesOpen" # Name of the branch to modify to stage for GitHub
 
-# delete DUET folder
-.modify: &modify |
-  git pull --rebase
-  git checkout $BRANCH_NAME # checkout the test branch
-  git fetch origin
-  git reset --hard origin/$BRANCH_NAME
-  rm -r ./*
-  git checkout master . # checkout the master files 
-  rm -r Inputs/DUET
-  rm .gitlab-ci.yml
-
 # push the repository
 # based on https://gitlab.com/taleodor/sample-helm-cd/-/blob/master/.gitlab-ci.yml
 .push: &push |
