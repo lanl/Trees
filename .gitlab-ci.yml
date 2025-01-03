@@ -55,5 +55,4 @@ modify-repo:
     - git checkout master
     - cd $CI_PROJECT_DIR        # go into the repo
   script:
-    - *modify                   # run the modify script and create the file
     - *push                     # run the push script and push the changes
