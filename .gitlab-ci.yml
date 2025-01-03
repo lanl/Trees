@@ -34,8 +34,8 @@ variables:
   echo $lines' new files: '$(git status -s | { grep -v DUET || true; } | { grep -v 'gitlab-ci' || true; })
   if [ $lines -gt 0 ];then
     echo "committing"
-    git config --global user.name "Dylan McDougall"
-    git config --global user.email "dmcdougall@lanl.gov"
+    git config --global user.name "Alexander Josephson"
+    git config --global user.email "alexanderj@lanl.gov"
     git commit -m "${CI_COMMIT_AUTHOR} ${CI_COMMIT_MESSAGE}"
     # Echo to log what you're doing next
     echo "git push -o ci.skip 'https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git' ${BRANCH_NAME}"
