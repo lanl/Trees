@@ -53,6 +53,7 @@ modify-repo:
     - apk add bash git grep     # add bash and git (probably not needed)
     - git fetch
     - git checkout master
+    - git pull
     - cd $CI_PROJECT_DIR        # go into the repo
   script:
     - *push                     # run the push script and push the changes
