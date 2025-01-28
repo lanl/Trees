@@ -17,6 +17,13 @@
 
 module DUETio
 
+  type :: workingpath
+    character:: workdir*255=''
+    character :: filesep*1=''
+  end type workingpath
+
+  type(workingpath) :: workpath
+
   type :: domaininfo
     integer :: nx,ny,nz,ns,nt,ysb,spy,ng
     real :: dx,dy,dz
@@ -112,9 +119,11 @@ contains
 
     print*,'DUET begun...'
 
-    inquire(file='../Inputs/fuellist', exist=exists)
+    call SetWorkingDirectory(workpath%workdir,workpath%filesep)
+
+    inquire(file=TRIM(workpath%workdir)//TRIM(workpath%filesep)//'fuellist', exist=exists)
     if(exists) then
-      filepath = '../Inputs/fuellist'
+      filepath = TRIM(workpath%workdir)//TRIM(workpath%filesep)//'fuellist'
     else
       inquire(file='fuellist', exist=exists)
       if(exists) then
@@ -283,13 +292,14 @@ contains
   !---------------------------------------------------------------------!
 
   subroutine makeFIAfile
-    use DUETio, only : SPECINFO,SPECgroups
+    use DUETio, only : SPECINFO,SPECgroups,workpath
 
     integer :: i,j,ct,fdrop=0,fstep=0
     real :: fsa=0,fdecay=0,fmoist=0,fss=0
     real :: fdrag=0,fvterm=0,ffrou=0,fcomp=0
 
-    open(unit=5, file='FIA_FastFuels_fin_fulllist_populated.txt', &
+    open(unit=5, file=TRIM(workpath%workdir)//TRIM(workpath%filesep) &
+      //'FIA_FastFuels_fin_fulllist_populated.txt', &
       status='old', access='sequential', form='formatted')
       do i=1,290
         read(5,*) SPECINFO(i)
@@ -341,7 +351,7 @@ contains
 
   subroutine usespeciesfile(speciesfile)
 
-    use DUETio, only : domain,species
+    use DUETio, only : domain,species,workpath
 
     character*50, intent(in) :: speciesfile
 
@@ -355,7 +365,7 @@ contains
     dragslope = 1.4/(sqrt(70.0) - 1.0)
     dragb = 0.6 - dragslope
     
-    open (99,file=speciesfile)
+    open (99,file=TRIM(workpath%workdir)//TRIM(workpath%filesep)//speciesfile)
     do s=1,domain%ns
       read(99,*) species%fuMA(s),species%fuSA(s),species%drop(s),species%decy(s),species%step(s)
       species%fuMA(s)=species%fuMA(s)/1000.

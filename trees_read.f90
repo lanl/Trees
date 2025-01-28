@@ -21,6 +21,7 @@ subroutine treelist_readin
 !-----------------------------------------------------------------
 use grid_variables
 use fuels_create_variables
+use io_variables
 
 implicit none
 
@@ -42,7 +43,7 @@ end if
 
 ! Count number of trees in file
 itree = 0
-open (2,file=treefile,form='formatted',status='old')
+open (2,file=TRIM(TRIM(workdir)//filesep)//treefile,form='formatted',status='old')
 do
   read (2,*,iostat=ierror)
   if (ierror/=0) exit
@@ -303,6 +304,7 @@ subroutine treelist_fastfuels
 !-----------------------------------------------------------------
 use grid_variables
 use fuels_create_variables
+use io_variables
 
 implicit none
 
@@ -330,7 +332,7 @@ real, dimension(2,11):: z_rad
 z_range = (/0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0/)
 
 ff_len = 0
-open (2,file=treefile)
+open (2,file=TRIM(TRIM(workdir)//filesep)//treefile)
 do
    read (2,*,end=19) !length of FF columns
    ff_len = ff_len+1
@@ -641,6 +643,7 @@ subroutine find_numspecies
 !-----------------------------------------------------------------
 use grid_variables
 use fuels_create_variables
+use io_variables
 !use species_variables
 
 implicit none
@@ -654,7 +657,7 @@ real,dimension(19) :: read_array
 
 ! Executable Code
 numtrees = 0
-open (2,file=treefile,status= 'old')
+open (2,file=TRIM(TRIM(workdir)//filesep)//treefile,status= 'old')
 do
   read (2,*,end=5) !length of treelist columns
   numtrees = numtrees+1

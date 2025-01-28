@@ -19,6 +19,7 @@ subroutine grid_readin
 use grid_variables
 use infile_variables
 use fuels_create_variables
+use io_variables
 
 implicit none
 
@@ -40,7 +41,7 @@ allocate(iafd(infuel,inx,iny,inz))
 
 ! Read in fuel files
 print*,"Reading existing fuel files"
-open(unit=1,file=rhoffile,form='unformatted',status='unknown')
+open(unit=1,file=TRIM(TRIM(workdir)//filesep)//rhoffile,form='unformatted',status='unknown')
 do ift=1,infuel
   read(1) irhof(ift,:,:,:)
 enddo
@@ -49,7 +50,7 @@ where (irhof<0)
   irhof = 0
 endwhere
 print*,'irhof','min=',minval(irhof),'max=',maxval(irhof),'avg=',sum(irhof)/(inx*iny*inz)
-open(unit=2,file=moistfile,form='unformatted',status='unknown')
+open(unit=2,file=TRIM(TRIM(workdir)//filesep)//moistfile,form='unformatted',status='unknown')
 do ift=1,infuel
   read(2) imoist(ift,:,:,:)
 enddo
@@ -58,7 +59,7 @@ where (imoist<0)
   imoist = 0
 endwhere
 print*,'imoist','min=',minval(imoist),'max=',maxval(imoist),'avg=',sum(imoist)/(inx*iny*inz)
-open(unit=3,file=ssfile,form='unformatted',status='unknown')
+open(unit=3,file=TRIM(TRIM(workdir)//filesep)//ssfile,form='unformatted',status='unknown')
 do ift=1,infuel
   read(3) iss(ift,:,:,:)
 enddo
@@ -78,7 +79,7 @@ where (iss<0)
   iss = 0
 endwhere
 print*,'iss','min=',minval(iss),'max=',maxval(iss),'avg=',sum(iss)/(inx*iny*inz)
-open(unit=4,file=afdfile,form='unformatted',status='unknown')
+open(unit=4,file=TRIM(TRIM(workdir)//filesep)//afdfile,form='unformatted',status='unknown')
 do ift=1,infuel
   read(4) iafd(ift,:,:,:)
 enddo
@@ -107,7 +108,7 @@ if (iintpr.eq.0) then
     print *,'Not using target topo'      
   else ! Normal topo
     print *,'Reading target topo file = ',topofile
-    open (1,file=topofile,form='unformatted',status='old')
+    open (1,file=TRIM(TRIM(workdir)//filesep)//topofile,form='unformatted',status='old')
     read (1) zs
     close (1)
     izs(:,:)=zs(:,:)
@@ -120,7 +121,7 @@ if (iintpr.eq.1) then ! Topo with existing fuels
     print *,'Not using target topo'      
   else  ! Normal target topo
     print *,'Define Varibles: Reading target topo file = ',topofile
-    open (1,file=topofile,form='unformatted',status='old')
+    open (1,file=TRIM(TRIM(workdir)//filesep)//topofile,form='unformatted',status='old')
     read (1) zs(:,:)
     close (1)
     !izs(:,:)=zs(:,:)
@@ -130,7 +131,7 @@ if (iintpr.eq.1) then ! Topo with existing fuels
     print *,'Not using previous topo'      
   else  ! Normal previous topo
     print *,'Reading previous fuel topo file = ',intopofile    !JO
-    open (2,file=intopofile,form='unformatted',status='old') !JO
+    open (2,file=TRIM(TRIM(workdir)//filesep)//intopofile,form='unformatted',status='old') !JO
     read (2) izs(:,:)
     close (2)
   endif 

@@ -51,6 +51,8 @@ implicit none
 integer :: singlefuel=0,lreduced=0
 integer :: controlseed,n,seedchange
 integer,allocatable :: seed(:)
+character:: workdir*255=''
+character :: filesep*1=''
 
 end module io_variables
 

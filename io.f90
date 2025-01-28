@@ -32,8 +32,13 @@ implicit none
 
 !Local Variables
 
+!Set working directory!
+call SetWorkingDirectory(workdir,filesep)
+print*,workdir
+print*,filesep
 ! Executable Code
-open(unit=48,file= 'fuellist',form= 'formatted',status= 'old')
+print*,TRIM(TRIM(workdir)//filesep)//'fuellist'
+open(unit=48,file=TRIM(TRIM(workdir)//filesep)//'fuellist',form= 'formatted',status= 'old')
 
 ! Domain information
 call QueryFuellist_integer('nx',nx,48,200)
@@ -151,6 +156,51 @@ close(48)
 
 end subroutine fuellist_input
 
+subroutine SetWorkingDirectory(workingVariable,fileVariable)
+!-----------------------------------------------------------------
+! For use to specifiy a different working directory
+! than the one where the exe is located
+!-----------------------------------------------------------------
+
+	implicit none
+
+  !Local Variables
+  character(len=255),intent(out) :: workingVariable
+  character(len=1),intent(out)   :: fileVariable
+
+	integer :: i, narg
+	character(255) :: wtemp, instring
+	
+
+	IF(IARGC() > 0)THEN
+		narg = 1		
+	ELSE
+		narg = 0
+	ENDIF
+
+	CALL GETARG(narg, instring)
+	if(narg == 1) THEN
+		workingVariable = TRIM(instring)
+    DO i = 1,256
+      IF(instring(i:i) .eq. '/')THEN
+        fileVariable = '/'
+        EXIT
+      ELSEIF(instring(i:i) .eq. '\')THEN
+        fileVariable = '\'
+        EXIT
+      ENDIF
+    ENDDO
+
+    print *,'Working directory is set to: '//TRIM(workingVariable)		
+	else
+		!call GETCWD(workdir)		
+    workingVariable = ''
+    fileVariable = ''
+	endif
+
+end subroutine SetWorkingDirectory
+
+
 subroutine output_fuel
 !-----------------------------------------------------------------
 ! output is a function which writes the .dat files for use in 
@@ -187,7 +237,7 @@ endif
 nonzero(:) = 1
 lfuel = 1
 do ift=1,nfuel
-  if (sum(rhof(ift,:,:,:)).le.0.0001*sum(rhof)) then
+  if (sum(rhof(ift,:,:,:)).le.0) then
     nonzero(ift) = 0
   else
     do k=1,nz
@@ -219,18 +269,18 @@ if(doubleprec.eq.1) then
   afd = dble(fueldepth)
 
   print*,'Exporting data to .dat files'
-  call write_file_dbl('treesrhof.dat',rho(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
-  call write_file_dbl('treesmoist.dat',h20(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
-  call write_file_dbl('treesss.dat',sss(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
-  call write_file_dbl('treesfueldepth.dat',afd(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file_dbl(TRIM(TRIM(workdir)//filesep)//'treesrhof.dat',rho(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file_dbl(TRIM(TRIM(workdir)//filesep)//'treesmoist.dat',h20(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file_dbl(TRIM(TRIM(workdir)//filesep)//'treesss.dat',sss(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file_dbl(TRIM(TRIM(workdir)//filesep)//'treesfueldepth.dat',afd(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
   
 else
 
   print*,'Exporting data to .dat files'
-  call write_file('treesrhof.dat',rhof(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
-  call write_file('treesmoist.dat',moist(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
-  call write_file('treesss.dat',sizescale(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
-  call write_file('treesfueldepth.dat',fueldepth(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file(TRIM(TRIM(workdir)//filesep)//'treesrhof.dat',rhof(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file(TRIM(TRIM(workdir)//filesep)//'treesmoist.dat',moist(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file(TRIM(TRIM(workdir)//filesep)//'treesss.dat',sizescale(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
+  call write_file(TRIM(TRIM(workdir)//filesep)//'treesfueldepth.dat',fueldepth(:,:,:,1:lz),nfuel,nx,ny,lz,nonzero)
 
   print*,'Min and Max of rhof layer 1:',minval(rhof(:,:,:,1)),maxval(rhof(:,:,:,1))
 
@@ -303,7 +353,7 @@ use fuels_create_variables
 character(len=100) :: newtreelistname
 integer :: ii
 
-open (2222,file= 'fuellist_'//newtreefile,form= 'formatted',status= 'unknown')
+open (2222,file= TRIM(TRIM(workdir)//filesep)//'fuellist_'//newtreefile,form= 'formatted',status= 'unknown')
 newtreelistname = newtreefile//'_treelist.txt'
 write(2222,'(A10)') '&fuellist'
 write(2222,'(A35)') '! ----------------------------------'
@@ -317,7 +367,7 @@ write(2222,'(A4,F6.2)')     'dy = ',dy
 write(2222,'(A4,F6.2,A50)') 'dz = ',dz,'! Grid Resolution [m]'
 write(2222,'(A6,F6.2,A50)') 'aa1 = ',aa1,'! Vertical stretching component [default=0.1]'
 write(2222,'(A15,I2.1,A60)') 'singlefuel = ',singlefuel,'! Flag forcing single fuel type instead of multiple fuels'
-write(2222,'(3A30)') "topofile = '"//TRIM(topofile)//"' 	     "
+write(2222,'(3A30)') "topofile = '"//TRIM(workdir//filesep//topofile)//"' 	     "
 
 if(ifuelin.eq.1) then
     write(2222,'(A35)')'! ----------------------------------'
@@ -350,7 +400,7 @@ endif
 
 if(itrees.ge.1)then
     write(2222,'(A12,I1)') "tfuelbins = ",tfuelbins
-    write(2222,*) "treefile = '",TRIM(newtreelistname)//'_treelist.txt',"'"
+    write(2222,*) "treefile = '",TRIM(workdir//filesep//newtreelistname)//'_treelist.txt',"'"
     !write(2222,'(A10,A30,A1)') "treefile= '",TRIM(newtreelistname),"'"
     write(2222,'(A10,F6.1)') "ndatax = ",nx*dx
     write(2222,'(A10,F6.1)') "ndatay = ",ny*dy

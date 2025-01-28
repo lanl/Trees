@@ -33,6 +33,7 @@ subroutine define_grid_variables
 use grid_variables
 use infile_variables
 use fuels_create_variables
+use io_variables
 
 implicit none
 
@@ -70,7 +71,7 @@ if (topofile.eq.'flat'.or.topofile.eq.'') then ! No topo
   print *,'Not using target topo'
 else ! Normal topo
   print *,'Reading target topo file = ',topofile
-  open (1,file=topofile,form='unformatted',status='old')
+  open (1,file=TRIM(TRIM(workdir)//filesep)//topofile,form='unformatted',status='old')
   read (1) zs
   close (1)
 endif
@@ -90,7 +91,7 @@ enddo
 
 if(minval(zs).gt.0)then ! Reduce topo values to least common value
   zs  = zs-minval(zs)
-  open (2,file='toporeduced.dat',form='unformatted',status='unknown')
+  open (2,file=TRIM(TRIM(workdir)//filesep)//'toporeduced.dat',form='unformatted',status='unknown')
   write(2) zs
   close(2)
 endif
@@ -112,7 +113,7 @@ if(ifuelin.eq.1)then
       print *,'Not using previous topo'
     else  ! Normal previous topo
       print *,'Reading previous fuel topo file = ',intopofile    !JO
-      open (2,file=intopofile,form='unformatted',status='old') !JO
+      open (2,file=TRIM(TRIM(workdir)//filesep)//intopofile,form='unformatted',status='old') !JO
       read (2) izs
       close (2)
     endif
