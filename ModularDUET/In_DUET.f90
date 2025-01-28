@@ -35,7 +35,7 @@ module DUETio
     real,allocatable :: trhof(:,:,:,:),zheight(:,:,:)
     real,allocatable :: moist(:,:,:,:),depth(:,:,:)
     real,allocatable :: sscale(:,:,:,:)
-    character*50 :: speciesfile  
+    character*255 :: speciesfile  
   end type inarrays
     
   type(inarrays) :: inarray
@@ -114,7 +114,7 @@ contains
 
     use DUETio
 
-    character*50 :: speciesfile,filepath
+    character*255 :: speciesfile,filepath
     logical :: exists
 
     print*,'DUET begun...'
