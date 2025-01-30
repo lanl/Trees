@@ -18,7 +18,7 @@
 module DUETio
 
   type :: workingpath
-    character:: workdir*255=''
+    character :: workdir*255=''
     character :: filesep*1=''
   end type workingpath
 
