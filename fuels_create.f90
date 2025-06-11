@@ -488,3 +488,207 @@ print*,'Litter actual fuel mass:',actual_mass
 print*,'Litter error:',100-actual_mass/target_mass*100,'%'
 
 end subroutine litter_fuels_create 
+
+
+subroutine tree_baseline 
+!-----------------------------------------------------------------
+! tree_baseline is a function which computes the characteristics  
+! of a forest from the variables designated in 
+! define_variables.f. It then fills trhof, tsizescale, tmoisture, 
+! and tfueldepth arrays.
+!-----------------------------------------------------------------
+use constant_variables
+use grid_variables
+use fuels_create_variables
+use tree_tracker_variables
+
+implicit none
+
+
+
+integer ift,i,j,k,ii,jj,kk,iii,jjj,kkk
+integer ii_real,jj_real
+integer ift_index
+real totarea
+real xtest,ytest
+integer xtop,xbot,ybot,ytop,zbot,ztop
+real canopytop,canopybot,canopydiameter,canopymaxh
+real atop,abot,test_height,bot_height,top_height
+integer cellcount
+real rhoftemp
+real target_mass,actual_mass
+real,external:: paraboloid,normal
+integer ntrees_sum
+
+integer cellnum, cn
+integer, dimension(100) :: cellid
+real, dimension(100) :: cellfuel 
+real tfueltot
+
+!-----Determine the number of trees for each species
+if(itrees.eq.1) then
+  totarea   = nx*dx*ny*dy
+  do i=1,ntspecies
+    ntrees(i) = ceiling(totarea*tcanopy(i)/(PI*(tcrowndiametertracker(1,i)/2.)**2.))
+  enddo
+  print*,'Number of trees of each species:',ntrees
+endif
+! Open tree tracking file:
+open(unit=12,file='TreeTracker.txt')
+!----- Begin loop which fills arrays with information for each tree
+ntrees_sum = 0
+do i=1, ntspecies
+  ntrees_sum = ntrees_sum + ntrees(i)
+enddo
+
+do i=1,1
+  if (itrees.eq.1) print*,'Species',i,'with',ntrees(i),'trees'
+  print*, 'ADAM ', i, ntspecies, ntrees(i), ntrees(2)
+  do j=1, ntrees_sum
+    cellnum=0
+    tfueltot=0
+    if (j.eq.4544) then
+      print*, 'ADAM ', j, tlocationtracker(j,1), tlocationtracker(j,2),tspecies(j)
+    endif
+    if (MOD(j,1000).eq.0) print*,'Placing tree',j,'of',ntrees(i)
+    
+    !----- Place tree location
+    if (itrees.eq.1.or.itrees.eq.3) then
+      ! Randomly place a tree
+      call random_number(xtest)
+      xtest = xtest*nx*dx
+      call random_number(ytest)
+      ytest = tdny(1)+ytest*(tdny(2)-tdny(1))*dy
+    else
+      ! Specific tree placement
+      xtest = tlocationtracker(j,1)
+      ytest = tlocationtracker(j,2)
+    endif
+
+
+    !----- Determine tree shape characteristics
+    if (itrees.eq.1) then
+      ! Sample shape from distributions
+      canopytop = min(nz*dz,normal(theighttracker(1,i),theighttracker(2,i)))
+      canopybot = max(0.,min(canopytop-0.02,normal(tcrownbotheighttracker(1,i),tcrownbotheighttracker(2,i))))
+      canopydiameter = max(0.,normal(tcrowndiametertracker(1,i),tcrowndiametertracker(2,i)))
+      canopymaxh = min(canopytop-0.01,max(canopybot+0.01,normal(tcrownmaxheighttracker(1,i),tcrownmaxheighttracker(2,i))))
+    else
+      ! Shape from tree file
+      canopytop = theighttracker(j,1)
+      canopybot = tcrownbotheighttracker(j,1)
+      canopydiameter = tcrowndiametertracker(j,1)
+      canopymaxh= tcrownmaxheighttracker(j,1)
+    endif
+
+    !----- Translate tree shape to grid
+    xbot = floor((xtest-canopydiameter/2.)/dx+1)
+    xtop = floor((xtest+canopydiameter/2.)/dx+1)
+    ybot = floor((ytest-canopydiameter/2.)/dy+1)
+    ytop = floor((ytest+canopydiameter/2.)/dy+1)
+    zbot = 0.
+    ztop = 0.
+    do k=1,nz-1
+      if (SIZE(zheight, DIM=2).le.nint(ytest/dy+1)) then
+        zbot = k
+        exit
+      
+      else if (canopybot.le.zheight(nint(xtest/dx+1),nint(ytest/dy+1),k+1)) then
+        zbot = k
+        exit
+      endif
+    enddo
+    do kk=k,nz-1
+      if (SIZE(zheight, DIM=2).le.nint(ytest/dy+1)) then
+        zbot = k
+        exit
+      else if (canopytop.le.zheight(nint(xtest/dx+1),nint(ytest/dy+1),kk+1)) then
+        ztop = kk
+        if (kk.gt.zmax) zmax=kk
+        exit
+      endif
+    enddo
+    
+    ! Ellipitical paraboloid used to determine tree contours
+    atop = 0.25*(canopydiameter)**2./(canopymaxh-canopytop)
+    abot = 0.25*(canopydiameter)**2./(canopymaxh-canopybot)
+    do ii=xbot,xtop
+      if (ii.gt.nx) then
+        ii_real = ii-nx 
+      else if (ii.lt.1) then 
+        ii_real = nx+ii
+      else
+        ii_real = ii
+      endif
+      do jj=ybot,ytop
+        if (jj.gt.ny) then
+          jj_real = jj-ny
+        else if (jj.lt.1) then
+          jj_real = ny+jj
+        else
+          jj_real = jj
+        endif
+        do kk=zbot,ztop
+          ! Determine how many of subcells of a cell are within the paraboloid, the fraction of the subcells is equal to the fraction of the cell within the paraboloid
+          cellcount = 0
+          do iii=1,10
+            do jjj=1,10
+              do kkk=1,10
+                test_height= zheight(ii_real,jj_real,kk)+(2.*kkk-1.)/20.*(zheight(ii_real,jj_real,kk+1)-zheight(ii_real,jj_real,kk))
+                bot_height = paraboloid(abot,((ii-1)+(2.*iii-1.)/20.)*dx,xtest,((jj-1)+(2.*jjj-1.)/20.)*dy,ytest,canopybot)
+                top_height = paraboloid(atop,((ii-1)+(2.*iii-1.)/20.)*dx,xtest,((jj-1)+(2.*jjj-1.)/20.)*dy,ytest,canopytop)
+                if (test_height.ge.bot_height.and.test_height.le.top_height) cellcount=cellcount+1
+              enddo
+            enddo
+          enddo
+
+          !----- Fill in the 3D arrays for a tree
+          if (cellcount.gt.0) then
+            cellnum = cellnum+1
+            do ift=1,tfuelbins
+              if (itrees.eq.1) then
+                ift_index = (i-1)*tfuelbins+ift
+              else
+                ift_index = (tspecies(j)-1)*tfuelbins+ift
+              endif
+              rhoftemp = tbulkdensity(ift,i)*cellcount/1000.
+              tsizescale(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)*tsizescale(ift_index,ii_real,jj_real,kk)+rhoftemp*tss(ift,i))/(trhof(ift_index,ii_real,jj_real,kk)+rhoftemp)
+           ! This is the nasty hard code. ~ AA
+           ! i==1, LLP, i==2, TurkeyOak
+              if(tspecies(j).eq.1)then
+               tmoisture(ift,i) = satarray(ii_real,jj_real,4)*1.33/0.55
+               !tmoisture(ift,i) = satarray(ii_real,jj_real,4)*1.33/0.55
+              elseif(tspecies(j).eq.2)then
+               tmoisture(ift,i) = satarray(ii_real,jj_real,6)*1.9/0.5
+               !tmoisture(ift,i) = satarray(ii_real,jj_real,5)*2/0.5
+              endif
+            ! End Hard Code ~ AA
+              tmoist(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)*tmoist(ift_index,ii_real,jj_real,kk)+rhoftemp*tmoisture(ift,i))/(trhof(ift_index,ii_real,jj_real,kk)+rhoftemp)
+              trhof(ift_index,ii_real,jj_real,kk) = trhof(ift_index,ii_real,jj_real,kk)+rhoftemp
+            enddo
+            ! ###### Check the Index here  ###### AA
+            ! Domain dimensions are hard coded, and need to be
+            ! able to read the domain dimensions
+            cellid(cellnum) = (ii_real+(jj_real*300)+(kk*300*300))
+            ! ###### Check the Index here  ######
+            cellfuel(cellnum) = rhoftemp
+            tfueltot = tfueltot + cellfuel(cellnum)
+          endif
+        enddo
+      enddo
+    enddo
+    !print*, 'ADAM cellnum ', j, ii_real,jj_real,kk,cellnum
+    do cn=1, cellnum
+       cellfuel(cn) = cellfuel(cn)/tfueltot 
+       !print*, cn, cellid(cn), cellfuel(cn), tfueltot
+    enddo 
+    !Print to TreeTracker.txt file here. AA
+    !print*, j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum)
+    write(12,*) j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum) 
+  enddo
+  ! if (itrees.ne.1) exit
+enddo
+
+close (12) 
+end subroutine tree_baseline 
+

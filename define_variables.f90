@@ -542,3 +542,91 @@ subroutine define_newtreefile
     end if
 
 end subroutine define_newtreefile
+
+
+subroutine define_tree_tracker
+use grid_variables
+use fuels_create_variables
+use tree_tracker_variables
+
+
+implicit none
+integer i,j,k
+!-----------------------------------------------------------------
+! Tree variables unique to the tree baseline
+!-----------------------------------------------------------------
+integer itree
+real,dimension(7+3*tfuelbins):: temp_array
+allocate(satarray(nx,ny,10))
+if (itrees.eq.1) then
+  allocate(ntrees(ntspecies)) ! Number of trees for each species
+  allocate(tcanopy(ntspecies)) ! Canopy closure [fraction]
+  allocate(theight(2,ntspecies)) ! Tree heights [m]
+  allocate(tcrownbotheight(2,ntspecies)) ! Height to live crown [m]
+  allocate(tcrowndiameter(2,ntspecies)) ! Crown diameter [m]
+  allocate(tcrownmaxheight(2,ntspecies)) ! Height to max crown diameter [m]
+  allocate(tbulkdensity(tfuelbins,ntspecies)) ! Crown fuel bulk density [kg/m3]
+  allocate(tmoisture(tfuelbins,ntspecies)) ! Crown fuel moisture content [fraction]
+  allocate(tss(tfuelbins,ntspecies)) ! Crown fuel size scale [m]
+
+  open (2,file=treefile)
+  read (2,*) tcanopy
+  read (2,*) theight(1,:)
+  read (2,*) theight(2,:)
+  read (2,*) tcrownbotheight(1,:)
+  read (2,*) tcrownbotheight(2,:)
+  read (2,*) tcrowndiameter(1,:)
+  read (2,*) tcrowndiameter(2,:)
+  read (2,*) tcrownmaxheight(1,:)
+  read (2,*) tcrownmaxheight(2,:)
+  do i=1,tfuelbins
+    read(2,*) tbulkdensity(i,:)
+    read(2,*) tmoisture(i,:)
+    read(2,*) tss(i,:)
+  enddo
+  close (2)
+endif
+
+if (itrees.eq.2.or.itrees.eq.3) then
+  itree = 0
+  open (2,file=treefile)
+  print*, 'Adam ', treefile
+  do
+    read (2,*,end=10)
+    itree = itree+1
+  enddo
+10      rewind(2)
+  allocate(tlocationtracker(itree,2)) ! Tree cartesian coordinates [m,m]
+  allocate(tbulkdensity(tfuelbins,itree)) ! Crown fuel bulk density [kg/m3]
+  allocate(tmoisture(tfuelbins,itree)) ! Crown fuel moisture content [fraction]
+  allocate(tss(tfuelbins,itree)) ! Crown fuel size scale [m]
+  allocate(theighttracker(itree,1))   ! Tree heights [m]
+  allocate(tcrownbotheighttracker(itree,1)) ! Height to live crown [m]
+  allocate(tcrowndiametertracker(itree,1)) ! Crown diameter [m]
+  allocate(tcrownmaxheighttracker(itree,1)) ! Height to max crown diameter [m]
+
+  open (2,file=treefile)
+  do i=1,itree
+    read (2,*) temp_array(:)
+    ! tspecies(i) = temp_array(1)
+    tlocationtracker(i,:) = temp_array(2:3)
+    theighttracker(i,1) = temp_array(4)
+    tcrownbotheighttracker(i,1) = temp_array(5)
+    tcrowndiametertracker(i,1) = temp_array(6)
+    tcrownmaxheighttracker(i,1) = temp_array(7)
+    do j=1,tfuelbins
+      tbulkdensity(j,i) = temp_array(7+(j-1)*tfuelbins+1)
+      tmoisture(j,i)    = temp_array(7+(j-1)*tfuelbins+2)
+      tss(j,i)          = temp_array(7+(j-1)*tfuelbins+3)
+    enddo
+  enddo
+  close (2)
+endif
+allocate(tdnx(2)) ! Array of the cell range (x)  where the trees are applied
+allocate(tdny(2)) ! Array of the cell range (x)  where the trees are applied
+tdnx(1) = 0
+tdnx(2) = nx-1
+tdny(1) = 0
+tdny(2) = ny-1
+
+end subroutine define_tree_tracker

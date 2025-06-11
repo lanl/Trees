@@ -164,5 +164,15 @@ end module fuels_create_variables
 !
 !end module species_variables
 
+module tree_tracker_variables
 
+integer,allocatable:: tdnx(:),tdny(:)
+real,allocatable:: satarray(:,:,:)
+real,allocatable:: tmoisture(:,:),tss(:,:),tbulkdensity(:,:)
+real,allocatable:: tcanopy(:)
+real,allocatable:: tlocationtracker(:,:)
+real,allocatable:: theighttracker(:,:),tcrownbotheighttracker(:,:),tcrownmaxheighttracker(:,:),tcrowndiametertracker(:,:)
+integer,allocatable:: ntreestracker(:)
+
+end module tree_tracker_variables
 

@@ -289,6 +289,7 @@ endif
 print*,'Your nfuel is',int(sum(nonzero(:)))
 print*,'Your lfuel is',lfuel
 
+call tree_baseline
 end subroutine output_fuel
 
 subroutine write_file(filename,dataname,nfuel,nx,ny,nz,nonzero)
@@ -521,5 +522,4 @@ write(2222,'(A75)')'verbose = 0 !flag to output treelist and fuellist from resul
 
 close(2222)
   
-
 end subroutine output_fuellist

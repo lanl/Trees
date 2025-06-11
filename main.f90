@@ -43,6 +43,7 @@ call define_grid_variables
 !-----Fuel Read-in
 if(ifuelin.eq.1) call grid_readin
 
+call define_tree_tracker
 !-----Establish fuels_create
 call fuels_create
 

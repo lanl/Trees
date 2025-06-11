@@ -1,1 +1,9 @@
 .DS_Store
+
+/mech
+/mechBurn
+/burn 
+/control
+
+edit_treelist.py
+height_determine.py
