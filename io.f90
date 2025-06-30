@@ -168,11 +168,13 @@ subroutine SetWorkingDirectory(workingVariable,fileVariable)
   character(len=255),intent(out) :: workingVariable
   character(len=1),intent(out)   :: fileVariable
 
-	integer :: i, narg
+	integer :: i, narg, k
 	character(255) :: wtemp, instring
 	
-
-	IF(IARGC() > 0)THEN
+  !PRINT(*,IARGC())
+  k = COMMAND_ARGUMENT_COUNT()
+  print *,k
+	IF(k > 0)THEN
 		narg = 1		
 	ELSE
 		narg = 0
