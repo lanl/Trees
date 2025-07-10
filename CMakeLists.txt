@@ -8,7 +8,7 @@ set(TREES_VERSION_MAJOR 1)
 enable_language(Fortran)
 
 if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-  set(FF_FLAGS "-O2 -g -ffixed-line-length-none -Wall -Wextra -Werror")
+  set(FF_FLAGS "-O2 -g -ffixed-line-length-none")
 elseif (Fortran_COMPILER_NAME MATCHES "ifort.*")
   set(FF_FLAGS "-O2 -g -extend-source")
 elseif (Fortran_COMPILER_NAME MATCHES "ftn.*")
@@ -16,17 +16,17 @@ elseif (Fortran_COMPILER_NAME MATCHES "ftn.*")
 endif()
 
 #find_package(MPI REQUIRED)
-#include_directories(${MPI_Fortran_INCLUDE_PATH})
+#set(-Wall -Wextra -Werror -fcheck=all) # Flags for debugging
 
 # Module dependecies
 add_subdirectory(ModularDUET)
 
 # Build
 set(Trees_SRCS
-  variables.f90 main.f90 define_variables.f90
-  power_parser.f90 io.f90 metryc.f90 shapes.f90
-  distribution.f90 fuels_create.f90
-  fuel_read.f90 trees_read.f90)
+  variables.F90 main.F90 define_variables.F90
+  power_parser.F90 io.F90 metryc.F90 shapes.F90
+  distribution.F90 fuels_create.F90
+  fuel_read.F90 trees_read.F90)
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/opt)
 add_executable(trees.exe ${Trees_SRCS})
