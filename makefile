@@ -19,11 +19,9 @@ clean:
 	rm Inputs/trees.exe *.o *.mod Inputs/trees*.dat
 
 # optimized suffix rules
-.SUFFIXES: .f .f90
+.SUFFIXES: .F90
 
-%.o: ${DUET_DIR}/%.f90
+%.o: ${DUET_DIR}/%.F90
 	${FC} ${FFLAGS} -c $<
-%.o: %.f
-	${FC} ${FFLAGS} -c $<
-%.o: %.f90
+%.o: %.F90
 	${FC} ${FFLAGS} -c $<
