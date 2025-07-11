@@ -1,59 +1,28 @@
-# Update trees submodule in HIGRAD-FIRETEC
-# Modified from https://www.benjaminrancourt.ca/how-to-push-to-a-git-repository-from-a-gitlab-ci-pipeline/
-trigger:
-  image: curlimages/curl:7.76.1
-  script:
-    # Use the Repository submodules API to update the submodule reference in other repositories (see https://docs.gitlab.com/ee/api/repository_submodules.html)
-    
-    # Put the string "PRIVATE-TOKEN:" into a variable to escape the "Linefeed-Limbo" (https://stackoverflow.com/a/51187502)
-    - PRIVATE_TOKEN="PRIVATE-TOKEN:"
+name: Mirror-to-B
 
-    # PUSHER_TOKEN is a group variable containing a group access token tied to EES Fire Modeling
-    # Go to Settings > CI/CD > Variables or Access Tokens to inspect/ change them    
-    - curl
-      --data "branch=${BRANCH}&commit_sha=${CI_COMMIT_SHA}&commit_message=Trees, ${CI_COMMIT_AUTHOR} ${CI_COMMIT_MESSAGE}"
-      --header "${PRIVATE_TOKEN} ${PUSHER_TOKEN}" 
-      --request PUT "${CI_SERVER_URL}/api/v4/projects/${PROJECT_ID}/repository/submodules/${SUBMODULE_PATH}"
-  stage: deploy
-  variables:
-    PROJECT_ID: '6604' # HIGRAD/FIRETEC
-    BRANCH: 'develop'
-    SUBMODULE_PATH: 'trees'
+# Fires on every push or branch/tag deletion
+on:
+  push:      {branches: ['master'], tags: ['*']}
+  delete:    {branches: ['**'], tags: ['*']}
 
-# Remove copyrighted code in treesOpen branch and push to TreesGitHub)
-# Modified from https://parsiya.net/blog/2021-10-11-modify-gitlab-repositories-from-the-ci-pipeline/
-variables:
-  BRANCH_NAME: "treesOpen" # Name of the branch to modify to stage for GitHub
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Get the full history
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-# push the repository
-# based on https://gitlab.com/taleodor/sample-helm-cd/-/blob/master/.gitlab-ci.yml
-.push: &push |
-  git add .
-  git log -1
-  lines=$(git status -s | { grep -v DUET || true; } | { grep -v 'gitlab-ci' || true; } | wc -l)
-  echo $lines' new files: '$(git status -s | { grep -v DUET || true; } | { grep -v 'gitlab-ci' || true; })
-  if [ $lines -gt 0 ];then
-    echo "committing"
-    git config --global user.name "Alexander Josephson"
-    git config --global user.email "alexanderj@lanl.gov"
-    git commit -m "${CI_COMMIT_AUTHOR} ${CI_COMMIT_MESSAGE}"
-    # Echo to log what you're doing next
-    echo "git push -o ci.skip 'https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git' ${BRANCH_NAME}"
-    # Push to treesOpen
-    git push -o ci.skip "https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" $BRANCH_NAME
-    # Push to GitLab mirror of Github repo. Configured under "Mirroring repositories" at https://gitlab.lanl.gov/ees-fire-modeling/TreesGitHub/-/settings/repository
-    git push -o ci.skip "https://whatever:${PUSHER_TOKEN}@${CI_SERVER_HOST}/ees-fire-modeling/TreesGitHub.git" $BRANCH_NAME
-  else
-    echo "changed files are not in ${BRANCH_NAME}, nothing to commit"
-  fi
-
-modify-repo:
-  image: alpine:latest
-  before_script:
-    - apk add bash git grep     # add bash and git (probably not needed)
-    - git fetch
-    - git checkout master
-    - git pull
-    - cd $CI_PROJECT_DIR        # go into the repo
-  script:
-    - *push                     # run the push script and push the changes
+      # 2. Push everything to the second remote
+      - name: Mirror to Repo B
+        env:
+          DEPLOY_KEY: ${{ secrets.REPO_B_SSH_KEY }}   # add in repo settings
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          git config --global user.name  "automation"
+          git config --global user.email "actions@github"
+          git remote add mirror git@github.com:lanl/Trees.git
+          git push --mirror mirror
