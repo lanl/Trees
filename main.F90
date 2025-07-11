@@ -39,11 +39,8 @@ program fuel_maps
   !-----Establish fuels_create
   call fuels_create
   
-  !-----Export data to binary files
+  !-----Export data
   call output_fuel
-  
-  !-----Check for and run DUET
-  
   if (verbose.eq.1) call output_fuellist
-  
-end
+
+end program fuel_maps

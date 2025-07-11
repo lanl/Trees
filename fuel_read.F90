@@ -16,12 +16,13 @@
 ! FIRETEC or QUIC-Fire
 !-----------------------------------------------------------------------
 subroutine grid_readin
-  use grid_variables, only : nx,ny,nz,dx,dy,zs,zheight,rhof,moist, &
-    sizescale,fueldepth
+  use grid_variables, only : nx,ny,nz,dx,dy,dz,zs,zheight,rhof,moist, &
+    sizescale,fueldepth,aa1,topofile
   use infile_variables, only : rhoffile,moistfile,ssfile,afdfile, &
-    irhof,imoist,iss,iafd,infuel,inx,iny,inz,iintpr,idx,idy, &
-    izs,izheight
+    irhof,imoist,iss,iafd,infuel,inx,iny,inz,iintpr,idx,idy,idz, &
+    izs,izheight,iaa1,intopofile
   use io_variables, only : filesep,workdir
+  use constant_variables, only : tolerance
   implicit none
   
   ! Local Variables
@@ -39,6 +40,8 @@ subroutine grid_readin
   allocate(imoist(infuel,inx,iny,inz))
   allocate(iss(infuel,inx,iny,inz))
   allocate(iafd(infuel,inx,iny,inz))
+  allocate(izs(inx,iny))
+  allocate(izheight(inx,iny,inz))
   
   print*,"Reading existing fuel files"
   ! Read in rhof
@@ -48,11 +51,8 @@ subroutine grid_readin
     read(1) irhof(ift,:,:,:)
   enddo
   close(1)
-  where (irhof<0)
-    irhof = 0
-  endwhere
-  print*,'irhof','min=',minval(irhof),'max=',maxval(irhof), &
-    'avg=',sum(irhof)/(inx*iny*inz)
+  irhof=max(0.,irhof)
+  print*,'irhof: min=',minval(irhof),'max=',maxval(irhof)
 
   ! Read in moist
   open(unit=2,file=TRIM(TRIM(workdir)//filesep)//moistfile, &
@@ -61,11 +61,8 @@ subroutine grid_readin
     read(2) imoist(ift,:,:,:)
   enddo
   close(2)
-  where (imoist<0)
-    imoist = 0
-  endwhere
-  print*,'imoist','min=',minval(imoist),'max=',maxval(imoist), &
-    'avg=',sum(imoist)/(inx*iny*inz)
+  imoist=max(0.,imoist)
+  print*,'imoist: min=',minval(imoist),'max=',maxval(imoist)
 
   ! Read in ss
   open(unit=3,file=TRIM(TRIM(workdir)//filesep)//ssfile, &
@@ -85,28 +82,54 @@ subroutine grid_readin
       enddo
     enddo
   endif
-  where (iss<0)
-    iss = 0
-  endwhere
-  print*,'iss','min=',minval(iss),'max=',maxval(iss), &
-    'avg=',sum(iss)/(inx*iny*inz)
-  open(unit=4,file=TRIM(TRIM(workdir)//filesep)//afdfile, &
-    form='unformatted',status='unknown')
+  iss=max(0.,iss)
+  print*,'iss: min=',minval(iss),'max=',maxval(iss)
 
   ! Read in afd
+  open(unit=4,file=TRIM(TRIM(workdir)//filesep)//afdfile, &
+    form='unformatted',status='unknown')
   do ift=1,infuel
     read(4) iafd(ift,:,:,:)
   enddo
   close(4)
-  where (iafd<0)
-    iafd = 0
-  endwhere
-  print*,'iafd','min=',minval(iafd),'max=',maxval(iafd), &
-    'avg=',sum(iafd)/(inx*iny*inz)
+  iafd=max(0.,iafd)
+  print*,'iafd: min=',minval(iafd),'max=',maxval(iafd)
   
-  print*,"Exisiting fuel files readin"
+  ! Set grid characteristics  
+  print*,'Readin topography'
+  if (intopofile.eq.'flat'.or.intopofile.eq.'')then ! No previous topo
+    izs(:,:)=0.0
+  else  ! Normal previous topo
+    print *,'Reading previous fuel topo file = ',intopofile
+    open (2,file=TRIM(TRIM(workdir)//filesep)//intopofile, &
+      form='unformatted',status='old')
+    read (2) izs
+    close (2)
+  endif
+  izs = izs-minval(izs)
+
+  print*,'Readin fuel grid heights'
+  do i=1,inx
+    do j=1,iny
+      do k=1,inz
+        if (iaa1.eq.0) then
+          izheight(i,j,k) = izs(i,j)+(k-1)*idz
+        else
+          izheight(i,j,k) = zcart(iaa1,(k-1)*idz,inz,idz,izs(i,j))
+        endif
+        if(i.eq.1.and.j.eq.1) print*,'cell',k,'bottom height', &
+          izheight(i,j,k)
+      enddo
+    enddo
+  enddo
   
   ! Interpolate read file onto FIRETEC grid
+  if(inx.ne.nx.or.iny.ne.ny.or.inz.ne.nz.or. &
+    abs(idx-dx).lt.tolerance.or.abs(idy-dy).lt.tolerance.or. &
+    abs(idz-dz).lt.tolerance.or.abs(iaa1-aa1).lt.tolerance.or. &
+    topofile.ne.intopofile) &
+    iintpr=1
+  
   if (iintpr.eq.1) then
     print*,"Interpolating readin fuel files to desired FIRETEC grid"
     do i=1,nx
@@ -211,5 +234,5 @@ subroutine grid_readin
   print*,'Readin actual fuel mass:',actual_mass
   print*,'Readin error:',actual_mass/target_mass*100,'%'
    
-  deallocate(irhof,imoist,iss,iafd)
+  deallocate(irhof,imoist,iss,iafd,izs,izheight)
 end subroutine grid_readin

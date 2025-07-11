@@ -97,7 +97,7 @@ module fuel_variables
   character:: treefile*250,newtreefile*250
   
   integer :: istem=0,ntspecies=0,tfuelbins=0,ntreefueltypes
-  integer,allocatable :: ntrees(:),tspecies(:)
+  integer,allocatable :: ntrees(:),tspecies(:),tunique_species(:)
   integer,allocatable :: trhofmaxindex(:)
   real,allocatable :: tstemdensity(:),tlocation(:,:,:)
   real,allocatable :: t1moisture(:,:),t1ss(:,:),t1bulkdensity(:,:)

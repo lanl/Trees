@@ -77,7 +77,7 @@ subroutine define_grid_variables
     enddo
   enddo
   
-  if(minval(zs).gt.0)then ! Reduce topo values to least common value
+  if(abs(minval(zs)).lt.tolerance)then ! Reduce topo values to least common value
     zs  = zs-minval(zs)
     open (2,file=TRIM(TRIM(workdir)//filesep)//'toporeduced.dat', &
       form='unformatted',status='unknown')
@@ -85,69 +85,6 @@ subroutine define_grid_variables
     close(2)
   endif
   
-  if(ifuelin.eq.1)then
-    allocate(izs(inx,iny))
-    allocate(izheight(inx,iny,inz))
-  
-    if(inx.ne.nx.or.iny.ne.ny.or.inz.ne.nz.or. &
-      abs(idx-dx).lt.tolerance.or.abs(idy-dy).lt.tolerance.or. &
-      abs(idz-dz).lt.tolerance.or.abs(iaa1-aa1).lt.tolerance.or. &
-      topofile.ne.intopofile) &
-      iintpr=1
-  
-    if (iintpr.eq.0) then
-      izs(:,:)=zs(:,:)
-      izheight(:,:,:)=zheight(:,:,:)
-    else  ! Topo with existing fuels
-      if (intopofile.eq.'flat'.or.intopofile.eq.'')then ! No previous topo
-        izs(:,:)=0.0
-        print *,'Not using previous topo'
-      else  ! Normal previous topo
-        print *,'Reading previous fuel topo file = ',intopofile
-        open (2,file=TRIM(TRIM(workdir)//filesep)//intopofile, &
-          form='unformatted',status='old')
-        read (2) izs
-        close (2)
-      endif
-      izs = izs-minval(zs)
-      do i=1,nx
-        do j=1,ny
-          xcor(1) = (i-1)*dx ! Real x lower edge
-          xcor(2) = i*dx     ! Real x upper edge
-          xbot    = floor(xcor(1)/idx+1) ! Fuel readin grid x lower edge
-          xtop    = floor(xcor(2)/idx+1) ! Fuel readin grid x upper edge
-          ycor(1) = (j-1)*dy ! Real y lower edge
-          ycor(2) = j*dy     ! Real y upper edge
-          ybot    = floor(ycor(1)/idy+1) ! Fuel readin grid y lower edge
-          ytop    = floor(ycor(2)/idy+1) ! Fuel readin grid y upper edge
-          cells   = 0.
-          do ii=xbot,xtop
-            do jj=ybot,ytop
-              xfrac  = (min(ii*idx,xcor(2))-max((ii-1)*idx,xcor(1)))/idx
-              yfrac  = (min(jj*idy,ycor(2))-max((jj-1)*idy,ycor(1)))/idy
-              cells  = cells+xfrac*yfrac
-              zs(i,j)= zs(i,j)+xfrac*yfrac*izs(ii,jj)
-            enddo
-          enddo
-          zs(i,j) = zs(i,j)/cells
-        enddo
-      enddo
-      print*,'Readin fuel grid heights'
-      do i=1,inx
-        do j=1,iny
-          do k=1,inz
-            if (iaa1.eq.0) then
-              izheight(i,j,k) = izs(i,j)+(k-1)*idz
-            else
-              izheight(i,j,k) = zcart(iaa1,(k-1)*idz,inz,idz,izs(i,j))
-            endif
-            if(i.eq.1.and.j.eq.1) print*,'cell',k,'bottom height', &
-              izheight(i,j,k)
-          enddo
-        enddo
-      enddo
-    endif
-  endif
 end subroutine define_grid_variables
 
 !-----------------------------------------------------------------------
@@ -187,17 +124,10 @@ subroutine define_fuel_variables
   allocate(tmoist(it,nx,ny,nz)); tmoist(:,:,:,:)=0.0
   allocate(tfueldepth(it,nx,ny)); tfueldepth(:,:,:)=0.0
   
-  !set name of output files
-  if (verbose.eq.1) call define_newtreefile
-  
   !---------------------------------------------------------------------
   ! Tree variables unique to the tree fuels_create
   !---------------------------------------------------------------------
-  if(itrees.eq.2.or.itrees.eq.3) then
-    call treelist_readin
-  else if(itrees.eq.7) then
-    call treelist_fastfuels
-  endif
+  if(itrees.gt.0) call treelist_readin
   
   ! Set maximum density tolerances for different species (unless values provided by user)
   if(itrees.gt.0)then
@@ -223,32 +153,26 @@ subroutine define_fuel_variables
 end subroutine define_fuel_variables
 
 !-----------------------------------------------------------------------
-!  
+! define_newtreefile creates and new treelist with the verbose option
 !-----------------------------------------------------------------------
 subroutine define_newtreefile
   use fuel_variables, only: newtreefile, itrees, treefile
   implicit none  
 
   ! Local Variables
-  integer(8) :: timeit
   character(len=30) :: dateit
   character(len=24) :: resultit
   integer :: n
 
   ! Executable Variables
-  if (itrees.eq.0) then 
-    newtreefile = '_blank'
-  else 
-    !------Open file for writing treelist to replicate files-------
-    timeit = time8()
-    call ctime(timeit,dateit)
-    do n = 1, len(TRIM(dateit))
-      resultit(n:n) = dateit(n:n)
-      if ((dateit(n:n) == ' ').or.(dateit(n:n) == ':')) then
-        resultit(n:n) = '_'
-      endif
-    enddo
-    newtreefile = treefile(1:len_trim(treefile)-len_trim('.txt'))// &
-      '_'//TRIM(resultit)
-  endif
+  !------Open file for writing treelist to replicate files-------
+  call ctime(time8(),dateit)
+  do n = 1, len(TRIM(dateit))
+    resultit(n:n) = dateit(n:n)
+    if ((dateit(n:n) == ' ').or.(dateit(n:n) == ':')) then
+      resultit(n:n) = '_'
+    endif
+  enddo
+  newtreefile = treefile(1:len_trim(treefile)-len_trim('.txt'))// &
+    '_'//TRIM(resultit)
 end subroutine define_newtreefile
