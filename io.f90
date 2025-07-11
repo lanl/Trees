@@ -77,7 +77,7 @@ if(ilitter.eq.2) igrass = 1
 
 ! Grass
 
-if(igrass.eq.1)then
+if(igrass.eq.1 .or. igrass.eq.3)then
   call QueryFuellist_integer('ngrass',ngrass,48,1)
   call QueryFuellist_real('grassconstant',grassconstant,48,5.)
   allocate(grho(ngrass))
@@ -106,7 +106,7 @@ endif
 
 ! Litter
 
-if(ilitter.eq.1) then
+if(ilitter.eq.1.or.ilitter.eq.3) then
   call QueryFuellist_real('litterconstant',litterconstant,48,0.0)
   allocate(lrho(ntspecies*tfuelbins))
   call QueryFuellist_real_array('lrho',lrho,ntspecies*tfuelbins,48,1.18)
@@ -413,7 +413,7 @@ write(2222,'(A35)')'! ----------------------------------'
 write(2222,'(A35)')'! Litter switch'
 write(2222,'(A35)')'! ----------------------------------'
 write(2222,'(A15,I1)')'ilitter = ',ilitter
-if(ilitter.eq.1) then
+if(ilitter.eq.1.or.ilitter.eq.3) then
     write(2222,'(A35)')'!ilitter eq 1 (BASIC) info'
     write(2222,'(A25,F4.2)')'litterconstant = ',litterconstant
     write(2222,'(A10)', Advance = 'No' ) 'lrho = '

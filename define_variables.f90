@@ -59,7 +59,7 @@ allocate(rhof(nfuel,nx,ny,nz)); rhof(:,:,:,:)=0.0
 allocate(sizescale(nfuel,nx,ny,nz)); sizescale(:,:,:,:)=0.0
 allocate(moist(nfuel,nx,ny,nz)); moist(:,:,:,:)=0.0
 allocate(fueldepth(nfuel,nx,ny,nz)); fueldepth(:,:,:,:)=0.0
-
+allocate(satarray(nx,ny,nz))
 !-----------------------------------------------------------------
 ! Create topo layer (Should be adjusted for non-flat topo)
 !-----------------------------------------------------------------
@@ -557,7 +557,6 @@ integer i,j,k
 !-----------------------------------------------------------------
 integer itree
 real,dimension(7+3*tfuelbins):: temp_array
-allocate(satarray(nx,ny,10))
 if (itrees.eq.1) then
   allocate(ntrees(ntspecies)) ! Number of trees for each species
   allocate(tcanopy(ntspecies)) ! Canopy closure [fraction]

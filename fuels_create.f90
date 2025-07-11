@@ -81,7 +81,7 @@ endif
 
 ! Fill litter arrays
 if (ilitter.ne.0) then
-  if (ilitter.eq.1) then
+  if (ilitter.eq.1.or.ilitter.eq.3) then
     if (itrees.gt.0) then
       print*,'Filling Litter fuels_create'
       call litter_fuels_create
@@ -132,16 +132,49 @@ subroutine grass_fuels_create
 use grid_variables
 use fuels_create_variables
 implicit none
-
+logical :: file_exists
 ! Local variables
 integer i,j,k,ift
 real target_mass,actual_mass
 !real x
+real,allocatable:: rhofxy(:,:)
+
+if (igrass.eq.3) then
+    ngrass=1
+    ! Check if the file exists
+    allocate(rhofxy(nx,ny))
+    open(1, file="LLM_litter_WG.txt")
+     read(1,*) rhofxy
+    close(1)
+    inquire(file="Saturation.txt", exist=file_exists)
+    if (file_exists) then
+         ! Read in saturation file to get moisture from ParFlow. AA
+      open (1,file='Saturation.txt',form='formatted',status='old')
+      print *, 'After opening file??'
+      do i=1,10
+        do j=1,ny
+          do k=1,nx
+            read (1,*) satarray(i,j,k)
+          enddo
+        enddo
+      enddo
+
+     print*,'Reading LLM WGlitter'
+   endif
+endif
+
 
 ! Executable code
 do ift=1,ngrass
   do i=1,nx
     do j=1,ny
+      if(igrass.eq.3) then 
+        grho(ift)=rhofxy(i,j)
+        if (file_exists) then
+          gmoisture(ift)=satarray(j,i,9)*0.08/0.46
+        endif
+      endif
+
       gfueldepth(ift,i,j) = gdepth(ift)
       do k=1,nz-1
         gmoist(ift,i,j,k) = gmoisture(ift)
@@ -420,13 +453,28 @@ implicit none
 integer i,j,k,ift,ift_grass
 real target_mass,actual_mass
 real rhocolumn,coverfactor,shadefactor !,rhoftemp
+real,allocatable:: rhofxy(:,:)
 
+
+if (ilitter.eq.3) then
+  print*,'Reading LLM tree litter'
+  allocate(rhofxy(nx,ny))
+  open(1, file="LLM_litter_trees.txt")
+    read(1,*) rhofxy
+  close(1)
+
+endif
+
+print*, SIZE(rhofxy)
 ! Executable code
 !----- Place litter on ground and remove grass to account for shading
 print*,'Placing litter and removing grass to account for shading'
 do ift = 1,ntspecies*tfuelbins
   do i=1,nx
     do j=1,ny
+      if(ilitter.eq.3) then
+        lrho(ift)=rhofxy(i,j)
+      endif
       ! Determine factors for placing litter and removing grass
       rhocolumn = 0
       do k=1,zmax
@@ -438,7 +486,7 @@ do ift = 1,ntspecies*tfuelbins
         coverfactor = 1.-exp(-litterconstant*rhocolumn/0.6)
 
         ! Remove grass due to shadefactor
-        if (igrass.eq.1) then
+        if (igrass.eq.1.or.igrass.eq.3) then
           do ift_grass=1,ngrass
             do k=1,nz
               if (zheight(i,j,k).gt.gdepth(ift_grass)+zs(i,j)) then
@@ -669,7 +717,7 @@ do i=1,1
             ! ###### Check the Index here  ###### AA
             ! Domain dimensions are hard coded, and need to be
             ! able to read the domain dimensions
-            cellid(cellnum) = (ii_real+(jj_real*300)+(kk*300*300))
+            cellid(cellnum) = (ii_real+(jj_real*ny)+(kk*ny*nx))
             ! ###### Check the Index here  ######
             cellfuel(cellnum) = rhoftemp
             tfueltot = tfueltot + cellfuel(cellnum)

@@ -101,7 +101,7 @@ real,allocatable:: trhofmax(:)
 integer,allocatable:: trhofmaxindex(:)
 real,allocatable:: gdepth(:),grho(:),gss(:),gmoisture(:)
 real,allocatable:: ldepth(:),lrho(:),lss(:),lmoisture(:)
-
+real,allocatable:: satarray(:,:,:)
 character :: command*50
 
 end module fuels_create_variables
@@ -167,7 +167,6 @@ end module fuels_create_variables
 module tree_tracker_variables
 
 integer,allocatable:: tdnx(:),tdny(:)
-real,allocatable:: satarray(:,:,:)
 real,allocatable:: tmoisture(:,:),tss(:,:),tbulkdensity(:,:)
 real,allocatable:: tcanopy(:)
 real,allocatable:: tlocationtracker(:,:)
@@ -176,3 +175,9 @@ integer,allocatable:: ntreestracker(:)
 
 end module tree_tracker_variables
 
+
+module surface_fuel_files
+
+character:: grassfile*50,treefile*50,litterfile*50
+
+end module surface_fuel_files

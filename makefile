@@ -10,7 +10,7 @@ VPATH = .:Modular/DUET
 DUET_DIR  = ModularDUET
 
 FC = gfortran   ## compiler
-FFLAGS = -O2 -ffixed-line-length-none
+FFLAGS = -O2 -ffixed-line-length-none -Wall -g
 
 Inputs/trees.exe: ${OBJS}
 	${FC} -o $@ ${FFLAGS} $^
