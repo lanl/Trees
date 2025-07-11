@@ -164,12 +164,12 @@ contains
     call QueryFuellist_real('gmoistoverride',duetvars%gmoistoverride,48,0.0)
     call QueryFuellist_real('densitythresh',duetvars%densitythresh,48,0.5)
     
-    if(windprofile.eq.0)then
+    if(duetvars%windprofile.eq.0)then
       call QueryFuellist_real_array('uavg',windarray%uavg,domain%nt,48,0.)
       call QueryFuellist_real_array('vavg',windarray%vavg,domain%nt,48,0.)
       call QueryFuellist_real_array('ustd',windarray%uvar,domain%nt,48,0.)
       call QueryFuellist_real_array('vstd',windarray%vvar,domain%nt,48,0.)
-    elseif(windprofile.eq.2)then
+    elseif(duetvars%windprofile.eq.2)then
       call QueryFuellist_integer('randomwinds',duetvars%randomwinds,48,3)
     endif
 

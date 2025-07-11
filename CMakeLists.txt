@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 # Project Information
 project(TREES)
@@ -16,7 +16,7 @@ elseif (Fortran_COMPILER_NAME MATCHES "ftn.*")
 endif()
 
 #find_package(MPI REQUIRED)
-#set(-Wall -Wextra -Werror -fcheck=all) # Flags for debugging
+#add_compile_options(-Wall -Wextra -Werror -fcheck=all) # Flags for debugging
 
 # Module dependecies
 add_subdirectory(ModularDUET)

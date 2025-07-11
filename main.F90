@@ -17,40 +17,33 @@
 ! publicly and display publicly, and to permit others to do so.
 !-----------------------------------------------------------------
 program fuel_maps
-
-use grid_variables
-use io_variables
-use infile_variables
-!use species_variables
-use fuels_create_variables!, only : ilitter!,command
-
-implicit none
-
-! Local Variables
-!logical :: DUETexists
-
-! Executable Code
-print *,'===================================='
-print *,' Running TREES to generate fuel     '
-print *,' files for FIRETEC or QUIC-Fire     '
-print *,'===================================='
-
-!-----Initialize
-call fuellist_input
-call define_constant_variables
-call define_grid_variables
-
-!-----Fuel Read-in
-if(ifuelin.eq.1) call grid_readin
-
-!-----Establish fuels_create
-call fuels_create
-
-!-----Export data to binary files
-call output_fuel
-
-!-----Check for and run DUET
-
-if (verbose.eq.1) call output_fuellist
-
+  use io_variables, only : verbose
+  use infile_variables, only : ifuelin
+  implicit none
+  
+  ! Local Variables
+  
+  ! Executable Code
+  print *,'===================================='
+  print *,' Running TREES to generate fuel     '
+  print *,' files for FIRETEC or QUIC-Fire     '
+  print *,'===================================='
+  
+  !-----Initialize
+  call fuellist_input
+  call define_grid_variables
+  
+  !-----Fuel Read-in
+  if(ifuelin.eq.1) call grid_readin
+  
+  !-----Establish fuels_create
+  call fuels_create
+  
+  !-----Export data to binary files
+  call output_fuel
+  
+  !-----Check for and run DUET
+  
+  if (verbose.eq.1) call output_fuellist
+  
 end

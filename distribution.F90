@@ -12,23 +12,23 @@
 ! paid-up, irrevocable worldwide license in this material to reproduce,
 ! prepare derivative works, distribute copies to the public, perform
 ! publicly and display publicly, and to permit others to do so.
-!-----------------------------------------------------------------
+
+!-----------------------------------------------------------------------
 real function normal(mu,sigma)
-!-----------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! normal is a function which randomly samples a number from a 
 ! gaussian distribution using the Box-Muller Transform with mu 
 ! being the mean and sigma the standard deviation
-!-----------------------------------------------------------------
-use constant_variables
+!-----------------------------------------------------------------------
+  use constant_variables, only : PI
+  implicit none
 
-implicit none
+  ! Local Variables
+  real :: x1,x2,mu,sigma
 
-! Local Variables
-real x1,x2,mu,sigma
+  ! Executable Code
+  call random_number(x1)
+  call random_number(x2)
+  normal = sigma*sqrt(-2.0*log(x1))*cos(2*PI*x2)+mu
 
-! Executable Code
-call random_number(x1)
-call random_number(x2)
-normal = sigma*sqrt(-2.0*log(x1))*cos(2*PI*x2)+mu
- 
 end function normal
