@@ -1,28 +1,11 @@
-name: Mirror-to-B
+# .gitlab-ci.yml
+stages: [mirror]
 
-# Fires on every push or branch/tag deletion
-on:
-  push:      {branches: ['master'], tags: ['*']}
-  delete:    {branches: ['**'], tags: ['*']}
-
-jobs:
-  mirror:
-    runs-on: ubuntu-latest
-    steps:
-      # 1. Get the full history
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # 2. Push everything to the second remote
-      - name: Mirror to Repo B
-        env:
-          DEPLOY_KEY: ${{ secrets.REPO_B_SSH_KEY }}   # add in repo settings
-        run: |
-          mkdir -p ~/.ssh
-          echo "$DEPLOY_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          git config --global user.name  "automation"
-          git config --global user.email "actions@github"
-          git remote add mirror git@github.com:lanl/Trees.git
-          git push --mirror mirror
+mirror:
+  stage: mirror
+  only:
+    - branches
+    - tags
+  script:
+    - git remote add mirror git@github.com:lanl/Trees.git
+    - git push --mirror mirror
