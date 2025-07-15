@@ -558,7 +558,7 @@ integer i,j,k
 integer itree
 real,dimension(7+3*tfuelbins):: temp_array
 if (itrees.eq.1) then
-  allocate(ntrees(ntspecies)) ! Number of trees for each species
+  ! allocate(ntrees(ntspecies)) ! Number of trees for each species
   allocate(tcanopy(ntspecies)) ! Canopy closure [fraction]
   allocate(theight(2,ntspecies)) ! Tree heights [m]
   allocate(tcrownbotheight(2,ntspecies)) ! Height to live crown [m]
@@ -595,7 +595,7 @@ if (itrees.eq.2.or.itrees.eq.3) then
     itree = itree+1
   enddo
 10      rewind(2)
-  allocate(tlocationtracker(itree,2)) ! Tree cartesian coordinates [m,m]
+  ! allocate(tlocationtracker(itree,2)) ! Tree cartesian coordinates [m,m]
   allocate(tbulkdensity(tfuelbins,itree)) ! Crown fuel bulk density [kg/m3]
   allocate(tmoisture(tfuelbins,itree)) ! Crown fuel moisture content [fraction]
   allocate(tss(tfuelbins,itree)) ! Crown fuel size scale [m]
@@ -608,7 +608,7 @@ if (itrees.eq.2.or.itrees.eq.3) then
   do i=1,itree
     read (2,*) temp_array(:)
     ! tspecies(i) = temp_array(1)
-    tlocationtracker(i,:) = temp_array(2:3)
+    ! tlocationtracker(i,:) = temp_array(2:3)
     theighttracker(i,1) = temp_array(4)
     tcrownbotheighttracker(i,1) = temp_array(5)
     tcrowndiametertracker(i,1) = temp_array(6)

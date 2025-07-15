@@ -465,7 +465,6 @@ if (ilitter.eq.3) then
 
 endif
 
-print*, SIZE(rhofxy)
 ! Executable code
 !----- Place litter on ground and remove grass to account for shading
 print*,'Placing litter and removing grass to account for shading'
@@ -572,7 +571,9 @@ integer cellnum, cn
 integer, dimension(100) :: cellid
 real, dimension(100) :: cellfuel 
 real tfueltot
+real nsub
 
+nsub = (nx*dx*ny*dy)/(ndatax*ndatay)
 !-----Determine the number of trees for each species
 if(itrees.eq.1) then
   totarea   = nx*dx*ny*dy
@@ -588,15 +589,16 @@ ntrees_sum = 0
 do i=1, ntspecies
   ntrees_sum = ntrees_sum + ntrees(i)
 enddo
-
-do i=1,1
+print*, ntrees
+print*, ntrees_sum
+do i=1,ntspecies
   if (itrees.eq.1) print*,'Species',i,'with',ntrees(i),'trees'
   print*, 'ADAM ', i, ntspecies, ntrees(i), ntrees(2)
-  do j=1, ntrees_sum
+  do j=1, ntrees(i)
     cellnum=0
     tfueltot=0
     if (j.eq.4544) then
-      print*, 'ADAM ', j, tlocationtracker(j,1), tlocationtracker(j,2),tspecies(j)
+      print*, 'ADAM ', j, tlocation(i, j,1), tlocation(i, j,2),tspecies(j)
     endif
     if (MOD(j,1000).eq.0) print*,'Placing tree',j,'of',ntrees(i)
     
@@ -609,11 +611,11 @@ do i=1,1
       ytest = tdny(1)+ytest*(tdny(2)-tdny(1))*dy
     else
       ! Specific tree placement
-      xtest = tlocationtracker(j,1)
-      ytest = tlocationtracker(j,2)
+      xtest = tlocation(i, j,1)
+      ytest = tlocation(i, j,2)
     endif
 
-
+    ! print*, tspecies
     !----- Determine tree shape characteristics
     if (itrees.eq.1) then
       ! Sample shape from distributions
@@ -623,10 +625,10 @@ do i=1,1
       canopymaxh = min(canopytop-0.01,max(canopybot+0.01,normal(tcrownmaxheighttracker(1,i),tcrownmaxheighttracker(2,i))))
     else
       ! Shape from tree file
-      canopytop = theighttracker(j,1)
-      canopybot = tcrownbotheighttracker(j,1)
-      canopydiameter = tcrowndiametertracker(j,1)
-      canopymaxh= tcrownmaxheighttracker(j,1)
+      canopytop = theight(j,1)
+      canopybot = tcrownbotheight(j,1)
+      canopydiameter = tcrowndiameter(j,1)
+      canopymaxh= tcrownmaxheight(j,1)
     endif
 
     !----- Translate tree shape to grid
@@ -697,16 +699,16 @@ do i=1,1
               if (itrees.eq.1) then
                 ift_index = (i-1)*tfuelbins+ift
               else
-                ift_index = (tspecies(j)-1)*tfuelbins+ift
+                ift_index = (tspecies(j/nsub +1)-1)*tfuelbins+ift
               endif
               rhoftemp = tbulkdensity(ift,i)*cellcount/1000.
               tsizescale(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)*tsizescale(ift_index,ii_real,jj_real,kk)+rhoftemp*tss(ift,i))/(trhof(ift_index,ii_real,jj_real,kk)+rhoftemp)
            ! This is the nasty hard code. ~ AA
            ! i==1, LLP, i==2, TurkeyOak
-              if(tspecies(j).eq.1)then
+              if(tspecies(j/nsub+1).eq.1)then
                tmoisture(ift,i) = satarray(ii_real,jj_real,4)*1.33/0.55
                !tmoisture(ift,i) = satarray(ii_real,jj_real,4)*1.33/0.55
-              elseif(tspecies(j).eq.2)then
+              elseif(tspecies(j/nsub+1).eq.2)then
                tmoisture(ift,i) = satarray(ii_real,jj_real,6)*1.9/0.5
                !tmoisture(ift,i) = satarray(ii_real,jj_real,5)*2/0.5
               endif

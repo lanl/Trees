@@ -1,8 +1,8 @@
 ! ----------------------------------
 ! FIRETEC domain info
 ! ----------------------------------
-      nx  = 200 
-      ny  = 200 
+      nx  = 300 
+      ny  = 300
       nz  = 41                      ! Size of HIGRAD/FIRETEC grid [cells]
       dx  = 2.0 
       dy  = 2.0 
@@ -33,9 +33,9 @@
 ! ----------------------------------
       itrees = 2                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
       tfuelbins = 1                     ! Number of size bins to distribute branches
-      treefile = 'treelisttest.txt'
-      ndatax = 400                       ! size of dataset domain in x direction [m]
-      ndatay = 400                      ! size of dataset domain in y direction [m]
+      treefile = 'controlFireTec.txt'
+      ndatax = 600                       ! size of dataset domain in x direction [m]
+      ndatay = 600                     ! size of dataset domain in y direction [m]
       datalocx = 0                       !x coordinate for bottom left corner where dataset should be placed 
       datalocy = 0                       !y coordinate for bottom left corner where dataset should be placed 
 ! ----------------------------------
@@ -69,7 +69,7 @@
 ! ----------------------------------
 ! Grass switch
 ! ----------------------------------
-      igrass = 3                ! Grass flag; 1=generalized grass data
+      igrass = 1                ! Grass flag; 1=generalized grass data
       !igrass options 
       ngrass = 1                ! Number of Grass Species
       grassconstant = 5         ! Exponential constant used to determine the decay of grass mass with tree shading
