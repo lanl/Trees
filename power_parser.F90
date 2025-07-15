@@ -1,6 +1,6 @@
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! Queries gridlist for input reals
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 subroutine QueryFuellist_real(variableName,variableValue, &
     fileunit,variableDefault)
   Implicit None
@@ -34,9 +34,9 @@ subroutine QueryFuellist_real(variableName,variableValue, &
     
 end subroutine QueryFuellist_real
 
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! Queries gridlist for input real arrays
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 subroutine QueryFuellist_real_array(variableName,array, &
     arraysize,fileunit,variableDefault)
   Implicit None
@@ -71,9 +71,9 @@ subroutine QueryFuellist_real_array(variableName,array, &
     
 end subroutine QueryFuellist_real_array
 
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! Queries gridlist for input integers
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 subroutine QueryFuellist_integer(variableName,variableValue, &
     fileunit,variableDefault)
   Implicit None
@@ -106,9 +106,9 @@ subroutine QueryFuellist_integer(variableName,variableValue, &
     
 end subroutine QueryFuellist_integer
 
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! Queries gridlist for input integer arrays
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 subroutine QueryFuellist_integer_array(variableName,array, &
     arraysize,fileunit,variableDefault)
   Implicit None
@@ -143,9 +143,9 @@ subroutine QueryFuellist_integer_array(variableName,array, &
     
 end subroutine QueryFuellist_integer_array
 
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! Queries gridlist for input string arrays
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 subroutine QueryFuellist_string(variableName,variableValue, &
     fileunit,variableDefault)
   Implicit None
@@ -156,7 +156,7 @@ subroutine QueryFuellist_string(variableName,variableValue, &
   character(len=*),intent(in)  :: variableDefault
   character(len=*),intent(out) :: variableValue
 
-  integer :: i,ierror
+  integer :: ierror
   character(len=20)   :: equal
   character(len=20)   :: word
   character(len=1000) :: text
@@ -179,9 +179,9 @@ subroutine QueryFuellist_string(variableName,variableValue, &
     
 end subroutine QueryFuellist_string
 
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 ! Queries gridlist for input string arrays
-!----------------------------------------------------------------
+!-----------------------------------------------------------------------
 subroutine QueryFuellist_string_array(variableName,array, &
     arraysize,fileunit,variableDefault)
   Implicit None
@@ -193,7 +193,7 @@ subroutine QueryFuellist_string_array(variableName,array, &
   character(len=*),intent(in)  :: variableDefault
   character(len=*),intent(out) :: array(arraysize)
 
-  integer :: i,ierror
+  integer :: ierror
   character(len=20)   :: equal
   character(len=20)   :: word
   character(len=1000) :: text

@@ -59,7 +59,7 @@ module FastFuels
         
         call random_seed(size=n)
         allocate(seed(n))
-        seed = seedchange
+        seed(:) = int(duetvars%seedchange)
         call random_seed(put=seed)
         deallocate(seed)
       
@@ -91,7 +91,7 @@ module FastFuels
         use fillio
     
         integer :: k,j,i,n
-        integer*2,allocatable :: specs(:)
+        integer,allocatable :: specs(:)
     
         integer,dimension(290) :: FIA
         integer,dimension(290) :: vals

@@ -101,7 +101,7 @@ module mainloop
                       ! Normalize volume in each large grid cell so total is equal to
                       ! volume of 1; find the portion of that volume in each of the grid
                       ! ground cells
-                      if(sum(ellarea).eq.0) then
+                      if(sum(ellarea).lt.1e-8) then
                         if(ellix.lt.1) ellix = ellix + domain%nx
                         if(ellix.gt.domain%nx) ellix = ellix - domain%nx
                         if(elliy.lt.1) elliy = elliy + domain%ny
