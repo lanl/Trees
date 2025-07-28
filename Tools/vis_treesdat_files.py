@@ -30,9 +30,9 @@ import struct
 #====================INPUTS====================
 #pathfiles------------------
 #pf = pathfile where .dat file lives
-pf = './'
+pf = '/Users/joliveto/Desktop/Projects/TREES/Inputs/'
 #of = out pathfile where you save image (as .png)
-of = './'
+of = '/Users/joliveto/Desktop/Projects/TREES/Inputs'
 #b = the name of the fuels case you are visualizing
 b = 'test_case'
 #topofile = pathfile and name of topography (if used), if no topography input: ''
@@ -40,13 +40,13 @@ topofile = ''#'/Users/joliveto/Desktop/trees_fix_topo/Inputs/rampHill.dat'
 
 #trees/viewing parameters------------------
 datfile  = 'treesrhof.dat' #which .dat to make png
-nfuel    = 5 #see bottom of trees output, number of output fuels
+nfuel    = 3 #see bottom of trees output, number of output fuels
 sum_flag = 1 #if = 0, the topdown figures will be z-slices specified by "plane" ; if = 1 plots topdown figures as a sum in z
 plane    = 0 #z-index slice of plotting (0=ground/bottom layer), will *not* be used if sum_flag = 1
 
 #grid parameters------------------
-Nx      = 350 
-Ny      = 250 
+Nx      = 300 
+Ny      = 200 
 Nz      = 41 
 dx      = 2.0
 dy      = 2.0
@@ -61,15 +61,13 @@ def readfield(fuelfile, Nx, Ny, Nz):
     np.frombuffer(fuelfile.read(4),'f')
     return np.frombuffer(fuelfile.read(Nx*Ny*Nz*4), 'f').reshape((Nx,Ny,Nz),order='F')
 
-def zheight(ZI):
+def zheight(ZI,topo):
     # generates array of cell heights from z-index array                                                                                
-    Z = np.copy(ZI, order='K')
-    ZItemp = Z[0,0,:]
-    ZItemp[0] = ZItemp[0] * 2
-    for ii in range(1,len(ZItemp)):
-        ZItemp[ii] = (ZItemp[ii] - sum(ZItemp[:ii]))*2
-    for ii in range(len(ZItemp)):
-        Z[:,:,ii] = ZItemp[ii]
+    Z = np.copy(ZI)
+    for ii in range(0,len(Z[0,0,:])):
+        Z[:,:,ii] = Z[:,:,ii]-topo
+    for ii in range(1,len(Z[0,0,:])-1):
+        Z[:,:,ii] = Z[:,:,ii-1]+2.0*(Z[:,:,ii]-Z[:,:,ii-1])
     return Z
 
 def metrics(topofile, Nx, Ny, Nz, dx, dy, dz, a1, f0, Stretch):
@@ -77,10 +75,11 @@ def metrics(topofile, Nx, Ny, Nz, dx, dy, dz, a1, f0, Stretch):
     if os.path.isfile(topofile):
         #topo = numpy.zeros((Nx,Ny))
         f = open(topofile, 'rb')
-        pre1 = struct.unpack("i",f.read(4))[0]
-        pre2 = struct.unpack("i",f.read(4))[0]
-        topo=np.fromstring(f.read(Nx*Ny*4),'f').reshape((Nx,Ny), order = 'F')
+        np.frombuffer(f.read(4),'f')
+        topo=np.frombuffer(f.read(Nx*Ny*4),'f').reshape((Nx,Ny), order = 'F')
         f.close()
+    else:
+        topo = np.zeros((Nx,Ny))
 
     # --- build base grid ---
     x = np.zeros((Nx))
@@ -98,6 +97,7 @@ def metrics(topofile, Nx, Ny, Nz, dx, dy, dz, a1, f0, Stretch):
         z[k] = k*dz + 0.5*dz
         zedge[k] = k*dz
     zedge[Nz] = Nz*dz
+    xc = 0 ; yc =0
     # --- using no stretching ---
     if Stretch == 0:
         print('not using stretching')
@@ -126,13 +126,19 @@ def metrics(topofile, Nx, Ny, Nz, dx, dy, dz, a1, f0, Stretch):
                     ZI[i,j,k] = (a3*(z[k]**3.0)+a2*(z[k]**2.0)+a1*z[k])*(zedge[Nz]-zedge[0])/zedge[Nz]+zedge[0]
         if os.path.isfile(topofile):
             print("Modifying coordinate to be terrain following!")
+            topo = topo - np.min(topo)
+            x_coords, y_coords = np.where(topo == 0)
+            zero_locations = list(zip(x_coords, y_coords))
+            xc = zero_locations[0][0] ; yc = zero_locations[0][1]
             for i in range(Nx):
                 for j in range(Ny):
                     for k in range(Nz):
                         ZI[i,j,k] = ZI[i,j,k]*(zedge[Nz]-topo[i,j])/zedge[Nz] + topo[i,j]
-    Z = zheight(ZI)
-    volume = np.multiply(dx,dy,Z)
-    return XI, YI, ZI, volume
+                          
+    Z = zheight(ZI,topo)
+    ZH = Z[:,:,1:]-Z[:,:,:-1]
+    volume = (dx*dy)*ZH#np.multiply(dx,dy,Z)
+    return XI, YI, ZI, Z, volume
 
 def plotTopdown(fig,axs,arr,title,X,Y,sum_flag,plane):
     if sum_flag == 1:
@@ -166,7 +172,7 @@ if nfuel < 1:
 #open rhof
 #rhof is a 4D array: 1st position is species ID, 2nd is x, 3rd is y, 4th is z
 rhof= np.zeros(nfuel*Nx*Ny*Nz).reshape(nfuel,Nx,Ny,Nz)
-rhoffile = open(pf+datfile,'rb')
+rhoffile = open(os.path.join(pf,datfile),'rb')
 for ift in range(nfuel):
     print('Reading fuel type:',ift)
     rhof[ift,:,:,:] = readfield(rhoffile,Nx,Ny,Nz)
@@ -213,7 +219,7 @@ if nfuel>1:
     #figure title    
     fig.suptitle(name)
     plt.tight_layout()
-    plt.savefig(of+name+'_'+b+'_topdownview.png')
+    plt.savefig(os.path.join(of,name+'_'+b+'_topdownview.png'))
     plt.close()    
     #=================================
 
@@ -238,7 +244,7 @@ if nfuel>1:
     #figure title    
     fig.suptitle(name)
     plt.tight_layout()
-    plt.savefig(of+name+'_'+b+'_verticalview.png')
+    plt.savefig(os.path.join(of,name+'_'+b+'_verticalview.png'))
     plt.close()    
     #=================================
 else:
@@ -250,7 +256,7 @@ else:
     #figure title    
     fig.suptitle(name)
     plt.tight_layout()
-    plt.savefig(of+name+'_'+b+'_topdownview.png')
+    plt.savefig(os.path.join(of,name+'_'+b+'_topdownview.png'))
     plt.close()    
     #=================================
     fig,axs = plt.subplots(figsize=(15,10))
@@ -262,6 +268,6 @@ else:
     #figure title    
     fig.suptitle(name)
     plt.tight_layout()
-    plt.savefig(of+name+'_'+b+'_verticalview.png')
+    plt.savefig(os.path.join(of,name+'_'+b+'_verticalview.png'))
     plt.close()    
     #=================================
