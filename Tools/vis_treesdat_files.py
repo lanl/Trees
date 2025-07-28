@@ -183,7 +183,7 @@ print(rhof.shape)
 
 #STEP 2======================
 #Create X,Y grid based on Nx,Ny,dx,dy
-XI, YI, ZI, vol = metrics(topofile, Nx, Ny, Nz, dx, dy, dz, aa1, f1, stretch)
+XI, YI, ZI, Z1, vol = metrics(topofile, Nx, Ny, Nz, dx, dy, dz, aa1, f1, stretch)
 X = XI[:,0,0]
 Y = YI[0,:,0]
 Z = ZI[0,0,:]
