@@ -39,7 +39,7 @@ b = 'test_case'
 topofile = ''#'/Users/joliveto/Desktop/trees_fix_topo/Inputs/rampHill.dat'
 
 #trees/viewing parameters------------------
-datfile  = 'treesrhof.dat' #which .dat to make png
+datfiles = ['treesrhof.dat','treesmoist.dat','treesfueldepth.dat','treesss.dat'] #which .dat to make png
 nfuel    = 3 #see bottom of trees output, number of output fuels
 sum_flag = 1 #if = 0, the topdown figures will be z-slices specified by "plane" ; if = 1 plots topdown figures as a sum in z
 plane    = 0 #z-index slice of plotting (0=ground/bottom layer), will *not* be used if sum_flag = 1
@@ -168,106 +168,108 @@ def plotVertical(fig,axs,arr,title,X,Z):
 
 if nfuel < 1:
     nfuel=1    
-#STEP 1======================
-#open rhof
-#rhof is a 4D array: 1st position is species ID, 2nd is x, 3rd is y, 4th is z
-rhof= np.zeros(nfuel*Nx*Ny*Nz).reshape(nfuel,Nx,Ny,Nz)
-rhoffile = open(os.path.join(pf,datfile),'rb')
-for ift in range(nfuel):
-    print('Reading fuel type:',ift)
-    rhof[ift,:,:,:] = readfield(rhoffile,Nx,Ny,Nz)
-    trhof = rhof[ift,:,:,:]
-    print( 'SPECIES ',ift+1,' MIN = ',np.min(trhof) ,' ; MAX = ',np.max(trhof))
-rhoffile.close()
-print(rhof.shape)
+for datfile in datfiles:
+    print('CREATING ',datfile,' PLOTS-------------')
+    #STEP 1======================
+    #open rhof
+    #rhof is a 4D array: 1st position is species ID, 2nd is x, 3rd is y, 4th is z
+    rhof= np.zeros(nfuel*Nx*Ny*Nz).reshape(nfuel,Nx,Ny,Nz)
+    rhoffile = open(os.path.join(pf,datfile),'rb')
+    for ift in range(nfuel):
+        print('Reading fuel type:',ift)
+        rhof[ift,:,:,:] = readfield(rhoffile,Nx,Ny,Nz)
+        trhof = rhof[ift,:,:,:]
+        print( 'SPECIES ',ift+1,' MIN = ',np.min(trhof) ,' ; MAX = ',np.max(trhof))
+    rhoffile.close()
+    print(rhof.shape)
 
-#STEP 2======================
-#Create X,Y grid based on Nx,Ny,dx,dy
-XI, YI, ZI, Z1, vol = metrics(topofile, Nx, Ny, Nz, dx, dy, dz, aa1, f1, stretch)
-X = XI[:,0,0]
-Y = YI[0,:,0]
-Z = ZI[0,0,:]
+    #STEP 2======================
+    #Create X,Y grid based on Nx,Ny,dx,dy
+    XI, YI, ZI, Z1, vol = metrics(topofile, Nx, Ny, Nz, dx, dy, dz, aa1, f1, stretch)
+    X = XI[:,0,0]
+    Y = YI[0,:,0]
+    Z = ZI[0,0,:]
 
-#STEP 3======================
-#Visualilize the X/Y plane of the .dat file
-name = datfile[:-4] #remove ".dat" from string
+    #STEP 3======================
+    #Visualilize the X/Y plane of the .dat file
+    name = datfile[:-4] #remove ".dat" from string
 
-if nfuel>1:
-    #find correct number of subplots for nfuel
-    rows = int(np.floor(np.sqrt(nfuel+1)))
-    cols = int(rows + np.ceil(np.sqrt(nfuel+1) - rows))
-    if (rows<(nfuel+1)/cols):
-        rows += 1
-    print(rows, cols)
+    if nfuel>1:
+        #find correct number of subplots for nfuel
+        rows = int(np.floor(np.sqrt(nfuel+1)))
+        cols = int(rows + np.ceil(np.sqrt(nfuel+1) - rows))
+        if (rows<(nfuel+1)/cols):
+            rows += 1
+        print(rows, cols)
 
-    fig,axs = plt.subplots(rows,cols, figsize=(15,10))
-    for n in range(nfuel+1):
-        if (n==0):
-            arr = np.sum(rhof, axis=0)
-            t = 'Sum Species'
-        else:
-            arr = rhof[n-1,:,:,:]
-            t = 'Species '+str(n)
-        if (rows!=1):
-            inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
-        else:
-            inpaxs = axs[n]
+        fig,axs = plt.subplots(rows,cols, figsize=(15,10))
+        for n in range(nfuel+1):
+            if (n==0):
+                arr = np.sum(rhof, axis=0)
+                t = 'Sum Species'
+            else:
+                arr = rhof[n-1,:,:,:]
+                t = 'Species '+str(n)
+            if (rows!=1):
+                inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
+            else:
+                inpaxs = axs[n]
+            plotTopdown(fig,inpaxs,arr,t,XI+Nx,YI+Ny,sum_flag,plane)  
+        #Hide unused subplots
+        for nn in range(nfuel+1,rows*cols):
+            axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
+        #figure title    
+        fig.suptitle(name)
+        plt.tight_layout()
+        plt.savefig(os.path.join(of,name+'_'+b+'_topdownview.png'))
+        plt.close()    
+        #=================================
+
+        fig,axs = plt.subplots(rows,cols, figsize=(15,10))
+
+        for n in range(nfuel+1):
+            if (n==0):
+                arr = np.sum(rhof, axis=0)
+                t = 'Sum Species'
+                max_z = int(np.max(np.nonzero(np.sum(arr,axis=(0,1)))))+2
+            else:
+                arr = rhof[n-1,:,:,:]
+                t = 'Species '+str(n)
+            if (rows!=1):
+                inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
+            else:
+                inpaxs = axs[n]
+            plotVertical(fig,inpaxs,arr[:,:,:max_z],t,XI[:,:,:max_z]+Nx,ZI[:,:,:max_z])  
+        #Hide unused subplots
+        for nn in range(nfuel+1,rows*cols):
+            axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
+        #figure title    
+        fig.suptitle(name)
+        plt.tight_layout()
+        plt.savefig(os.path.join(of,name+'_'+b+'_verticalview.png'))
+        plt.close()    
+        #=================================
+    else:
+        fig,axs = plt.subplots(figsize=(15,10))
+        arr = rhof[0,:,:,:]
+        t = 'Species '+str(1)
+        inpaxs = axs
         plotTopdown(fig,inpaxs,arr,t,XI+Nx,YI+Ny,sum_flag,plane)  
-    #Hide unused subplots
-    for nn in range(nfuel+1,rows*cols):
-        axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
-    #figure title    
-    fig.suptitle(name)
-    plt.tight_layout()
-    plt.savefig(os.path.join(of,name+'_'+b+'_topdownview.png'))
-    plt.close()    
-    #=================================
-
-    fig,axs = plt.subplots(rows,cols, figsize=(15,10))
-
-    for n in range(nfuel+1):
-        if (n==0):
-            arr = np.sum(rhof, axis=0)
-            t = 'Sum Species'
-            max_z = int(np.max(np.nonzero(np.sum(arr,axis=(0,1)))))+2
-        else:
-            arr = rhof[n-1,:,:,:]
-            t = 'Species '+str(n)
-        if (rows!=1):
-            inpaxs = axs[int(np.floor((n)/cols)),((n)%cols)]
-        else:
-            inpaxs = axs[n]
+        #figure title    
+        fig.suptitle(name)
+        plt.tight_layout()
+        plt.savefig(os.path.join(of,name+'_'+b+'_topdownview.png'))
+        plt.close()    
+        #=================================
+        fig,axs = plt.subplots(figsize=(15,10))
+        max_z = int(np.max(np.nonzero(np.sum(rhof,axis=(0,1,2)))))+2
+        arr = rhof[0,:,:,:]
+        t = 'Species '+str(1)
+        inpaxs = axs
         plotVertical(fig,inpaxs,arr[:,:,:max_z],t,XI[:,:,:max_z]+Nx,ZI[:,:,:max_z])  
-    #Hide unused subplots
-    for nn in range(nfuel+1,rows*cols):
-        axs[int(np.floor((nn)/cols)),((nn)%cols)].axis('off')
-    #figure title    
-    fig.suptitle(name)
-    plt.tight_layout()
-    plt.savefig(os.path.join(of,name+'_'+b+'_verticalview.png'))
-    plt.close()    
-    #=================================
-else:
-    fig,axs = plt.subplots(figsize=(15,10))
-    arr = rhof[0,:,:,:]
-    t = 'Species '+str(1)
-    inpaxs = axs
-    plotTopdown(fig,inpaxs,arr,t,XI+Nx,YI+Ny,sum_flag,plane)  
-    #figure title    
-    fig.suptitle(name)
-    plt.tight_layout()
-    plt.savefig(os.path.join(of,name+'_'+b+'_topdownview.png'))
-    plt.close()    
-    #=================================
-    fig,axs = plt.subplots(figsize=(15,10))
-    max_z = int(np.max(np.nonzero(np.sum(rhof,axis=(0,1,2)))))+2
-    arr = rhof[0,:,:,:]
-    t = 'Species '+str(1)
-    inpaxs = axs
-    plotVertical(fig,inpaxs,arr[:,:,:max_z],t,XI[:,:,:max_z]+Nx,ZI[:,:,:max_z])  
-    #figure title    
-    fig.suptitle(name)
-    plt.tight_layout()
-    plt.savefig(os.path.join(of,name+'_'+b+'_verticalview.png'))
-    plt.close()    
-    #=================================
+        #figure title    
+        fig.suptitle(name)
+        plt.tight_layout()
+        plt.savefig(os.path.join(of,name+'_'+b+'_verticalview.png'))
+        plt.close()    
+        #=================================
