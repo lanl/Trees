@@ -27,7 +27,7 @@ use fuels_create_variables
 implicit none
 
 ! Local variables
-integer i,j,k,ift
+integer i,j,k,ift, count
 real,external:: zcart
 
 ! Executable code
@@ -237,7 +237,18 @@ real tot,add,prt
 real target_mass,actual_mass
 real,allocatable:: rhoftemp(:)
 real,external:: paraboloid,normal 
+
+! Variables for the TreeTracker
+integer cellnum, cn
+integer cellcount
+integer, dimension(100) :: cellid
+real, dimension(100) :: cellfuel 
+real tfueltot
+
+
 !real x
+! Open tree tracking file:
+! open(unit=12,file='TreeTracker.txt')
 
 ! Executable Code
 !-----Determine the number of trees for each species
@@ -248,6 +259,8 @@ allocate(rhoftemp(tfuelbins))
 do i=1,ntspecies
   print*,'Species',i,'with',ntrees(i),'trees'
   do j=1,ntrees(i)
+    cellnum = 0
+    tfueltot = 0
     if (ntrees(i).gt.9) then
       if (MOD(j,int(ntrees(i)/10)).eq.0) print*,'Placing tree',j,'of',ntrees(i)
     endif
@@ -333,6 +346,7 @@ do i=1,ntspecies
         endif
         do kk=zbot,ztop
           ! Determine how many of subcells of a cell are within the paraboloid, the fraction of the subcells is equal to the fraction of the cell within the paraboloid
+          cellcount = 0
           rhoftemp(:) = 0 ! Density of fuels to be added to current cell of interest
           do iii=1,10
             do jjj=1,10
@@ -344,6 +358,7 @@ do i=1,ntspecies
                 bot_height = paraboloid(abot,xloc,tlocation(i,j,1),yloc,tlocation(i,j,2),canopybot)
                 top_height = paraboloid(atop,xloc,tlocation(i,j,1),yloc,tlocation(i,j,2),canopytop)
                 if (test_height.ge.bot_height.and.test_height.le.top_height) then 
+                  cellcount = cellcount + 1
                   do ift=1,tfuelbins
                     rhoftemp(ift) = rhoftemp(ift)+3./2000.*t2bulkdensity(j,ift,i)* &
                       (test_height-canopybot+4.*(canopytop-canopymaxh)*((xloc-tlocation(i,j,1))**2.+ &
@@ -356,6 +371,13 @@ do i=1,ntspecies
 
           !----- Fill in the 3D arrays for a tree
           do ift=1,tfuelbins
+            if (cellcount.gt.0) then
+              cellnum = cellnum + 1
+              cellid(cellnum) = (ii_real+(jj_real*ny)+(kk*ny*nx))
+              ! ###### Check the Index here  ######
+              cellfuel(cellnum) = rhoftemp(ift)
+              tfueltot = tfueltot + cellfuel(cellnum)
+            endif
             if (rhoftemp(ift).gt.0) then
               ift_index = (i-1)*ntreefueltypes+ift
               tsizescale(ift_index,ii_real,jj_real,kk) = (trhof(ift_index,ii_real,jj_real,kk)* &
@@ -367,9 +389,18 @@ do i=1,ntspecies
               trhof(ift_index,ii_real,jj_real,kk) = trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)
             endif
           enddo
+
         enddo
       enddo
     enddo
+    do cn=1, cellnum
+       cellfuel(cn) = cellfuel(cn)/tfueltot 
+       !print*, cn, cellid(cn), cellfuel(cn), tfueltot
+    enddo 
+    !Print to TreeTracker.txt file here. AA
+    !print*, j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum)
+    write(12,*) j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum) 
+
   enddo
 enddo
 deallocate(rhoftemp)
@@ -660,6 +691,10 @@ do i=1,1
     ! Ellipitical paraboloid used to determine tree contours
     atop = 0.25*(canopydiameter)**2./(canopymaxh-canopytop)
     abot = 0.25*(canopydiameter)**2./(canopymaxh-canopybot)
+    if (j.eq.24) then
+      print*, "NOLAN HEIGHT STUFF"
+      print*, xbot, xtop, zbot, ztop
+    endif
     do ii=xbot,xtop
       if (ii.gt.nx) then
         ii_real = ii-nx 
@@ -685,11 +720,20 @@ do i=1,1
                 test_height= zheight(ii_real,jj_real,kk)+(2.*kkk-1.)/20.*(zheight(ii_real,jj_real,kk+1)-zheight(ii_real,jj_real,kk))
                 bot_height = paraboloid(abot,((ii-1)+(2.*iii-1.)/20.)*dx,xtest,((jj-1)+(2.*jjj-1.)/20.)*dy,ytest,canopybot)
                 top_height = paraboloid(atop,((ii-1)+(2.*iii-1.)/20.)*dx,xtest,((jj-1)+(2.*jjj-1.)/20.)*dy,ytest,canopytop)
-                if (test_height.ge.bot_height.and.test_height.le.top_height) cellcount=cellcount+1
+                if (test_height.ge.bot_height.and.test_height.le.top_height) then
+                  if (j.eq.24) then
+                    print*, "NOLAN HEIGHT STUFF", j
+                    print*, top_height, bot_height, test_height
+                  endif
+                  cellcount=cellcount+1
+                endif
               enddo
             enddo
           enddo
-
+          if (j.eq.24) then
+            print*, "CELL COUNT"
+            print*, cellcount
+          endif
           !----- Fill in the 3D arrays for a tree
           if (cellcount.gt.0) then
             cellnum = cellnum+1
@@ -718,6 +762,11 @@ do i=1,1
             ! Domain dimensions are hard coded, and need to be
             ! able to read the domain dimensions
             cellid(cellnum) = (ii_real+(jj_real*ny)+(kk*ny*nx))
+            if (j.eq.24) then
+              print*, "CELLNUM"
+              print*, cellnum
+              print*, cellid(cellnum)
+            endif
             ! ###### Check the Index here  ######
             cellfuel(cellnum) = rhoftemp
             tfueltot = tfueltot + cellfuel(cellnum)
@@ -732,6 +781,10 @@ do i=1,1
     enddo 
     !Print to TreeTracker.txt file here. AA
     !print*, j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum)
+    if (j.eq.24) then
+      print*, "OUTPUT OF ", j
+      print*, j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum) 
+    endif
     write(12,*) j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum) 
   enddo
   ! if (itrees.ne.1) exit

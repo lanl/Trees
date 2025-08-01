@@ -289,7 +289,7 @@ endif
 print*,'Your nfuel is',int(sum(nonzero(:)))
 print*,'Your lfuel is',lfuel
 
-call tree_baseline
+! call tree_baseline
 end subroutine output_fuel
 
 subroutine write_file(filename,dataname,nfuel,nx,ny,nz,nonzero)
