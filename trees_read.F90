@@ -218,8 +218,10 @@ subroutine treelist_readin
 
         ! Find location for new tree
         it=j+ntreesold(i)
-        newx = tlocation(i,tindex,1)
-        newy = tlocation(i,tindex,2)
+        if (tindex.ge.1) then
+          newx = tlocation(i,tindex,1)
+          newy = tlocation(i,tindex,2)
+        endif 
         do while (newx.ge.dataleft.and.newx.le.dataright.and. &
           newy.ge.databottom.and.newy.le.datatop)
           call random_number(rnumx)
@@ -236,13 +238,15 @@ subroutine treelist_readin
         enddo
         tlocation(i,it,1) = newx
         tlocation(i,it,2) = newy
-        theight(it,i) = theight(tindex,i)
-        tcrownbotheight(it,i) = tcrownbotheight(tindex,i)
-        tcrowndiameter(it,i) = tcrowndiameter(tindex,i)
-        tcrownmaxheight(it,i) = tcrownmaxheight(tindex,i)
-        t2bulkdensity(it,:,i) = t2bulkdensity(tindex,:,i)
-        t2moisture(it,:,i) = t2moisture(tindex,:,i)
-        t2ss(it,:,i) = t2ss(tindex,:,i)
+        if (tindex.ge.1) then
+          theight(it,i) = theight(tindex,i)
+          tcrownbotheight(it,i) = tcrownbotheight(tindex,i)
+          tcrowndiameter(it,i) = tcrowndiameter(tindex,i)
+          tcrownmaxheight(it,i) = tcrownmaxheight(tindex,i)
+          t2bulkdensity(it,:,i) = t2bulkdensity(tindex,:,i)
+          t2moisture(it,:,i) = t2moisture(tindex,:,i)
+          t2ss(it,:,i) = t2ss(tindex,:,i)
+        endif
       enddo
     enddo
   endif

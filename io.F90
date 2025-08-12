@@ -82,7 +82,7 @@ subroutine fuellist_input
   
   ! Grass
   
-  if(igrass.eq.1)then
+  if(igrass.eq.1.or.igrass.eq.3) then
     call QueryFuellist_integer('ngrass',ngrass,48,1)
     call QueryFuellist_real('grassconstant',grassconstant,48,5.)
     allocate(grho(ngrass))
@@ -111,7 +111,7 @@ subroutine fuellist_input
   endif
   
   ! Litter
-  if(ilitter.eq.1) then
+  if(ilitter.eq.1.or.ilitter.eq.3) then
     call QueryFuellist_real('litterconstant',litterconstant,48,0.0)
     allocate(lrho(ntspecies*tfuelbins))
     call QueryFuellist_real_array('lrho',lrho,ntspecies*tfuelbins, &
