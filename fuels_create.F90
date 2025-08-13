@@ -227,7 +227,7 @@ end subroutine grass_fuels_create
 subroutine tree_fuels_create
   use constant_variables, only : PI 
   use grid_variables, only : nx,ny,nz,dx,dy,zs,zheight,zmax
-  use fuel_variables, only : tfuelbins,ntspecies,ntrees,tlocation, &
+  use fuel_variables, only : tfuelbins,ntspecies,ntrees,tlocation,treetracker, &
     theight,tcrownbotheight,tcrowndiameter,tcrownmaxheight,tfuelbins, &
     ntreefueltypes,istem,tbarkthick,tsizescale,trhof,tmoist,tfueldepth,&
     t2bulkdensity,tdbh,trhomicro,tstemmoist,tbarkmoist,t2ss,t2moisture,&
@@ -258,9 +258,11 @@ subroutine tree_fuels_create
   ! Executable Code
   !-----Determine the number of trees for each species
   print*,'Number of trees of each species:',ntrees
-  
-  ! Open tree tracking file:
-  open(unit=12,file='TreeTracker.txt')
+
+  if (treetracker.eq.1)then
+    ! Open tree tracking file:
+    open(unit=12,file='TreeTracker.txt')
+  endif
   !----- Begin loop which fills arrays with information for each tree
   allocate(rhoftemp(tfuelbins))
   do i=1,ntspecies
@@ -399,7 +401,7 @@ subroutine tree_fuels_create
   
             !----- Fill in the 3D arrays for a tree
             do ift=1,tfuelbins
-              if (cellcount.gt.0) then
+              if (cellcount.gt.0.and.treetracker.eq.1) then
                 cellnum = cellnum + 1
                 cellid(cellnum) = (ii_real+(jj_real*ny)+(kk*ny*nx))
                 ! ###### Check the Index here  ######
@@ -425,14 +427,18 @@ subroutine tree_fuels_create
           enddo
         enddo
       enddo
-      do cn=1, cellnum
-         cellfuel(cn) = cellfuel(cn)/tfueltot 
-      enddo 
-      write(12,*) j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum) 
+      if (treetracker.eq.1)then
+        do cn=1, cellnum
+           cellfuel(cn) = cellfuel(cn)/tfueltot 
+        enddo 
+        write(12,*) j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum) 
+      endif
     enddo
   enddo
   deallocate(rhoftemp)
-  close(12)
+  if (treetracker.eq.1)then
+    close(12)
+  endif
   !----- Limit Tree Densities for overlapping trees -----
   do i=1,nx
     do j=1,ny
@@ -514,7 +520,6 @@ subroutine litter_fuels_create
   
   ! Local variables
   integer :: i,j,k,ift,ift_grass
-  ! integer :: zmax
   real :: target_mass,actual_mass
   real :: rhocolumn,coverfactor,shadefactor
   real,allocatable:: rhofxy(:,:)
@@ -532,7 +537,6 @@ subroutine litter_fuels_create
   ! Executable code
   !----- Place litter on ground and remove grass to account for shading
   print*,'Placing litter and removing grass to account for shading'
-  ! zmax=0
   do ift = 1,ntspecies*tfuelbins
     do i=1,nx
       do j=1,ny

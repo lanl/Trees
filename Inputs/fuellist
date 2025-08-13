@@ -38,10 +38,11 @@
       ndatay = 108                      ! size of dataset domain in y direction [m]
       datalocx = 0                       !x coordinate for bottom left corner where dataset should be placed 
       datalocy = 0                       !y coordinate for bottom left corner where dataset should be placed 
+      treetracker = 0                    ! Tree Tracker Flag (0 will not output TreeTracker.txt, 1 will output TreeTracker.txt)
 ! ----------------------------------
 ! Litter switch
 ! ----------------------------------
-      ilitter = 3                       ! Litter flag; 0=no litter, 1=basic litter, 2=DUET
+      ilitter = 1                       ! Litter flag; 0=no litter, 1=basic litter, 2=DUET, 3=DRM
       !ilitter eq 1 (BASIC) info
       litterconstant = 5  ! Exponential constant to determine increase of litter mass under trees
       lrho = 4.667,4.667       ! litter bulk densities for each fuel type [kg/m3]
@@ -68,7 +69,7 @@
 ! ----------------------------------
 ! Grass switch
 ! ----------------------------------
-      igrass = 3                ! Grass flag; 1=generalized grass data
+      igrass = 1                ! Grass flag; 1=generalized grass data; 3=DRM
       !igrass options 
       ngrass = 1                ! Number of Grass Species
       grassconstant = 5         ! Exponential constant used to determine the decay of grass mass with tree shading

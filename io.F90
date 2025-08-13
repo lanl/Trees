@@ -27,7 +27,7 @@ subroutine fuellist_input
   use infile_variables, only : ifuelin,inx,iny,inz,idx,idy,idz,iaa1, &
     infuel,intopofile,rhoffile,ssfile,moistfile,afdfile
   use fuel_variables, only : ilitter,igrass,ngrass,grassconstant, &
-    grho,gmoisture,gss,gdepth,itrees,tfuelbins,treefile,ntspecies, &
+    grho,gmoisture,gss,gdepth,itrees,tfuelbins,treefile,ntspecies,treetracker, &
     trhofmax,litterconstant,lrho,lmoisture,lss,ldepth
   implicit none
   
@@ -108,6 +108,7 @@ subroutine fuellist_input
     call find_numspecies
     allocate(trhofmax(ntspecies))
     call QueryFuellist_real_array('trhofmax',trhofmax,ntspecies,48,0.)
+    call QueryFuellist_integer('treetracker', treetracker, 48, 0)
   endif
   
   ! Litter

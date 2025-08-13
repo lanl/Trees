@@ -84,7 +84,7 @@ end module infile_variables
 module fuel_variables
   implicit none
   
-  integer :: igrass=0,itrees=0,ilitter=0
+  integer :: igrass=0,itrees=0,ilitter=0,treetracker=0
   integer :: ngrass=0,duet_ngrass=0
   integer :: iFIA,iFIAspecies
   real :: grassconstant=5.,litterconstant=5.,gmoistoverride=0.

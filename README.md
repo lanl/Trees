@@ -61,6 +61,7 @@ The main input file which the program will look for is called ‘fuellist’ and
     datalocx    -- 0.                     -- itrees>0   -- Bottom left corner x coordinate for where dataset should be placed
     datalocy    -- 0.                     -- itrees>0   -- Bottom left corner y coordinate for where dataset should be placed
     trhofmax    -- 1.5*tBulkDenisty       -- itrees>0   -- Array of size ntspecies containing the maximum tree bulk density in any given cell
+    treetracker -- 0                      -- itrees>0   -- Flag to produce the TreeTracker.txt file that defines tree cell locations and fuel values
     !-------------------------------------------------------------------------------------------------
     ilitter         -- 0                    -- None             -- Flag for litter, 0 if no litter, 1 if litter distributed by vertical fuel-load, 2 if litter is filled with DUET
     litterconstant  -- 5                    -- ilitter=1        -- Exponential constant to increase of litter mass under trees
@@ -138,6 +139,7 @@ This program creates four binary files each containing a full fortran array whic
 2. treesfueldepth.dat contains actual fuel depths for entire HIGRAD array (3D array, but only bottom layer actually used in fire simulations)
 3. treesss.dat contains sizescales for entire HIGRAD array
 4. treesmoist.dat contains fuel moisture contents for entire HIGRAD array
+5. TreeTracker.txt contains a list of trees ids, the number of cells of the tree corresponds to, a cellid (for its location set as a 1D index), and the fuel value for that cell.
 
 ## Program Outline
 Main driver file for this program is located in main.f. From this file, all other subroutines are called which execute in this order:
