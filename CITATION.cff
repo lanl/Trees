@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+title: LANL Trees
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - name: Los Alamos National Laboratory
+    city: Los Alamos
+    country: US
+  - given-names: Rod Linn
+    affiliation: LANL
+  - given-names: Alexander Josephson
+    affiliation: LANL
+  - given-names: Jenna McDanold
+    affiliation: LANL
+  - given-names: Judy Winterkamp
+    affiliation: LANL
+  - given-names: Adam Atchley
+    affiliation: LANL
+  - given-names: Julia Oliveto
+    affiliation: LANL
+identifiers:
+  - type: url
+    value: 'https://github.com/lanl/Trees'
+repository-code: 'https://github.com/lanl/Trees'
+abstract: >-
+  The Trees program is a pre-processing tool used to
+  virtually build the forest fuel arrays used by FIRETEC and
+  QUIC-Fire. This is meant to be a living document to be
+  updated as the program evolves and is modified.
+keywords:
+  - Fuel Voxelization
+  - QUIC-Fire
+  - HIGRAD/FIRETEC
+  - Fuel Modeling
+license: BSD-3-Clause
+version: 1.0.0
+date-released: '2025-07-30'
