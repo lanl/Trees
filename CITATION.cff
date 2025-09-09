@@ -5,21 +5,18 @@ message: >-
   metadata from this file.
 type: software
 authors:
-  - name: Los Alamos National Laboratory
-    city: Los Alamos
-    country: US
-  - given-names: Rod Linn
-    affiliation: LANL
   - given-names: Alexander Josephson
-    affiliation: LANL
-  - given-names: Jenna McDanold
-    affiliation: LANL
-  - given-names: Judy Winterkamp
-    affiliation: LANL
+    affiliation: Los Alamos National Laboratory
+  - given-names: Rod Linn
+    affiliation: Los Alamos National Laboratory
   - given-names: Adam Atchley
-    affiliation: LANL
+    affiliation: Los Alamos National Laboratory
+  - given-names: Judy Winterkamp
+    affiliation: Los Alamos National Laboratory
+  - given-names: Jenna McDanold
+    affiliation: Los Alamos National Laboratory
   - given-names: Julia Oliveto
-    affiliation: LANL
+    affiliation: Los Alamos National Laboratory
 identifiers:
   - type: url
     value: 'https://github.com/lanl/Trees'
@@ -36,4 +33,4 @@ keywords:
   - Fuel Modeling
 license: BSD-3-Clause
 version: 1.0.0
-date-released: '2025-07-30'
+date-released: '2021-07-10'
