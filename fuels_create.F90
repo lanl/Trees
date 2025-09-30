@@ -56,13 +56,6 @@ subroutine fuels_create
     enddo
   endif
   
-  if(ilitter.eq.2) then
-    call TR_RunDUET(nx,ny,nz,ntspecies,ngrass,zheight,trhof,tmoist, &
-      tfueldepth,tsizescale,grhof,lrhof,gmoist,lmoist,gsizescale, &
-      lsizescale,gfueldepth,lfueldepth)
-    print*,'DUET complete.'
-  endif
-  
   ! Fill grass arrays
   if (igrass.ne.0) then     
     if (ilitter.ne.2) then
@@ -94,6 +87,11 @@ subroutine fuels_create
       else if (itrees.eq.0) then
         print*,'Warning: itrees=0, no litter placed'
       end if
+    else if (ilitter.eq.2) then
+      call TR_RunDUET(nx,ny,nz,ntspecies,ngrass,zheight,trhof,tmoist, &
+        tfueldepth,tsizescale,grhof,lrhof,gmoist,lmoist,gsizescale, &
+        lsizescale,gfueldepth,lfueldepth)
+      print*,'DUET complete.'
     endif
     do ift=1,ntspecies
       if (sum(trhof(ift,:,:,1)).lt.sum(trhof(ift,:,:,:))*0.01) then

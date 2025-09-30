@@ -183,7 +183,8 @@ end subroutine SetWorkingDirectory
 subroutine output_fuel
   use grid_variables, only : nx,ny,nz,rhof,moist,fueldepth,sizescale, &
     nfuel
-  use io_variables, only : singlefuel,doubleprec,lreduced,workdir,filesep
+  use io_variables, only : singlefuel,doubleprec,lreduced,workdir, &
+    filesep
   implicit none
   
   ! Local Variables
@@ -239,23 +240,26 @@ subroutine output_fuel
     allocate(sss(nfuel,nx,ny,nz)); sss=dble(sizescale)
     allocate(afd(nfuel,nx,ny,nz)); afd=dble(fueldepth)
   
-    open (1,file=TRIM(TRIM(workdir)//filesep)//'treesrhof.dat',form='unformatted',status='unknown')
+    open (1,file=TRIM(TRIM(workdir)//filesep)//'treesrhof.dat', &
+      form='unformatted',status='unknown')
     do ift=1,nfuel
       if (nonzero(ift).ne.0)  write (1) rho(ift,:,:,1:lz)
     enddo
     close (1)
-    open (2,file=TRIM(TRIM(workdir)//filesep)//'treesmoist.dat',form='unformatted',status='unknown')
+    open (2,file=TRIM(TRIM(workdir)//filesep)//'treesmoist.dat', &
+      form='unformatted',status='unknown')
     do ift=1,nfuel
       if (nonzero(ift).ne.0)  write (1) h2o(ift,:,:,1:lz)
     enddo
     close (2)
-    open (3,file=TRIM(TRIM(workdir)//filesep)//'treesss.dat',form='unformatted',status='unknown')
+    open (3,file=TRIM(TRIM(workdir)//filesep)//'treesss.dat', &
+      form='unformatted',status='unknown')
     do ift=1,nfuel
       if (nonzero(ift).ne.0)  write (1) sss(ift,:,:,1:lz)
     enddo
     close (3)
-    open (4,file=TRIM(TRIM(workdir)//filesep)//'treesfueldepth.dat',form='unformatted', &
-      status='unknown')
+    open (4,file=TRIM(TRIM(workdir)//filesep)//'treesfueldepth.dat', &
+      form='unformatted',status='unknown')
     do ift=1,nfuel
       if (nonzero(ift).ne.0)  write (1) afd(ift,:,:,1:lz)
     enddo
@@ -263,24 +267,27 @@ subroutine output_fuel
 
     deallocate(rho,h2o,sss,afd)
   else
-    open (1,file=TRIM(TRIM(workdir)//filesep)//'treesrhof.dat',form='unformatted',status='unknown')
+    open (1,file=TRIM(TRIM(workdir)//filesep)//'treesrhof.dat', &
+      form='unformatted',status='unknown')
     do ift=1,nfuel
       if (nonzero(ift).ne.0)  write (1) rhof(ift,:,:,1:lz)
     enddo
     close (1)
-    open (2,file=TRIM(TRIM(workdir)//filesep)//'treesmoist.dat',form='unformatted',status='unknown')
+    open (2,file=TRIM(TRIM(workdir)//filesep)//'treesmoist.dat', &
+      form='unformatted',status='unknown')
     do ift=1,nfuel
       if (nonzero(ift).ne.0)  print*,'GOOD!'
       if (nonzero(ift).ne.0)  write (2) moist(ift,:,:,1:lz)
     enddo
     close (2)
-    open (3,file=TRIM(TRIM(workdir)//filesep)//'treesss.dat',form='unformatted',status='unknown')
+    open (3,file=TRIM(TRIM(workdir)//filesep)//'treesss.dat', &
+      form='unformatted',status='unknown')
     do ift=1,nfuel
       if (nonzero(ift).ne.0)  write (3) sizescale(ift,:,:,1:lz)
     enddo
     close (3)
-    open (4,file=TRIM(TRIM(workdir)//filesep)//'treesfueldepth.dat',form='unformatted', &
-      status='unknown')
+    open (4,file=TRIM(TRIM(workdir)//filesep)//'treesfueldepth.dat', &
+      form='unformatted',status='unknown')
     do ift=1,nfuel
       if (nonzero(ift).ne.0)  write (4) fueldepth(ift,:,:,1:lz)
     enddo
