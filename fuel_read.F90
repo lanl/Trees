@@ -29,7 +29,7 @@ subroutine grid_readin
   integer :: ift,i,j,k
   integer :: ii,jj,kk
   integer :: xbot,xtop,ybot,ytop,zbot,ztop
-  real :: cells,xfrac,yfrac,zfrac
+  real :: vol,xfrac,yfrac,zfrac
   real :: rhoftemp 
   real :: target_mass,actual_mass
   real,dimension(2) :: xcor,ycor
@@ -41,7 +41,7 @@ subroutine grid_readin
   allocate(iss(infuel,inx,iny,inz))
   allocate(iafd(infuel,inx,iny,inz))
   allocate(izs(inx,iny))
-  allocate(izheight(inx,iny,inz))
+  allocate(izheight(inx,iny,inz+1))
   
   print*,"Reading existing fuel files"
   ! Read in rhof
@@ -111,8 +111,8 @@ subroutine grid_readin
   print*,'Readin fuel grid heights'
   do i=1,inx
     do j=1,iny
-      do k=1,inz
-        if (iaa1.eq.0) then
+      do k=1,inz+1
+        if (iaa1.lt.tolerance) then
           izheight(i,j,k) = izs(i,j)+(k-1)*idz
         else
           izheight(i,j,k) = zcart(iaa1,(k-1)*idz,inz,idz,izs(i,j))
@@ -142,37 +142,37 @@ subroutine grid_readin
         ycor(2) = j*dy     ! Real y upper edge
         ybot    = min(iny,floor(ycor(1)/idy+1)) ! Fuel readin grid y lower edge
         ytop    = min(iny,floor(ycor(2)/idy+1)) ! Fuel readin grid y upper edge 
-        do k=1,nz-1
-          zbot=inz
-          ztop=inz
-          do kk=1,inz
-            if((izheight(ii,jj,kk+1)-izs(ii,jj)).gt. &
-              (zheight(i,j,k)-zs(i,j)))then
-              zbot=kk
-              exit
-            endif
-          enddo
-          do kk=zbot,inz
-            if((izheight(ii,jj,kk)-izs(ii,jj)).ge. &
-              (zheight(i,j,k+1)-zs(i,j)))then
-              ztop=kk
-              exit
-            endif
-          enddo
-          cells = 0.
+        do k=1,nz
           do ii=xbot,xtop
             xfrac = (min(ii*idx,xcor(2))-max((ii-1)*idx,xcor(1)))/idx
             do jj=ybot,ytop
               yfrac = (min(jj*idy,ycor(2))-max((jj-1)*idy,ycor(1)))/idy
+              zbot=inz
+              ztop=inz
+              do kk=1,inz
+                if((izheight(ii,jj,kk+1)-izs(ii,jj)).gt. &
+                  (zheight(i,j,k)-zs(i,j)))then
+                  zbot=kk
+                  exit
+                endif
+              enddo
+              do kk=zbot,inz
+                if((izheight(ii,jj,kk)-izs(ii,jj)).ge. &
+                  (zheight(i,j,k+1)-zs(i,j)))then
+                  ztop=kk
+                  exit
+                endif
+              enddo
+              
               do kk=zbot,ztop
                 zfrac = min((izheight(ii,jj,kk+1)-izs(ii,jj)), &
                   (zheight(i,j,k+1)-zs(i,j))) - &
                   max((izheight(ii,jj,kk)-izs(ii,jj)) ,  &
                   (zheight(i,j,k)-zs(i,j)))/ &
                   (izheight(ii,jj,kk+1)-izheight(ii,jj,kk))
-                cells = cells+xfrac*yfrac*zfrac
                 do ift=1,infuel
-                  rhoftemp=irhof(ift,ii,jj,kk)*xfrac*yfrac*zfrac
+                  vol=idx*idy*(izheight(ii,jj,kk+1)-izheight(ii,jj,kk))
+                  rhoftemp=irhof(ift,ii,jj,kk)*vol*xfrac*yfrac*zfrac
                   if(rhoftemp.gt.0)then
                     sizescale(ift,i,j,k) =  &
                       (rhof(ift,i,j,k)*sizescale(ift,i,j,k)+ &
@@ -192,9 +192,8 @@ subroutine grid_readin
               enddo
             enddo
           enddo
-          do ift=1,infuel
-            if(cells.gt.0) rhof(ift,i,j,k)=rhof(ift,i,j,k)/cells
-          enddo
+          vol=dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
+          rhof(:,i,j,k)=rhof(:,i,j,k)/vol
         enddo
       enddo
     enddo
@@ -206,7 +205,7 @@ subroutine grid_readin
       fueldepth(ift,:,:,:)=iafd(ift,:,:,:)
     enddo
   endif
-  
+ 
   ! Print out the target and actual fuel masses for comparisons sake
   target_mass = 0
   do ift=1,infuel

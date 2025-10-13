@@ -19,9 +19,8 @@
 !-----------------------------------------------------------------------
 subroutine define_grid_variables
   use grid_variables, only : nx,ny,nz,rhof,sizescale,moist,fueldepth, &
-    zs,zheight,topofile,aa1,dx,dy,dz,nfuel
-  use infile_variables, only : infuel,inx,iny,inz,idx,idy,idz,iintpr, &
-    intopofile,izs,izheight,iaa1,ifuelin
+    zs,zheight,topofile,aa1,dz,nfuel
+  use infile_variables, only : infuel
   use fuel_variables, only : ntreefueltypes,istem,tfuelbins,ngrass, &
     ntspecies,ilitter
   use io_variables, only : workdir,filesep
@@ -30,11 +29,7 @@ subroutine define_grid_variables
   
   ! Local Variables
   integer :: i,j,k
-  integer :: ii,jj
-  integer :: xbot,xtop,ybot,ytop
-  real :: cells,xfrac,yfrac
   real,external :: zcart
-  real,dimension(2) :: xcor,ycor
   
   ! Executable Code
   ntreefueltypes = istem*2+tfuelbins
@@ -51,7 +46,7 @@ subroutine define_grid_variables
   !---------------------------------------------------------------------
   
   allocate(zs(nx,ny))
-  allocate(zheight(nx,ny,nz))
+  allocate(zheight(nx,ny,nz+1))
   if (topofile.eq.'flat'.or.topofile.eq.'') then ! No topo
     zs(:,:)=0.0
     print *,'Not using target topo'
@@ -65,8 +60,8 @@ subroutine define_grid_variables
   
   do i=1,nx
     do j=1,ny
-      do k=1,nz
-        if (aa1.eq.0) then
+      do k=1,nz+1
+        if (aa1.lt.tolerance) then
           zheight(i,j,k) = zs(i,j)+(k-1)*dz
         else
           zheight(i,j,k) = zcart(aa1,(k-1)*dz,nz,dz,zs(i,j))
@@ -96,7 +91,7 @@ subroutine define_fuel_variables
     gfueldepth,ilitter,ntspecies,tfuelbins,lrhof,lsizescale,lmoist, &
     lfueldepth,trhof,tsizescale,tmoist,tfueldepth,itrees,trhofmax, &
     trhofmaxindex,t2bulkdensity,ntreefueltypes,ntrees
-  use io_variables, only : verbose
+  use constant_variables, only : tolerance
   implicit none
   
   ! Local Variables
@@ -133,7 +128,7 @@ subroutine define_fuel_variables
   if(itrees.gt.0)then
     allocate(trhofmaxindex(ntspecies))
     do ift=1,ntspecies
-      if(trhofmax(ift).eq.0.) then
+      if(trhofmax(ift).lt.tolerance) then
         allocate(averagedensity(ntrees(ift)))
         do i=1,ntrees(ift)
           averagedensity(i)=sum(t2bulkdensity(i,:,ift))
@@ -156,7 +151,7 @@ end subroutine define_fuel_variables
 ! define_newtreefile creates and new treelist with the verbose option
 !-----------------------------------------------------------------------
 subroutine define_newtreefile
-  use fuel_variables, only: newtreefile, itrees, treefile
+  use fuel_variables, only: newtreefile,treefile
   implicit none  
 
   ! Local Variables

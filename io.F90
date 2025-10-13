@@ -276,7 +276,6 @@ subroutine output_fuel
     open (2,file=TRIM(TRIM(workdir)//filesep)//'treesmoist.dat', &
       form='unformatted',status='unknown')
     do ift=1,nfuel
-      if (nonzero(ift).ne.0)  print*,'GOOD!'
       if (nonzero(ift).ne.0)  write (2) moist(ift,:,:,1:lz)
     enddo
     close (2)
