@@ -24,18 +24,17 @@ subroutine treelist_readin
     tlocation,theight,tcrownbotheight,tcrownmaxheight,itrees,treefile, &
     t2bulkdensity,t2moisture,t2ss,tcrowndiameter,tunique_species
   use io_variables, only : verbose,workdir,filesep
-  use constant_variables, only : tolerance
   implicit none
   
   ! Local Variables
-  integer :: i,j,it,tindex,itree,ierror
+  integer :: i,j,it,tindex,ierror
   real :: nsub,rnumx,rnumy,newx,newy
   real :: treeid,xtest,ytest
   real :: x_loc_min,x_loc_max,y_loc_min,y_loc_max,x_per,y_per
   real :: dataleft,dataright,databottom,datatop
   character(len=50) :: treelistformat
   integer,allocatable :: numarray(:)
-  integer,allocatable :: rounddown(:),ntreesold(:)
+  integer,allocatable :: ntreesold(:)
   real,allocatable :: temp_array(:)
   
   ! Variables for finding height to max crown radius
@@ -54,8 +53,8 @@ subroutine treelist_readin
     !using x/y extremes, shift xpos and ypos
     x_loc_max = 0
     y_loc_max = 0
-    x_loc_min = 0
-    y_loc_min = 0
+    x_loc_min = nx*dx
+    y_loc_min = ny*dy
     
     allocate(temp_array(19))
     read(48,*) !read 1st line and throw away, has column headers
@@ -64,12 +63,6 @@ subroutine treelist_readin
       if(ierror<0)then
         close(48)
         exit
-      endif
-      if (i.eq.1) then  
-        x_loc_max = temp_array(18) !initilize min/max
-        x_loc_min = temp_array(18) !initilize min/max
-        y_loc_max = temp_array(19) !initilize min/max
-        y_loc_min = temp_array(19) !initilize min/max
       endif
       x_loc_max = max(temp_array(18), x_loc_max) !max x for transformation
       x_loc_min = min(temp_array(18), x_loc_min) !min x for transformation
