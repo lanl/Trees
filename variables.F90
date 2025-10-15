@@ -35,7 +35,7 @@ module grid_variables
   real :: dx,dy,dz
   real :: aa1=0.1
   real :: ndatax=0.,ndatay=0.,datalocx=0.,datalocy=0. !JSM added ndatax, etc.
-  integer :: nfuel,zmax
+  integer :: nfuel
   real,allocatable :: rhof(:,:,:,:),sizescale(:,:,:,:)
   real,allocatable :: moist(:,:,:,:),fueldepth(:,:,:,:)
   real,allocatable :: zs(:,:),zheight(:,:,:)

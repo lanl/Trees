@@ -137,16 +137,14 @@ subroutine grass_fuels_create
   
   ! Local variables
   integer :: i,j,k,ift
-  integer :: zmax
   real :: target_mass,actual_mass
   
   ! Executable code
-  zmax=0
   do ift=1,ngrass
     do i=1,nx
       do j=1,ny
         gfueldepth(ift,i,j) = gdepth(ift)
-        do k=1,nz-1
+        do k=1,nz
           gmoist(ift,i,j,k) = gmoisture(ift)
           gsizescale(ift,i,j,k) = gss(ift)
           if (zheight(i,j,k+1).lt.gdepth(ift)+zs(i,j)) then
@@ -155,7 +153,6 @@ subroutine grass_fuels_create
             grhof(ift,i,j,k) = grho(ift)* &
               (gdepth(ift)+zs(i,j)-zheight(i,j,k))/ &
               (zheight(i,j,k+1)-zheight(i,j,k))
-            if (k.gt.zmax) zmax=k
             exit
           endif
         enddo
@@ -169,7 +166,7 @@ subroutine grass_fuels_create
     target_mass = target_mass+gdepth(ift)*nx*dx*ny*dy*grho(ift)
     do i=1,nx
       do j=1,ny
-        do k=1,zmax
+        do k=1,nz
           actual_mass = actual_mass+ &
             grhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
         enddo
@@ -189,7 +186,7 @@ end subroutine grass_fuels_create
 !-----------------------------------------------------------------------
 subroutine tree_fuels_create
   use constant_variables, only : PI 
-  use grid_variables, only : nx,ny,nz,dx,dy,zs,zheight,zmax
+  use grid_variables, only : nx,ny,nz,dx,dy,zs,zheight
   use fuel_variables, only : tfuelbins,ntspecies,ntrees,tlocation, &
     theight,tcrownbotheight,tcrowndiameter,tcrownmaxheight,tfuelbins, &
     ntreefueltypes,istem,tbarkthick,tsizescale,trhof,tmoist,tfueldepth,&
@@ -255,7 +252,6 @@ subroutine tree_fuels_create
       do kk=k,nz-1
         if (canopytop.le.zheight(xcor,ycor,kk+1)) then
           ztop = kk
-          if (kk.gt.zmax) zmax=kk
           exit
         endif
       enddo
@@ -376,7 +372,7 @@ subroutine tree_fuels_create
   !----- Limit Tree Densities for overlapping trees -----
   do i=1,nx
     do j=1,ny
-      do k=1,zmax
+      do k=1,nz
         tot=0.
         do it=1,ntspecies
           ift=trhofmaxindex(it)
@@ -424,7 +420,7 @@ subroutine tree_fuels_create
   do ift=1,ntspecies*ntreefueltypes
     do i=1,nx
       do j=1,ny
-        do k=1,zmax
+        do k=1,nz
           actual_mass = actual_mass+ &
             trhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
         enddo
@@ -454,20 +450,18 @@ subroutine litter_fuels_create
   
   ! Local variables
   integer :: i,j,k,ift,ift_grass
-  integer :: zmax
   real :: target_mass,actual_mass
   real :: rhocolumn,coverfactor,shadefactor
   
   ! Executable code
   !----- Place litter on ground and remove grass to account for shading
   print*,'Placing litter and removing grass to account for shading'
-  zmax=0
   do ift = 1,ntspecies*tfuelbins
     do i=1,nx
       do j=1,ny
         ! Determine factors for placing litter and removing grass
         rhocolumn = 0
-        do k=1,zmax
+        do k=1,nz
           rhocolumn = rhocolumn+ &
             sum(trhof((ift-1)*tfuelbins+1:ift*tfuelbins,i,j,k))* &
             (zheight(i,j,k+1)-zheight(i,j,k))/theight(ift,1)
@@ -493,16 +487,16 @@ subroutine litter_fuels_create
           ! Add litter with dependence to coverfactor
           lfueldepth(ift,i,j) = coverfactor*ldepth(ift)
           do k=1,nz
-            if (zheight(i,j,k).gt.lfueldepth(ift,i,j)+zs(i,j)) exit
+            lsizescale(ift,i,j,k) = lss(ift)
+            lmoist(ift,i,j,k) = lmoisture(ift)
             if (zheight(i,j,k+1).lt.lfueldepth(ift,i,j)+zs(i,j)) then
               lrhof(ift,i,j,k) = lrho(ift)
             else 
               lrhof(ift,i,j,k) = lrho(ift)* &
                 (lfueldepth(ift,i,j)+zs(i,j)-zheight(i,j,k))/ &
                 (zheight(i,j,k+1)-zheight(i,j,k))
+              exit
             endif
-            lsizescale(ift,i,j,k) = lss(ift)
-            lmoist(ift,i,j,k) = lmoisture(ift)
           enddo
         endif
       enddo
@@ -521,7 +515,7 @@ subroutine litter_fuels_create
   do ift=1,ntspecies
     do i=1,nx
       do j=1,ny
-        do k=1,zmax
+        do k=1,nz
           actual_mass = actual_mass+ &
             lrhof(ift,i,j,k)*dx*dy*(zheight(i,j,k+1)-zheight(i,j,k))
         enddo
