@@ -19,7 +19,7 @@
 !-----------------------------------------------------------------------
 subroutine define_grid_variables
   use grid_variables, only : nx,ny,nz,rhof,sizescale,moist,fueldepth, &
-    zs,zheight,topofile,aa1,dx,dy,dz,nfuel
+    zs,zheight,topofile,aa1,dx,dy,dz,nfuel,liveDead
   use infile_variables, only : infuel,inx,iny,inz,idx,idy,idz,iintpr, &
     intopofile,izs,izheight,iaa1,ifuelin
   use fuel_variables, only : ntreefueltypes,istem,tfuelbins,ngrass, &
@@ -45,6 +45,7 @@ subroutine define_grid_variables
   allocate(sizescale(nfuel,nx,ny,nz)); sizescale(:,:,:,:)=0.0
   allocate(moist(nfuel,nx,ny,nz)); moist(:,:,:,:)=0.0
   allocate(fueldepth(nfuel,nx,ny,nz)); fueldepth(:,:,:,:)=0.0
+  allocate(liveDead(nfuel,nx,ny,nz)); liveDead(:,:,:,:)=0.0
   
   !---------------------------------------------------------------------
   ! Create topo layer (Should be adjusted for non-flat topo)
@@ -95,7 +96,7 @@ subroutine define_fuel_variables
   use fuel_variables, only : igrass,grhof,ngrass,gsizescale,gmoist, &
     gfueldepth,ilitter,ntspecies,tfuelbins,lrhof,lsizescale,lmoist, &
     lfueldepth,trhof,tsizescale,tmoist,tfueldepth,itrees,trhofmax, &
-    trhofmaxindex,t2bulkdensity,ntreefueltypes,ntrees
+    trhofmaxindex,t2bulkdensity,ntreefueltypes,ntrees,tdeadoralive
   use io_variables, only : verbose
   implicit none
   
@@ -122,6 +123,7 @@ subroutine define_fuel_variables
   allocate(trhof(it,nx,ny,nz)); trhof(:,:,:,:)=0.0
   allocate(tsizescale(it,nx,ny,nz)); tsizescale(:,:,:,:)=0.0
   allocate(tmoist(it,nx,ny,nz)); tmoist(:,:,:,:)=0.0
+  allocate(tdeadoralive(it,nx,ny,nz)); tdeadoralive(:,:,:,:)=0.0
   allocate(tfueldepth(it,nx,ny)); tfueldepth(:,:,:)=0.0
   
   !---------------------------------------------------------------------

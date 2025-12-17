@@ -23,11 +23,11 @@
 !-----------------------------------------------------------------------
 subroutine fuels_create
   use grid_variables, only : nx,ny,nz,rhof,sizescale,moist,fueldepth, &
-    zheight
+    zheight, liveDead
   use infile_variables, only : infuel
   use fuel_variables, only : ntspecies,ntreefueltypes,trhof,ilitter, &
     tsizescale,tmoist,tfueldepth,ngrass,grhof,lrhof,gmoist,lmoist, &
-    gsizescale,lsizescale,gfueldepth,lfueldepth,itrees,igrass
+    gsizescale,lsizescale,gfueldepth,lfueldepth,itrees,igrass,tdeadoralive,ilive
   implicit none
   
   ! Local variables
@@ -49,6 +49,9 @@ subroutine fuels_create
             rhof(it,i,j,k)      = trhof(ift,i,j,k)
             sizescale(it,i,j,k) = tsizescale(ift,i,j,k)
             moist(it,i,j,k)     = tmoist(ift,i,j,k)
+            if(ilive.eq.1)then
+              liveDead(it,i,j,k)  = tdeadoralive(ift,i,j,k)
+            endif
           enddo
           fueldepth(it,i,j,1) = tfueldepth(ift,i,j)
         enddo
@@ -77,6 +80,9 @@ subroutine fuels_create
             rhof(it,i,j,k)      = grhof(ift,i,j,k)
             sizescale(it,i,j,k) = gsizescale(ift,i,j,k)
             moist(it,i,j,k)     = gmoist(ift,i,j,k)
+            if(ilive.eq.1)then
+              liveDead(it,i,j,k)  = 0.0
+            endif
           enddo
           fueldepth(it,i,j,1) = gfueldepth(ift,i,j)
         enddo
@@ -106,6 +112,9 @@ subroutine fuels_create
             sizescale(it,i,j,1) = lsizescale(ift,i,j,1)
             moist(it,i,j,1)     = lmoist(ift,i,j,1)
             fueldepth(it,i,j,1) = lfueldepth(ift,i,j)
+            if(ilive.eq.1)then
+              liveDead(it,i,j,1)  = 0.0
+            endif
           enddo
         enddo
       else
@@ -116,6 +125,9 @@ subroutine fuels_create
               rhof(it,i,j,k)      = lrhof(ift,i,j,k)
               sizescale(it,i,j,k) = lsizescale(ift,i,j,k)
               moist(it,i,j,k)     = lmoist(ift,i,j,k)
+              if(ilive.eq.1)then
+                liveDead(it,i,j,k)  = 0.0
+              endif
             enddo
             fueldepth(it,i,j,1) = lfueldepth(ift,i,j)
           enddo
@@ -196,7 +208,7 @@ subroutine tree_fuels_create
     theight,tcrownbotheight,tcrowndiameter,tcrownmaxheight,tfuelbins, &
     ntreefueltypes,istem,tbarkthick,tsizescale,trhof,tmoist,tfueldepth,&
     t2bulkdensity,tdbh,trhomicro,tstemmoist,tbarkmoist,t2ss,t2moisture,&
-    trhofmaxindex,trhofmax
+    trhofmaxindex,trhofmax,tdeadoralive,t2deadoralive,ilive
   implicit none
   
   ! Local variables
@@ -366,6 +378,11 @@ subroutine tree_fuels_create
                   (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
                 trhof(ift_index,ii_real,jj_real,kk) = &
                   trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)
+                if(ilive.eq.1)then
+                  tdeadoralive(ift_index,ii_real,jj_real,kk) = &
+                    t2deadoralive(j,i)
+                    
+                endif
               endif
             enddo
           enddo

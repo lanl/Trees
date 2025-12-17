@@ -1,0 +1,10 @@
+# The fortran modules provided by this target.
+provides
+ duetio.mod
+ fastfuels.mod
+ ffio.mod
+ fillio.mod
+ mainloop.mod
+ speciesvars.mod
+ support.mod
+ winds.mod

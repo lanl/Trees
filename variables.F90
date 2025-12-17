@@ -38,6 +38,7 @@ module grid_variables
   integer :: nfuel,zmax
   real,allocatable :: rhof(:,:,:,:),sizescale(:,:,:,:)
   real,allocatable :: moist(:,:,:,:),fueldepth(:,:,:,:)
+  real,allocatable :: liveDead(:,:,:,:)
   real,allocatable :: zs(:,:),zheight(:,:,:)
   character :: topofile*50='flat'
 
@@ -74,7 +75,7 @@ module infile_variables
   real,allocatable :: imoist(:,:,:,:),iafd(:,:,:,:)
   real,allocatable :: izs(:,:),izheight(:,:,:)
   character :: intopofile*50='flat' 
-  character :: rhoffile*50,moistfile*50,ssfile*50,afdfile*50
+  character :: rhoffile*50,moistfile*50,ssfile*50,afdfile*50,lifefile*50
 
 end module infile_variables
 
@@ -84,7 +85,7 @@ end module infile_variables
 module fuel_variables
   implicit none
   
-  integer :: igrass=0,itrees=0,ilitter=0
+  integer :: igrass=0,itrees=0,ilitter=0,ilive=0
   integer :: ngrass=0,duet_ngrass=0
   integer :: iFIA,iFIAspecies
   real :: grassconstant=5.,litterconstant=5.,gmoistoverride=0.
@@ -107,6 +108,7 @@ module fuel_variables
   real,allocatable :: trhomicro(:),tdbh(:,:),tstemmoist(:)
   real,allocatable :: tbarkthick(:,:),tbarkmoist(:)
   real,allocatable :: trhofmax(:)
+  real,allocatable :: tdeadoralive(:,:,:,:),t2deadoralive(:,:)
   real,allocatable :: gdepth(:),grho(:),gss(:),gmoisture(:)
   real,allocatable :: ldepth(:),lrho(:),lss(:),lmoisture(:)
   

@@ -20,23 +20,25 @@
 !-----------------------------------------------------------------------
 subroutine treelist_readin
   use grid_variables, only : nx,ny,dx,dy,ndatax,ndatay,datalocx,datalocy
-  use fuel_variables, only : tfuelbins,newtreefile,ntspecies,ntrees, &
+  use fuel_variables, only : tfuelbins,newtreefile,ntspecies,ntrees,ilive, &
     tlocation,theight,tcrownbotheight,tcrownmaxheight,itrees,treefile, &
-    t2bulkdensity,t2moisture,t2ss,tcrowndiameter,tunique_species
+    t2bulkdensity,t2moisture,t2ss,tcrowndiameter,tunique_species,tdeadoralive,t2deadoralive
   use io_variables, only : verbose,workdir,filesep
   use constant_variables, only : tolerance
   implicit none
   
   ! Local Variables
-  integer :: i,j,it,tindex,itree,ierror
+  integer :: i,j,it,tindex,itree,ierror,count
   real :: nsub,rnumx,rnumy,newx,newy
   real :: treeid,xtest,ytest
   real :: x_loc_min,x_loc_max,y_loc_min,y_loc_max,x_per,y_per
   real :: dataleft,dataright,databottom,datatop
   character(len=50) :: treelistformat
+  character(len=60) :: line_count
   integer,allocatable :: numarray(:)
   integer,allocatable :: rounddown(:),ntreesold(:)
   real,allocatable :: temp_array(:)
+  logical :: in_entry
   
   ! Variables for finding height to max crown radius
   real:: beta_a, beta_b, beta_c, beta_norm, z, rad, norm_height
@@ -107,6 +109,7 @@ subroutine treelist_readin
   allocate(tcrownbotheight(maxval(ntrees),ntspecies)) ! Height to live crown [m]
   allocate(tcrowndiameter(maxval(ntrees),ntspecies))  ! Crown diameter [m]
   allocate(tcrownmaxheight(maxval(ntrees),ntspecies)) ! Height to max crown diameter [m]
+  allocate(t2deadoralive(maxval(ntrees),ntspecies))    ! Living status of tree [-]
   
   allocate(t2bulkdensity(maxval(ntrees),tfuelbins,ntspecies)) ! Crown fuel bulk density [kg/m3]
   allocate(t2moisture(maxval(ntrees),tfuelbins,ntspecies))    ! Crown fuel moisture content [fraction]
@@ -157,7 +160,11 @@ subroutine treelist_readin
       enddo
     enddo
   else ! Forest Service tree list
-    allocate(temp_array(7+3*tfuelbins))
+    if(ilive.eq.1)then
+      allocate(temp_array(8+3*tfuelbins))
+    else
+      allocate(temp_array(7+3*tfuelbins))
+    endif
     do
       read(48,*,iostat=ierror) temp_array(:)
       if(ierror<0)then
@@ -184,13 +191,24 @@ subroutine treelist_readin
       tcrownbotheight(numarray(tindex),tindex) = temp_array(5)
       tcrowndiameter(numarray(tindex),tindex) = temp_array(6)
       tcrownmaxheight(numarray(tindex),tindex) = temp_array(7)
-      do j=1,tfuelbins
-        t2bulkdensity(numarray(tindex),j,tindex) = &
-          temp_array(8+3*(j-1))
-        t2moisture(numarray(tindex),j,tindex) = &
-          temp_array(9+3*(j-1))
-        t2ss(numarray(tindex),j,tindex) = temp_array(10+3*(j-1))
-      enddo
+      if(ilive.eq.1)then
+        t2deadoralive(numarray(tindex),tindex) = temp_array(8)
+        do j=1,tfuelbins
+          t2bulkdensity(numarray(tindex),j,tindex) = &
+            temp_array(9+3*(j-1))
+          t2moisture(numarray(tindex),j,tindex) = &
+            temp_array(10+3*(j-1))
+          t2ss(numarray(tindex),j,tindex) = temp_array(11+3*(j-1))
+        enddo
+      else
+        do j=1,tfuelbins
+          t2bulkdensity(numarray(tindex),j,tindex) = &
+            temp_array(8+3*(j-1))
+          t2moisture(numarray(tindex),j,tindex) = &
+            temp_array(9+3*(j-1))
+          t2ss(numarray(tindex),j,tindex) = temp_array(10+3*(j-1))
+        enddo
+      endif
     enddo
   endif
   deallocate(numarray,temp_array)

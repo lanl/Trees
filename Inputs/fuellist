@@ -1,7 +1,7 @@
 ! ----------------------------------
 ! FIRETEC domain info
 ! ----------------------------------
-      nx  = 300 
+      nx  = 200 
       ny  = 200 
       nz  = 41                      ! Size of HIGRAD/FIRETEC grid [cells]
       dx  = 2.0 
@@ -31,7 +31,8 @@
 ! ----------------------------------
 ! Input trees dataset info
 ! ----------------------------------
-      itrees = 3                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
+      itrees = 2                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
+      ilive = 0                         ! Tells whether to read an extra column that tells how alive a tree is
       tfuelbins = 1                     ! Number of size bins to distribute branches
       treefile = 'AJOSEglinTrees.txt'
       ndatax = 67                       ! size of dataset domain in x direction [m]

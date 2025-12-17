@@ -25,10 +25,10 @@ subroutine fuellist_input
   use io_variables, only : workdir,filesep,singlefuel,lreduced, &
     doubleprec,verbose
   use infile_variables, only : ifuelin,inx,iny,inz,idx,idy,idz,iaa1, &
-    infuel,intopofile,rhoffile,ssfile,moistfile,afdfile
+    infuel,intopofile,rhoffile,ssfile,moistfile,afdfile,lifefile
   use fuel_variables, only : ilitter,igrass,ngrass,grassconstant, &
     grho,gmoisture,gss,gdepth,itrees,tfuelbins,treefile,ntspecies, &
-    trhofmax,litterconstant,lrho,lmoisture,lss,ldepth
+    trhofmax,litterconstant,lrho,lmoisture,lss,ldepth,ilive
   implicit none
   
   ! Local Variables
@@ -74,6 +74,8 @@ subroutine fuellist_input
       'treesmoist.dat.orig')
     call QueryFuellist_string('afdfile',afdfile,48, &
       'treesfueldepth.dat.orig')
+    call QueryFuellist_string('lifefile',lifefile,48, &
+      'treeslivedead.dat.orig')
   endif
       
   call QueryFuellist_integer('ilitter',ilitter,48,0)
@@ -99,6 +101,7 @@ subroutine fuellist_input
   call QueryFuellist_integer('itrees',itrees,48,0)
   if(itrees.ge.1)then
     call QueryFuellist_integer('tfuelbins',tfuelbins,48,1)
+    call QueryFuellist_integer('ilive',ilive,48,1)
     call QueryFuellist_string('treefile',treefile,48, &
       'AJoseEglinTrees.txt')
     call QueryFuellist_real('ndatax',ndatax,48,nx*dx)
@@ -182,8 +185,9 @@ end subroutine SetWorkingDirectory
 !-----------------------------------------------------------------------
 subroutine output_fuel
   use grid_variables, only : nx,ny,nz,rhof,moist,fueldepth,sizescale, &
-    nfuel
+    nfuel,liveDead
   use io_variables, only : singlefuel,doubleprec,lreduced,workdir,filesep
+  use fuel_variables, only : ilive
   implicit none
   
   ! Local Variables
@@ -191,6 +195,7 @@ subroutine output_fuel
   integer,dimension(nfuel):: nonzero
   real(8),allocatable :: rho(:,:,:,:),h2o(:,:,:,:)
   real(8),allocatable :: sss(:,:,:,:),afd(:,:,:,:)
+  integer,allocatable :: life(:,:,:,:)
   
   ! Executable Code
   if (singlefuel.eq.1) then ! Condense fuels to a single fuel type
@@ -285,6 +290,15 @@ subroutine output_fuel
       if (nonzero(ift).ne.0)  write (4) fueldepth(ift,:,:,1:lz)
     enddo
     close (4)
+    if(ilive.eq.1)then
+
+      open (5,file=TRIM(TRIM(workdir)//filesep)//'treeslivedead.dat',form='unformatted', &
+        status='unknown')
+      do ift=1,nfuel
+        if (nonzero(ift).ne.0)  write (5) liveDead(ift,:,:,1:lz)
+      enddo
+      close (5)
+    endif
   endif
   
   print*,'Min and Max of rhof layer 1:', &
@@ -346,6 +360,7 @@ subroutine output_fuellist
       write(2222,'(A15)')'ssfile   =  " " '
       write(2222,'(A15)')'moistfile =  " " '
       write(2222,'(A15)')'afdfile  =  " " '
+      write(2222,'(A15)')'lifefile =  " " '
   endif
   
   write(2222,'(A35)')'! ----------------------------------'
