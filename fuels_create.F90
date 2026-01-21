@@ -93,7 +93,7 @@ subroutine fuels_create
   
   ! Fill litter arrays
   if (ilitter.ne.0) then
-    if (ilitter.eq.1) then
+    if (ilitter.eq.1.or.ilitter.eq.3) then
       if (itrees.gt.0) then
         print*,'Filling Litter fuels_create'
         call litter_fuels_create
@@ -146,19 +146,54 @@ end subroutine fuels_create
 subroutine grass_fuels_create
   use grid_variables, only : nx,ny,nz,dx,dy,zheight,zs
   use fuel_variables, only : ngrass,gfueldepth,gdepth,gmoist, &
-    gmoisture,gsizescale,gss,grhof,grho
+    gmoisture,gsizescale,gss,grhof,grho, satarray, igrass
   implicit none
   
   ! Local variables
   integer :: i,j,k,ift
   integer :: zmax
   real :: target_mass,actual_mass
+  real,allocatable:: rhofxy(:,:)
+  logical :: file_exists
+
+  if (igrass.eq.3) then
+      ngrass=1
+      ! Check if the file exists
+      allocate(rhofxy(nx,ny))
+      open(1, file="LLM_litter_WG.dat")
+       read(1,*) rhofxy
+      close(1)
+      print*, "Grass read in"
+      inquire(file="Saturation.txt", exist=file_exists)
+      if (file_exists) then
+           ! Read in saturation file to get moisture from ParFlow. AA
+        open (1,file='Saturation.txt',form='formatted',status='old')
+        print *, 'After opening file??'
+        do i=1,10
+          do j=1,ny
+            do k=1,nx
+              read (1,*) satarray(i,j,k)
+            enddo
+          enddo
+        enddo
+
+       print*,'Reading LLM WGlitter'
+     endif
+  endif
+
+
   
   ! Executable code
   zmax=0
   do ift=1,ngrass
     do i=1,nx
       do j=1,ny
+        if(igrass.eq.3) then 
+          grho(ift)=rhofxy(i,j)
+          if (file_exists) then
+            gmoisture(ift)=satarray(j,i,9)*0.08/0.46
+          endif
+        endif
         gfueldepth(ift,i,j) = gdepth(ift)
         do k=1,nz-1
           gmoist(ift,i,j,k) = gmoisture(ift)
@@ -204,7 +239,7 @@ end subroutine grass_fuels_create
 subroutine tree_fuels_create
   use constant_variables, only : PI 
   use grid_variables, only : nx,ny,nz,dx,dy,zs,zheight,zmax
-  use fuel_variables, only : tfuelbins,ntspecies,ntrees,tlocation, &
+  use fuel_variables, only : tfuelbins,ntspecies,ntrees,tlocation,treetracker, &
     theight,tcrownbotheight,tcrowndiameter,tcrownmaxheight,tfuelbins, &
     ntreefueltypes,istem,tbarkthick,tsizescale,trhof,tmoist,tfueldepth,&
     t2bulkdensity,tdbh,trhomicro,tstemmoist,tbarkmoist,t2ss,t2moisture,&
@@ -226,15 +261,27 @@ subroutine tree_fuels_create
   real,allocatable :: rhoftemp(:)
   real,external :: paraboloid,normal 
   
+  ! Variables for the TreeTracker
+  integer cellnum, cn
+  integer cellcount
+  integer, dimension(10000) :: cellid
+  real, dimension(10000) :: cellfuel 
+  real tfueltot
   ! Executable Code
   !-----Determine the number of trees for each species
   print*,'Number of trees of each species:',ntrees
-  
+
+  if (treetracker.eq.1)then
+    ! Open tree tracking file:
+    open(unit=12,file='TreeTracker.txt')
+  endif
   !----- Begin loop which fills arrays with information for each tree
   allocate(rhoftemp(tfuelbins))
   do i=1,ntspecies
     print*,'Species',i,'with',ntrees(i),'trees'
     do j=1,ntrees(i)
+      cellnum = 0
+      tfueltot = 0
       if (ntrees(i).gt.9) then
         if (MOD(j,int(ntrees(i)/10)).eq.0) print*, &
           'Placing tree',j,'of',ntrees(i)
@@ -316,7 +363,7 @@ subroutine tree_fuels_create
       atop = 0.25*canopydiameter**2./(canopymaxh-canopytop)
       abot = 0.25*canopydiameter**2./(canopymaxh-canopybot)
       do ii=xbot,xtop
-        if (ii.gt.nx) then
+          if (ii.gt.nx) then
           ii_real = ii-nx 
         else if (ii.lt.1) then 
           ii_real = nx+ii
@@ -334,6 +381,7 @@ subroutine tree_fuels_create
           do kk=zbot,ztop
             ! Determine how many of subcells of a cell are within the paraboloid, the fraction of the subcells is equal to the fraction of the cell within the paraboloid
             rhoftemp(:) = 0 ! Density of fuels to be added to current cell of interest
+            cellcount = 0
             do iii=1,10
               do jjj=1,10
                 do kkk=1,10
@@ -348,6 +396,7 @@ subroutine tree_fuels_create
                     yloc,tlocation(i,j,2),canopytop)
                   if (test_height.ge.bot_height.and. &
                     test_height.le.top_height) then 
+                    cellcount=cellcount+1
                     do ift=1,tfuelbins
                       rhoftemp(ift) = rhoftemp(ift)+ &
                         3./2000.*t2bulkdensity(j,ift,i)* &
@@ -364,6 +413,13 @@ subroutine tree_fuels_create
   
             !----- Fill in the 3D arrays for a tree
             do ift=1,tfuelbins
+              if (cellcount.gt.0.and.treetracker.eq.1) then
+                cellnum = cellnum + 1
+                cellid(cellnum) = (ii_real+(jj_real*ny)+(kk*ny*nx))
+                ! ###### Check the Index here  ######
+                cellfuel(cellnum) = rhoftemp(ift)
+                tfueltot = tfueltot + cellfuel(cellnum)
+              endif
               if (rhoftemp(ift).gt.0) then
                 ift_index = (i-1)*ntreefueltypes+ift
                 tsizescale(ift_index,ii_real,jj_real,kk) = &
@@ -388,10 +444,18 @@ subroutine tree_fuels_create
           enddo
         enddo
       enddo
+      if (treetracker.eq.1)then
+        do cn=1, cellnum
+           cellfuel(cn) = cellfuel(cn)/tfueltot 
+        enddo 
+        write(12,*) j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum) 
+      endif
     enddo
   enddo
   deallocate(rhoftemp)
-  
+  if (treetracker.eq.1)then
+    close(12)
+  endif
   !----- Limit Tree Densities for overlapping trees -----
   do i=1,nx
     do j=1,ny
@@ -463,27 +527,39 @@ end subroutine tree_fuels_create
 !-----------------------------------------------------------------------
 subroutine litter_fuels_create
   use constant_variables, only : pi
-  use grid_variables, only : nx,ny,nz,dx,dy,zs,zheight,rhof
+  use grid_variables, only : nx,ny,nz,dx,dy,zs,zheight,rhof, zmax
   use fuel_variables, only : ntspecies,tfuelbins,grassconstant, &
     litterconstant,trhof,tfuelbins,lrhof,lsizescale,lmoist,lfueldepth, &
     ldepth,lrho,lss,lmoisture,tcrowndiameter,igrass,ngrass,theight, &
-    gdepth,ntrees
+    gdepth,ntrees, ilitter
   use infile_variables, only : infuel
   implicit none
   
   ! Local variables
   integer :: i,j,k,ift,ift_grass
-  integer :: zmax
   real :: target_mass,actual_mass
   real :: rhocolumn,coverfactor,shadefactor
+  real,allocatable:: rhofxy(:,:)
+  
+
+  if (ilitter.eq.3) then
+    print*,'Reading LLM tree litter'
+    allocate(rhofxy(nx,ny))
+    open(1, file="LLM_litter_trees.dat")
+      read(1,*) rhofxy
+    close(1)
+
+  endif
   
   ! Executable code
   !----- Place litter on ground and remove grass to account for shading
   print*,'Placing litter and removing grass to account for shading'
-  zmax=0
   do ift = 1,ntspecies*tfuelbins
     do i=1,nx
       do j=1,ny
+        if(ilitter.eq.3) then
+          lrho(ift)=rhofxy(i,j)
+        endif
         ! Determine factors for placing litter and removing grass
         rhocolumn = 0
         do k=1,zmax

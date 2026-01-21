@@ -27,8 +27,9 @@ subroutine fuellist_input
   use infile_variables, only : ifuelin,inx,iny,inz,idx,idy,idz,iaa1, &
     infuel,intopofile,rhoffile,ssfile,moistfile,afdfile,lifefile
   use fuel_variables, only : ilitter,igrass,ngrass,grassconstant, &
-    grho,gmoisture,gss,gdepth,itrees,tfuelbins,treefile,ntspecies, &
+    grho,gmoisture,gss,gdepth,itrees,tfuelbins,treefile,ntspecies,treetracker, &
     trhofmax,litterconstant,lrho,lmoisture,lss,ldepth,ilive
+
   implicit none
   
   ! Local Variables
@@ -84,7 +85,7 @@ subroutine fuellist_input
   
   ! Grass
   
-  if(igrass.eq.1)then
+  if(igrass.eq.1.or.igrass.eq.3) then
     call QueryFuellist_integer('ngrass',ngrass,48,1)
     call QueryFuellist_real('grassconstant',grassconstant,48,5.)
     allocate(grho(ngrass))
@@ -111,10 +112,11 @@ subroutine fuellist_input
     call find_numspecies
     allocate(trhofmax(ntspecies))
     call QueryFuellist_real_array('trhofmax',trhofmax,ntspecies,48,0.)
+    call QueryFuellist_integer('treetracker', treetracker, 48, 0)
   endif
   
   ! Litter
-  if(ilitter.eq.1) then
+  if(ilitter.eq.1.or.ilitter.eq.3) then
     call QueryFuellist_real('litterconstant',litterconstant,48,0.0)
     allocate(lrho(ntspecies*tfuelbins))
     call QueryFuellist_real_array('lrho',lrho,ntspecies*tfuelbins, &

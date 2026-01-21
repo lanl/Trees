@@ -96,7 +96,8 @@ subroutine define_fuel_variables
   use fuel_variables, only : igrass,grhof,ngrass,gsizescale,gmoist, &
     gfueldepth,ilitter,ntspecies,tfuelbins,lrhof,lsizescale,lmoist, &
     lfueldepth,trhof,tsizescale,tmoist,tfueldepth,itrees,trhofmax, &
-    trhofmaxindex,t2bulkdensity,ntreefueltypes,ntrees,tdeadoralive
+    trhofmaxindex,t2bulkdensity,ntreefueltypes,ntrees,tdeadoralive,satarray
+
   use io_variables, only : verbose
   implicit none
   
@@ -125,7 +126,7 @@ subroutine define_fuel_variables
   allocate(tmoist(it,nx,ny,nz)); tmoist(:,:,:,:)=0.0
   allocate(tdeadoralive(it,nx,ny,nz)); tdeadoralive(:,:,:,:)=0.0
   allocate(tfueldepth(it,nx,ny)); tfueldepth(:,:,:)=0.0
-  
+  allocate(satarray(nx,ny,nz)); satarray(:,:,:)=0.0
   !---------------------------------------------------------------------
   ! Tree variables unique to the tree fuels_create
   !---------------------------------------------------------------------
