@@ -207,7 +207,7 @@ subroutine treelist_readin
       do j=1,ntrees(i)-ntreesold(i) 
         ! Sample from tree list for new tree
         call random_number(treeid)
-        tindex=floor(treeid*(ntrees(i)+1))
+        tindex=floor(treeid*(ntreesold(i)+1))
 
         ! Find location for new tree
         it=j+ntreesold(i)
