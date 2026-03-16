@@ -111,7 +111,7 @@ module fuel_variables
   real,allocatable :: tdeadoralive(:,:,:,:),t2deadoralive(:,:)
   real,allocatable :: gdepth(:),grho(:),gss(:),gmoisture(:)
   real,allocatable :: ldepth(:),lrho(:),lss(:),lmoisture(:)
-  real,allocatable:: satarray(:,:,:)
+  real,allocatable :: satarray(:,:,:)
   character :: command*50
 
 end module fuel_variables

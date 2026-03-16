@@ -232,7 +232,7 @@ subroutine treelist_readin
       do j=1,ntrees(i)-ntreesold(i) 
         ! Sample from tree list for new tree
         call random_number(treeid)
-        tindex=floor(treeid*(ntrees(i)+1))
+        tindex=floor(treeid*(ntreesold(i)+1))
 
         ! Find location for new tree
         it=j+ntreesold(i)
@@ -264,6 +264,9 @@ subroutine treelist_readin
           t2bulkdensity(it,:,i) = t2bulkdensity(tindex,:,i)
           t2moisture(it,:,i) = t2moisture(tindex,:,i)
           t2ss(it,:,i) = t2ss(tindex,:,i)
+          if(ilive.eq.1) then
+            t2deadoralive(it,i) = t2deadoralive(tindex,i)
+          endif
         endif
       enddo
     enddo
