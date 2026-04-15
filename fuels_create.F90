@@ -436,7 +436,10 @@ subroutine tree_fuels_create
                   trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift)
                 if(ilive.eq.1)then
                   tdeadoralive(ift_index,ii_real,jj_real,kk) = &
-                    t2deadoralive(j,i)
+                    (trhof(ift_index,ii_real,jj_real,kk)* &
+                  tdeadoralive(ift_index,ii_real,jj_real,kk)+ &
+                  rhoftemp(ift)*t2deadoralive(j,ift,i))/ &
+                  (trhof(ift_index,ii_real,jj_real,kk)+rhoftemp(ift))
                     
                 endif
               endif
@@ -448,7 +451,7 @@ subroutine tree_fuels_create
         do cn=1, cellnum
            cellfuel(cn) = cellfuel(cn)/tfueltot 
         enddo 
-        write(12,*) j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum) 
+        write(12,*) i, j, cellnum, cellid(1:cellnum), cellfuel(1:cellnum) 
       endif
     enddo
   enddo

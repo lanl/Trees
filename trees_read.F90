@@ -109,7 +109,7 @@ subroutine treelist_readin
   allocate(tcrownbotheight(maxval(ntrees),ntspecies)) ! Height to live crown [m]
   allocate(tcrowndiameter(maxval(ntrees),ntspecies))  ! Crown diameter [m]
   allocate(tcrownmaxheight(maxval(ntrees),ntspecies)) ! Height to max crown diameter [m]
-  allocate(t2deadoralive(maxval(ntrees),ntspecies))    ! Living status of tree [-]
+  allocate(t2deadoralive(maxval(ntrees),tfuelbins,ntspecies))    ! Living status of tree [-]
   
   allocate(t2bulkdensity(maxval(ntrees),tfuelbins,ntspecies)) ! Crown fuel bulk density [kg/m3]
   allocate(t2moisture(maxval(ntrees),tfuelbins,ntspecies))    ! Crown fuel moisture content [fraction]
@@ -192,8 +192,9 @@ subroutine treelist_readin
       tcrowndiameter(numarray(tindex),tindex) = temp_array(6)
       tcrownmaxheight(numarray(tindex),tindex) = temp_array(7)
       if(ilive.eq.1)then
-        t2deadoralive(numarray(tindex),tindex) = temp_array(8)
         do j=1,tfuelbins
+          t2deadoralive(numarray(tindex),j,tindex) = &
+            temp_array(8+3*(j-1))
           t2bulkdensity(numarray(tindex),j,tindex) = &
             temp_array(9+3*(j-1))
           t2moisture(numarray(tindex),j,tindex) = &
@@ -232,14 +233,12 @@ subroutine treelist_readin
       do j=1,ntrees(i)-ntreesold(i) 
         ! Sample from tree list for new tree
         call random_number(treeid)
-        tindex=floor(treeid*(ntreesold(i)+1))
+        tindex=ceiling(treeid*(ntreesold(i)))
 
         ! Find location for new tree
         it=j+ntreesold(i)
-        if (tindex.ge.1) then
-          newx = tlocation(i,tindex,1)
-          newy = tlocation(i,tindex,2)
-        endif 
+        newx = tlocation(i,tindex,1)
+        newy = tlocation(i,tindex,2)
         do while (newx.ge.dataleft.and.newx.le.dataright.and. &
           newy.ge.databottom.and.newy.le.datatop)
           call random_number(rnumx)
@@ -256,17 +255,15 @@ subroutine treelist_readin
         enddo
         tlocation(i,it,1) = newx
         tlocation(i,it,2) = newy
-        if (tindex.ge.1) then
-          theight(it,i) = theight(tindex,i)
-          tcrownbotheight(it,i) = tcrownbotheight(tindex,i)
-          tcrowndiameter(it,i) = tcrowndiameter(tindex,i)
-          tcrownmaxheight(it,i) = tcrownmaxheight(tindex,i)
-          t2bulkdensity(it,:,i) = t2bulkdensity(tindex,:,i)
-          t2moisture(it,:,i) = t2moisture(tindex,:,i)
-          t2ss(it,:,i) = t2ss(tindex,:,i)
-          if(ilive.eq.1) then
-            t2deadoralive(it,i) = t2deadoralive(tindex,i)
-          endif
+        theight(it,i) = theight(tindex,i)
+        tcrownbotheight(it,i) = tcrownbotheight(tindex,i)
+        tcrowndiameter(it,i) = tcrowndiameter(tindex,i)
+        tcrownmaxheight(it,i) = tcrownmaxheight(tindex,i)
+        t2bulkdensity(it,:,i) = t2bulkdensity(tindex,:,i)
+        t2moisture(it,:,i) = t2moisture(tindex,:,i)
+        t2ss(it,:,i) = t2ss(tindex,:,i)
+        if(ilive.eq.1) then
+          t2deadoralive(it,:,i) = t2deadoralive(tindex,:,i)
         endif
       enddo
     enddo
@@ -276,20 +273,38 @@ subroutine treelist_readin
     call define_newtreefile
     open (222,file=TRIM(newtreefile)//'_treelist.txt', &
       form='formatted',status='unknown')
-    treelistformat = '(I2.1,6F12.5,F10.6,F10.4,F10.5)'
+    if(ilive.eq.1) then
+      treelistformat = '(I2.1,6F12.5,F10.3,F10.6,F10.4,F10.5)'
+    else
+      treelistformat = '(I2.1,6F12.5,F10.6,F10.4,F10.5)'
+    endif
     do j=1,ntspecies
       do i=1,ntrees(j)
         !species, x, y, ht, htlc, cd , htmcd, cbd, fmc, ss
-        write(222,treelistformat) j,&
-          tlocation(j,i,1),&
-          tlocation(j,i,2),&
-          theight(i,j),&
-          tcrownbotheight(i,j),&
-          tcrowndiameter(i,j),&
-          tcrownmaxheight(i,j),&
-          t2bulkdensity(i,1,j),&
-          t2moisture(i,1,j),&
-          t2ss(i,1,j)
+        if(ilive.eq.1) then
+          write(222,treelistformat) j,&
+            tlocation(j,i,1),&
+            tlocation(j,i,2),&
+            theight(i,j),&
+            tcrownbotheight(i,j),&
+            tcrowndiameter(i,j),&
+            tcrownmaxheight(i,j),&
+            t2deadoralive(i,1,j),&
+            t2bulkdensity(i,1,j),&
+            t2moisture(i,1,j),&
+            t2ss(i,1,j)
+        else
+          write(222,treelistformat) j,&
+            tlocation(j,i,1),&
+            tlocation(j,i,2),&
+            theight(i,j),&
+            tcrownbotheight(i,j),&
+            tcrowndiameter(i,j),&
+            tcrownmaxheight(i,j),&
+            t2bulkdensity(i,1,j),&
+            t2moisture(i,1,j),&
+            t2ss(i,1,j)
+        endif    
       enddo
     enddo
     close(222)

@@ -108,7 +108,7 @@ module fuel_variables
   real,allocatable :: trhomicro(:),tdbh(:,:),tstemmoist(:)
   real,allocatable :: tbarkthick(:,:),tbarkmoist(:)
   real,allocatable :: trhofmax(:)
-  real,allocatable :: tdeadoralive(:,:,:,:),t2deadoralive(:,:)
+  real,allocatable :: tdeadoralive(:,:,:,:),t2deadoralive(:,:,:)
   real,allocatable :: gdepth(:),grho(:),gss(:),gmoisture(:)
   real,allocatable :: ldepth(:),lrho(:),lss(:),lmoisture(:)
   real,allocatable :: satarray(:,:,:)
