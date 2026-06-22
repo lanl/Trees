@@ -34,8 +34,8 @@
       itrees = 3                        ! Trees flag (1 is generalized tree data, 2 is specific tree data with locations, 3 is specific tree data with randomized locations)
       tfuelbins = 1                     ! Number of size bins to distribute branches
       treefile = 'AJOSEglinTrees.txt'
-      ndatax = 67                       ! size of dataset domain in x direction [m]
-      ndatay = 108                      ! size of dataset domain in y direction [m]
+      ndatax = 600                       ! size of dataset domain in x direction [m]
+      ndatay = 400                      ! size of dataset domain in y direction [m]
       datalocx = 0                       !x coordinate for bottom left corner where dataset should be placed 
       datalocy = 0                       !y coordinate for bottom left corner where dataset should be placed 
 ! ----------------------------------

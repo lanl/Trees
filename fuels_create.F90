@@ -204,7 +204,7 @@ subroutine tree_fuels_create
   real :: canopytop,canopybot,canopydiameter,canopymaxh
   real :: atop,abot,test_height,bot_height,top_height
   real :: dbh,barkthick,sstemp,srhoftemp
-  real :: tot,add,prt
+  real :: tot,add,prt, rhoftotal=0
   real :: target_mass,actual_mass
   real,allocatable :: rhoftemp(:)
   real,external :: paraboloid,normal 
@@ -244,7 +244,7 @@ subroutine tree_fuels_create
       ytop = floor((tlocation(i,j,2)+canopydiameter/2.)/dy+1)
       
       do k=1,nz-1
-        if (canopybot.le.zheight(xcor,ycor,k)) then
+        if (canopybot.le.zheight(xcor,ycor,k+1)) then
           zbot = k
           exit
         endif
@@ -328,6 +328,7 @@ subroutine tree_fuels_create
                     yloc,tlocation(i,j,2),canopybot)
                   top_height = paraboloid(atop,xloc,tlocation(i,j,1), &
                     yloc,tlocation(i,j,2),canopytop)
+
                   if (test_height.ge.bot_height.and. &
                     test_height.le.top_height) then 
                     do ift=1,tfuelbins
@@ -415,7 +416,6 @@ subroutine tree_fuels_create
       enddo
     enddo
   enddo
-  print*,'Trees target fuel mass:',target_mass
   actual_mass = 0
   do ift=1,ntspecies*ntreefueltypes
     do i=1,nx
