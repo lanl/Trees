@@ -2,7 +2,7 @@
 ! program to populate a grid with an established fuel map
 !
 ! Author: Alexander Josephson (11/19)
-! Last Modified: 4/23
+! Last Modified: 9/26
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! © 2022. Triad National Security, LLC. All rights reserved.  This
 ! program was produced under U.S. Government contract 89233218CNA000001
@@ -39,6 +39,9 @@ program fuel_maps
   !-----Establish fuels_create
   call fuels_create
   
+  !-----Evolve fuels
+  !if(imeh.eq.1) call meh_main
+
   !-----Export data
   call output_fuel
   if (verbose.eq.1) call output_fuellist

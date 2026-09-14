@@ -36,10 +36,10 @@ subroutine define_grid_variables
   nfuel = infuel+ngrass+ntspecies*ntreefueltypes
   print*,ntspecies
   if(ilitter.gt.0) nfuel=nfuel+ntspecies*tfuelbins
-  allocate(rhof(nfuel,nx,ny,nz)); rhof(:,:,:,:)=0.0
-  allocate(sizescale(nfuel,nx,ny,nz)); sizescale(:,:,:,:)=0.0
-  allocate(moist(nfuel,nx,ny,nz)); moist(:,:,:,:)=0.0
-  allocate(fueldepth(nfuel,nx,ny,nz)); fueldepth(:,:,:,:)=0.0
+  allocate(rhof(nfuel,nx,ny,nz)); rhof(:,:,:,:)=0.
+  allocate(sizescale(nfuel,nx,ny,nz)); sizescale(:,:,:,:)=0.
+  allocate(moist(nfuel,nx,ny,nz)); moist(:,:,:,:)=0.
+  allocate(fueldepth(nfuel,nx,ny,nz)); fueldepth(:,:,:,:)=0.
   
   !---------------------------------------------------------------------
   ! Create topo layer (Should be adjusted for non-flat topo)

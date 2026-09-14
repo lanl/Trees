@@ -1,215 +1,173 @@
-!-----------------------------------------------------------------------
-! Queries gridlist for input reals
-!-----------------------------------------------------------------------
-subroutine QueryFuellist_real(variableName,variableValue, &
-    fileunit,variableDefault)
+module QueryGridlist_mod
+  use iso_fortran_env, only : int64, real64
   Implicit None
 
-  ! Local Variables
-  character(len=*),intent(in) :: variableName
-  integer,intent(in)  :: fileunit
-  real,intent(in)  :: variableDefault
-  real,intent(out) :: variableValue
-
-  integer :: ierror
-  character(len=1)    :: equal
-  character(len=20)   :: word
-  character(len=1000) :: text
-
-  ! Executable Code
-  variableValue=variableDefault
-
-  do ! Iterate through all lines of file
-    read(fileunit,"(a)",iostat=ierror) text ! Read line into text
-    if (ierror/=0) exit
-    if(text/='')then
-      read(text,*) word
-      if(word.eq.variableName)then
-        read(text,*) word,equal,variableValue
-        exit
-      endif
-    endif
-  enddo
-  rewind(fileunit)
+  contains
     
-end subroutine QueryFuellist_real
-
-!-----------------------------------------------------------------------
-! Queries gridlist for input real arrays
-!-----------------------------------------------------------------------
-subroutine QueryFuellist_real_array(variableName,array, &
-    arraysize,fileunit,variableDefault)
-  Implicit None
-
-  ! Local Variables
-  character(len=*),intent(in) :: variableName
-  integer,intent(in)  :: arraysize
-  integer,intent(in)  :: fileunit
-  real,intent(in)  :: variableDefault
-  real,intent(out) :: array(arraysize)
-
-  integer :: ierror
-  character(len=1)    :: equal
-  character(len=20)   :: word
-  character(len=1000) :: text
-
-  ! Executable Code
-  array(:)=variableDefault
-
-  do ! Iterate through all lines of file
-    read(fileunit,"(a)",iostat=ierror) text ! Read line into text
-    if (ierror/=0) exit
-    if(text/='')then
-      read(text,*) word
-      if(word.eq.variableName)then
-        read(text,*) word,equal,array
-        exit
-      endif
-    endif
-  enddo
-  rewind(fileunit)
+    !-------------------------------------------------------------------
+    ! Queries gridlist for input variable values regardless of type
+    !-------------------------------------------------------------------
+    subroutine QueryFuellist_variable(variableName,variableValue, &
+        fileunit,variableDefault)
+      Implicit None
     
-end subroutine QueryFuellist_real_array
-
-!-----------------------------------------------------------------------
-! Queries gridlist for input integers
-!-----------------------------------------------------------------------
-subroutine QueryFuellist_integer(variableName,variableValue, &
-    fileunit,variableDefault)
-  Implicit None
-
-  ! Local Variables
-  character(len=*),intent(in) :: variableName
-  integer,intent(in)  :: fileunit
-  integer,intent(in)  :: variableDefault
-  integer,intent(out) :: variableValue
-
-  integer :: ierror
-  character(len=1)    :: equal
-  character(len=len(variableName))   :: word
-  character(len=1000) :: text
-
-  ! Executable Code
-  variableValue=variableDefault
-  do ! Iterate through all lines of file
-    read(fileunit,"(a)",iostat=ierror) text ! Read line into text
-    if (ierror/=0) exit
-    if(text/='')then
-      read(text,*) word
-      if(word.eq.variableName)then
-        read(text,*) word,equal,variableValue
-        exit
-      endif
-    endif
-  enddo
-  rewind(fileunit)
+      ! Local Variables
+      character(len=*),intent(in) :: variableName
+      class(*),intent(inout) :: variableValue
+      class(*),intent(in) :: variableDefault
+      integer,intent(in)  :: fileunit
     
-end subroutine QueryFuellist_integer
-
-!-----------------------------------------------------------------------
-! Queries gridlist for input integer arrays
-!-----------------------------------------------------------------------
-subroutine QueryFuellist_integer_array(variableName,array, &
-    arraysize,fileunit,variableDefault)
-  Implicit None
-
-  ! Local Variables
-  character(len=*),intent(in) :: variableName
-  integer,intent(in)  :: arraysize
-  integer,intent(in)  :: fileunit
-  integer,intent(in)  :: variableDefault
-  integer,intent(out) :: array(arraysize)
-
-  integer :: ierror
-  character(len=1)    :: equal
-  character(len=20)   :: word
-  character(len=1000) :: text
-
-  ! Executable Code
-  array(:)=variableDefault
-
-  do ! Iterate through all lines of file
-    read(fileunit,"(a)",iostat=ierror) text ! Read line into text
-    if (ierror/=0) exit
-    if(text/='')then
-      read(text,*) word
-      if(word.eq.variableName)then
-        read(text,*) word,equal,array
-        exit
-      endif
-    endif
-  enddo
-  rewind(fileunit)
+      integer :: ierror,eqpos,nfound
+      character(len=20)   :: word
+      character(len=1000) :: queryName
+      character(len=1000) :: text,valueText
     
-end subroutine QueryFuellist_integer_array
+      ! Executable Code
+      ! Set default value using select type
+      select type (x=>variableValue)
+        type is (integer)
+          select type (y=>variableDefault)
+            type is (integer)
+              x = y
+          end select
+        type is (integer(int64))
+          select type (y=>variableDefault)
+            type is (integer(int64))
+              x = y
+          end select
+        type is (character(len=*))
+          select type (y=>variableDefault)
+            type is (character(len=*))
+              x = y
+          end select
+      end select
+      
+      queryName = variableName
+      call lowercase_inplace(queryName)
+      nfound = 0
+      do ! Iterate through all lines of file
+        read(fileunit,"(a)",iostat=ierror) text ! Read line into text
+        if (ierror/=0) exit
+        if(text/='')then
+          eqpos=index(text,'=')
+          word =trim(adjustl(text(:eqpos-1)))
+          call lowercase_inplace(word)
+          if(trim(word).eq.trim(queryName))then
+            nfound = nfound + 1
+            if(nfound.gt.1)then
+              print*,'ERROR: duplicate gridlist key: ', &
+                trim(variableName)
+              STOP
+            endif
+            valueText=trim(text(eqpos+1:))
+            select type (x=>variableValue)
+              type is (integer)
+                read(valueText,*) x
+              type is (integer(int64))
+                read(valueText,*) x
+              type is (character(len=*))
+                read(valueText,*) x
+              class default
+                print*,"Unexpected type in reading fuellist"
+            end select
+          endif
+        endif
+      enddo
+      rewind(fileunit)
 
-!-----------------------------------------------------------------------
-! Queries gridlist for input string arrays
-!-----------------------------------------------------------------------
-subroutine QueryFuellist_string(variableName,variableValue, &
-    fileunit,variableDefault)
-  Implicit None
-
-  ! Local Variables
-  character(len=*),intent(in) :: variableName
-  integer,intent(in)  :: fileunit
-  character(len=*),intent(in)  :: variableDefault
-  character(len=*),intent(out) :: variableValue
-
-  integer :: ierror
-  character(len=20)   :: equal
-  character(len=20)   :: word
-  character(len=1000) :: text
-
-  ! Executable Code
-  variableValue=variableDefault
-
-  do ! Iterate through all lines of file
-    read(fileunit,"(a)",iostat=ierror) text ! Read line into text
-    if (ierror/=0) exit
-    if(text/='')then
-      read(text,*) word
-      if(word.eq.variableName)then
-        read(text,*) word,equal,variableValue
-        exit
-      endif
-    endif
-  enddo
-  rewind(fileunit)
+    end subroutine QueryFuellist_variable
     
-end subroutine QueryFuellist_string
+    !-------------------------------------------------------------------
+    ! Queries gridlist for input array values regardless of type
+    !-------------------------------------------------------------------
+    subroutine QueryFuellist_array(variableName,arrayValue,size, &
+        fileunit,variableDefault)
+      Implicit None
 
-!-----------------------------------------------------------------------
-! Queries gridlist for input string arrays
-!-----------------------------------------------------------------------
-subroutine QueryFuellist_string_array(variableName,array, &
-    arraysize,fileunit,variableDefault)
-  Implicit None
+      ! Local Variables
+      character(len=*),intent(in) :: variableName
+      integer,intent(in)  :: size
+      integer,intent(in)  :: fileunit
+      class(*),intent(inout) :: arrayValue(size)
+      class(*),intent(in) :: variableDefault
 
-  ! Local Variables
-  character(len=*),intent(in) :: variableName
-  integer,intent(in)  :: arraysize
-  integer,intent(in)  :: fileunit
-  character(len=*),intent(in)  :: variableDefault
-  character(len=*),intent(out) :: array(arraysize)
+      integer :: ierror,eqpos,nfound
+      character(len=20)   :: word
+      character(len=1000) :: queryName
+      character(len=1000) :: text,valueText
 
-  integer :: ierror
-  character(len=20)   :: equal
-  character(len=20)   :: word
-  character(len=1000) :: text
+      ! Executable Code
+      ! Set default value using select type
+      select type (x=>arrayValue)
+        type is (integer)
+          select type (y=>variableDefault)
+            type is (integer)
+              x(:) = y
+          end select
+        type is (integer(int64))
+          select type (y=>variableDefault)
+            type is (integer(int64))
+              x(:) = y
+          end select
+        type is (character(len=*))
+          select type (y=>variableDefault)
+            type is (character(len=*))
+              x(:) = y
+          end select
+      end select
+      
+      queryName = variableName
+      call lowercase_inplace(queryName)
+      nfound = 0
+      do ! Iterate through all lines of file
+        read(fileunit,"(a)",iostat=ierror) text ! Read line into text
+        if (ierror/=0) exit
+        if(text/='')then
+          eqpos=index(text,'=')
+          word =trim(adjustl(text(:eqpos-1)))
+          call lowercase_inplace(word)
+          if(trim(word).eq.trim(queryName))then
+            nfound = nfound + 1
+            if(nfound.gt.1)then
+              print*,'ERROR: duplicate gridlist key: ', &
+                trim(variableName)
+              STOP
+            endif
+            valueText=trim(text(eqpos+1:))
+            select type (x=>arrayValue)
+              type is (integer)
+                read(valueText,*) x
+              type is (integer(int64))
+                read(valueText,*) x
+              type is (character(len=*))
+                read(valueText,*) x
+              class default
+                print*,"Unexpected type in reading fuellist"
+            end select
+          endif
+        endif
+      enddo
+      rewind(fileunit)
+    end subroutine QueryFuellist_array
 
-  ! Executable Code
-  array(:)=variableDefault
+    !-------------------------------------------------------------------
+    ! Modifies text to include both uppercase and lowercase characters
+    ! in string
+    !-------------------------------------------------------------------
+    subroutine lowercase_inplace(text)
+      Implicit None
 
-  do ! Iterate through all lines of file
-    read(fileunit,"(a)",iostat=ierror) text ! Read line into text
-    if (ierror/=0) exit
-    read(text,*) word
-    if(word.eq.variableName)then
-      read(text,*) word,equal,array
-      exit
-    endif
-  enddo
-  rewind(fileunit)
-    
-end subroutine QueryFuellist_string_array
+      ! Local Variables
+      character(len=*),intent(inout) :: text
+      integer :: i,c
+
+      ! Executable Code
+      do i=1,len_trim(text)
+        c = iachar(text(i:i))
+        if(c.ge.iachar('A').and.c.le.iachar('Z'))then
+          text(i:i) = achar(c + iachar('a') - iachar('A'))
+        endif
+      enddo
+    end subroutine lowercase_inplace
+
+end module QueryGridlist_mod

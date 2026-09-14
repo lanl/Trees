@@ -29,6 +29,8 @@ subroutine fuellist_input
   use fuel_variables, only : ilitter,igrass,ngrass,grassconstant, &
     grho,gmoisture,gss,gdepth,itrees,tfuelbins,treefile,ntspecies, &
     trhofmax,litterconstant,lrho,lmoisture,lss,ldepth
+  use QueryGridlist_mod, only : QueryFuellist_variable, &
+    QueryFuellist_array
   implicit none
   
   ! Local Variables
@@ -43,92 +45,92 @@ subroutine fuellist_input
     form= 'formatted',status= 'old')
   
   ! Domain information
-  call QueryFuellist_integer('nx',nx,48,200)
-  call QueryFuellist_integer('ny',ny,48,200)
-  call QueryFuellist_integer('nz',nz,48,41)
-  call QueryFuellist_real('dx',dx,48,2.)
-  call QueryFuellist_real('dy',dy,48,2.)
-  call QueryFuellist_real('dz',dz,48,15.)
-  call QueryFuellist_real('aa1',aa1,48,0.1)
-  call QueryFuellist_integer('singlefuel',singlefuel,48,0)
-  call QueryFuellist_integer('lreduced',lreduced,48,0)
-  call QueryFuellist_string('topofile',topofile,48,'flat')
-  call QueryFuellist_integer('doubleprec',doubleprec,48,0)
+  call QueryFuellist_variable('nx',nx,48,200)
+  call QueryFuellist_variable('ny',ny,48,200)
+  call QueryFuellist_variable('nz',nz,48,41)
+  call QueryFuellist_variable('dx',dx,48,2.)
+  call QueryFuellist_variable('dy',dy,48,2.)
+  call QueryFuellist_variable('dz',dz,48,15.)
+  call QueryFuellist_variable('aa1',aa1,48,0.1)
+  call QueryFuellist_variable('singlefuel',singlefuel,48,0)
+  call QueryFuellist_variable('lreduced',lreduced,48,0)
+  call QueryFuellist_variable('topofile',topofile,48,'flat')
+  call QueryFuellist_variable('doubleprec',doubleprec,48,0)
   
   ! Data import from existing files
-  call QueryFuellist_integer('ifuelin',ifuelin,48,0)
+  call QueryFuellist_variable('ifuelin',ifuelin,48,0)
   if(ifuelin.eq.1) then
-    call QueryFuellist_integer('inx',inx,48,nx)
-    call QueryFuellist_integer('iny',iny,48,ny)
-    call QueryFuellist_integer('inz',inz,48,nz)
-    call QueryFuellist_real('idx',idx,48,dx)
-    call QueryFuellist_real('idy',idy,48,dy)
-    call QueryFuellist_real('idz',idz,48,dz)
-    call QueryFuellist_real('iaa1',iaa1,48,aa1)
-    call QueryFuellist_integer('infuel',infuel,48,1)
-    call QueryFuellist_string('intopofile',intopofile,48,'flat')
-    call QueryFuellist_string('rhoffile',rhoffile,48, &
+    call QueryFuellist_variable('inx',inx,48,nx)
+    call QueryFuellist_variable('iny',iny,48,ny)
+    call QueryFuellist_variable('inz',inz,48,nz)
+    call QueryFuellist_variable('idx',idx,48,dx)
+    call QueryFuellist_variable('idy',idy,48,dy)
+    call QueryFuellist_variable('idz',idz,48,dz)
+    call QueryFuellist_variable('iaa1',iaa1,48,aa1)
+    call QueryFuellist_variable('infuel',infuel,48,1)
+    call QueryFuellist_variable('intopofile',intopofile,48,'flat')
+    call QueryFuellist_variable('rhoffile',rhoffile,48, &
       'treesrhof.dat.orig')
-    call QueryFuellist_string('ssfile',ssfile,48,'treesss.dat.orig')
-    call QueryFuellist_string('moistfile',moistfile,48, &
+    call QueryFuellist_variable('ssfile',ssfile,48,'treesss.dat.orig')
+    call QueryFuellist_variable('moistfile',moistfile,48, &
       'treesmoist.dat.orig')
-    call QueryFuellist_string('afdfile',afdfile,48, &
+    call QueryFuellist_variable('afdfile',afdfile,48, &
       'treesfueldepth.dat.orig')
   endif
       
-  call QueryFuellist_integer('ilitter',ilitter,48,0)
-  call QueryFuellist_integer('igrass',igrass,48,0)
+  call QueryFuellist_variable('ilitter',ilitter,48,0)
+  call QueryFuellist_variable('igrass',igrass,48,0)
   if(ilitter.eq.2) igrass = 1
   
   ! Grass
   
   if(igrass.eq.1)then
-    call QueryFuellist_integer('ngrass',ngrass,48,1)
-    call QueryFuellist_real('grassconstant',grassconstant,48,5.)
+    call QueryFuellist_variable('ngrass',ngrass,48,1)
+    call QueryFuellist_variable('grassconstant',grassconstant,48,5.)
     allocate(grho(ngrass))
-    call QueryFuellist_real_array('grho',grho,ngrass,48,1.18)
+    call QueryFuellist_array('grho',grho,ngrass,48,1.18)
     allocate(gmoisture(ngrass))
-    call QueryFuellist_real_array('gmoisture',gmoisture,ngrass,48,0.06)
+    call QueryFuellist_array('gmoisture',gmoisture,ngrass,48,0.06)
     allocate(gss(ngrass))
-    call QueryFuellist_real_array('gss',gss,ngrass,48,0.0005)
+    call QueryFuellist_array('gss',gss,ngrass,48,0.0005)
     allocate(gdepth(ngrass))
-    call QueryFuellist_real_array('gdepth',gdepth,ngrass,48,0.27)
+    call QueryFuellist_array('gdepth',gdepth,ngrass,48,0.27)
   endif
   
   ! Trees
-  call QueryFuellist_integer('itrees',itrees,48,0)
+  call QueryFuellist_variable('itrees',itrees,48,0)
   if(itrees.ge.1)then
-    call QueryFuellist_integer('tfuelbins',tfuelbins,48,1)
-    call QueryFuellist_string('treefile',treefile,48, &
+    call QueryFuellist_variable('tfuelbins',tfuelbins,48,1)
+    call QueryFuellist_variable('treefile',treefile,48, &
       'AJoseEglinTrees.txt')
-    call QueryFuellist_real('ndatax',ndatax,48,nx*dx)
-    call QueryFuellist_real('ndatay',ndatay,48,ny*dy)
-    call QueryFuellist_real('datalocx',datalocx,48,0.)
-    call QueryFuellist_real('datalocy',datalocy,48,0.)
+    call QueryFuellist_variable('ndatax',ndatax,48,nx*dx)
+    call QueryFuellist_variable('ndatay',ndatay,48,ny*dy)
+    call QueryFuellist_variable('datalocx',datalocx,48,0.)
+    call QueryFuellist_variable('datalocy',datalocy,48,0.)
     call find_numspecies
     allocate(trhofmax(ntspecies))
-    call QueryFuellist_real_array('trhofmax',trhofmax,ntspecies,48,0.)
+    call QueryFuellist_array('trhofmax',trhofmax,ntspecies,48,0.)
   endif
   
   ! Litter
   if(ilitter.eq.1) then
-    call QueryFuellist_real('litterconstant',litterconstant,48,0.0)
+    call QueryFuellist_variable('litterconstant',litterconstant,48,0.0)
     allocate(lrho(ntspecies*tfuelbins))
-    call QueryFuellist_real_array('lrho',lrho,ntspecies*tfuelbins, &
+    call QueryFuellist_array('lrho',lrho,ntspecies*tfuelbins, &
       48,1.18)
     allocate(lmoisture(ntspecies*tfuelbins))
-    call QueryFuellist_real_array('lmoisture',lmoisture, &
+    call QueryFuellist_array('lmoisture',lmoisture, &
       ntspecies*tfuelbins,48,0.06)
     allocate(lss(ntspecies*tfuelbins))
-    call QueryFuellist_real_array('lss',lss,ntspecies*tfuelbins, &
+    call QueryFuellist_array('lss',lss,ntspecies*tfuelbins, &
       48,0.0005)
     allocate(ldepth(ntspecies*tfuelbins))
-    call QueryFuellist_real_array('ldepth',ldepth,ntspecies*tfuelbins, &
+    call QueryFuellist_array('ldepth',ldepth,ntspecies*tfuelbins, &
       48,0.05)
   endif
   
   ! Verbose
-  call QueryFuellist_integer('verbose',verbose,48,0)
+  call QueryFuellist_variable('verbose',verbose,48,0)
        
   close(48)
 

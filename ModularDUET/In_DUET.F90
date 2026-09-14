@@ -113,6 +113,7 @@ contains
   subroutine TR_filldomain
 
     use DUETio
+    use QueryGridlist_mod
 
     character*255 :: speciesfile,filepath
     logical :: exists
@@ -133,51 +134,51 @@ contains
 
     open(unit=48,file=filepath,form= 'formatted',status= 'old')
 
-    call QueryFuellist_real('dx',domain%dx,48,2.0)
-    call QueryFuellist_real('dy',domain%dy,48,2.0)
-    call QueryFuellist_real('dz',domain%dz,48,1.0)
+    call QueryFuellist_variable('dx',domain%dx,48,2.0)
+    call QueryFuellist_variable('dy',domain%dy,48,2.0)
+    call QueryFuellist_variable('dz',domain%dz,48,1.0)
 
-    call QueryFuellist_integer('YearsSinceBurn',domain%ysb,48,1)
-    call QueryFuellist_integer('StepsPerYear',domain%spy,48,1)
-    call QueryFuellist_integer('ngrass',domain%ng,48,1)
+    call QueryFuellist_variable('YearsSinceBurn',domain%ysb,48,1)
+    call QueryFuellist_variable('StepsPerYear',domain%spy,48,1)
+    call QueryFuellist_variable('ngrass',domain%ng,48,1)
 
     domain%nt = domain%ysb * domain%spy
 
     call alloc_init
 
-    call QueryFuellist_integer('windprofile',duetvars%windprofile,48,2)
+    call QueryFuellist_variable('windprofile',duetvars%windprofile,48,2)
 
-    call QueryFuellist_real('relhum',duetvars%relhum,48,0.1)
+    call QueryFuellist_variable('relhum',duetvars%relhum,48,0.1)
 
-    call QueryFuellist_real('grassconstant',duetvars%grassconstant,48,5.0)
-    call QueryFuellist_real('litterconstant',duetvars%litterconstant,48,5.0)
-    call QueryFuellist_integer_array('grassstep',grasses%step,domain%ng,48,1)
-    call QueryFuellist_real_array('grho',grasses%grho,domain%ng,48,1.1766)
-    call QueryFuellist_real_array('gmoisture',grasses%fh20,domain%ng,48,0.06)
-    call QueryFuellist_real_array('gss',grasses%ssss,domain%ng,48,0.0005)
-    call QueryFuellist_real_array('gdepth',grasses%dept,domain%ng,48,0.27)
+    call QueryFuellist_variable('grassconstant',duetvars%grassconstant,48,5.0)
+    call QueryFuellist_variable('litterconstant',duetvars%litterconstant,48,5.0)
+    call QueryFuellist_array('grassstep',grasses%step,domain%ng,48,1)
+    call QueryFuellist_array('grho',grasses%grho,domain%ng,48,1.1766)
+    call QueryFuellist_array('gmoisture',grasses%fh20,domain%ng,48,0.06)
+    call QueryFuellist_array('gss',grasses%ssss,domain%ng,48,0.0005)
+    call QueryFuellist_array('gdepth',grasses%dept,domain%ng,48,0.27)
 
-    call QueryFuellist_integer('iFIA',duetvars%iFIA,48,1)
-    call QueryFuellist_integer('iFIAspecies',duetvars%iFIAspecies,48,1)
+    call QueryFuellist_variable('iFIA',duetvars%iFIA,48,1)
+    call QueryFuellist_variable('iFIAspecies',duetvars%iFIAspecies,48,1)
 
-    call QueryFuellist_integer('litout',duetvars%litout,48,0)
-    call QueryFuellist_real('gmoistoverride',duetvars%gmoistoverride,48,0.0)
-    call QueryFuellist_real('densitythresh',duetvars%densitythresh,48,0.5)
+    call QueryFuellist_variable('litout',duetvars%litout,48,0)
+    call QueryFuellist_variable('gmoistoverride',duetvars%gmoistoverride,48,0.0)
+    call QueryFuellist_variable('densitythresh',duetvars%densitythresh,48,0.5)
     
     if(duetvars%windprofile.eq.0)then
-      call QueryFuellist_real_array('uavg',windarray%uavg,domain%nt,48,0.)
-      call QueryFuellist_real_array('vavg',windarray%vavg,domain%nt,48,0.)
-      call QueryFuellist_real_array('ustd',windarray%uvar,domain%nt,48,0.)
-      call QueryFuellist_real_array('vstd',windarray%vvar,domain%nt,48,0.)
+      call QueryFuellist_array('uavg',windarray%uavg,domain%nt,48,0.)
+      call QueryFuellist_array('vavg',windarray%vavg,domain%nt,48,0.)
+      call QueryFuellist_array('ustd',windarray%uvar,domain%nt,48,0.)
+      call QueryFuellist_array('vstd',windarray%vvar,domain%nt,48,0.)
     elseif(duetvars%windprofile.eq.2)then
-      call QueryFuellist_integer('randomwinds',duetvars%randomwinds,48,3)
+      call QueryFuellist_variable('randomwinds',duetvars%randomwinds,48,3)
     endif
 
     if(duetvars%iFIA.eq.0)then
-      call QueryFuellist_string('speciesfile',speciesfile,48,'speciesfile.dat')
+      call QueryFuellist_variable('speciesfile',speciesfile,48,'speciesfile.dat')
       call usespeciesfile(speciesfile)
     elseif(duetvars%iFIA.eq.1)then 
-      call QueryFuellist_integer_array('FIA',specarray,domain%ns,48,1)
+      call QueryFuellist_array('FIA',specarray,domain%ns,48,1)
     endif
 
     close(48)
