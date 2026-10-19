@@ -1,4 +1,4 @@
-module QueryGridlist_mod
+module power_parser_mod
   use iso_fortran_env, only : int64, real64
   Implicit None
 
@@ -35,6 +35,11 @@ module QueryGridlist_mod
             type is (integer(int64))
               x = y
           end select
+        type is (real)
+          select type (y=>variableDefault)
+            type is (real)
+              x = y
+          end select
         type is (character(len=*))
           select type (y=>variableDefault)
             type is (character(len=*))
@@ -65,10 +70,13 @@ module QueryGridlist_mod
                 read(valueText,*) x
               type is (integer(int64))
                 read(valueText,*) x
+              type is (real)
+                read(valueText,*) x
               type is (character(len=*))
                 read(valueText,*) x
               class default
-                print*,"Unexpected type in reading fuellist"
+                print*,"Unexpected type in reading fuellist: ", &
+                  variableName
             end select
           endif
         endif
@@ -109,6 +117,11 @@ module QueryGridlist_mod
             type is (integer(int64))
               x(:) = y
           end select
+        type is (real)
+          select type (y=>variableDefault)
+            type is (real)
+              x(:) = y
+          end select
         type is (character(len=*))
           select type (y=>variableDefault)
             type is (character(len=*))
@@ -139,10 +152,13 @@ module QueryGridlist_mod
                 read(valueText,*) x
               type is (integer(int64))
                 read(valueText,*) x
+              type is (real)
+                read(valueText,*) x
               type is (character(len=*))
                 read(valueText,*) x
               class default
-                print*,"Unexpected type in reading fuellist"
+                print*,"Unexpected type in reading fuellist: ", &
+                  variableName
             end select
           endif
         endif
@@ -170,4 +186,4 @@ module QueryGridlist_mod
       enddo
     end subroutine lowercase_inplace
 
-end module QueryGridlist_mod
+end module power_parser_mod

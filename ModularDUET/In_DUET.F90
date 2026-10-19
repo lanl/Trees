@@ -113,7 +113,7 @@ contains
   subroutine TR_filldomain
 
     use DUETio
-    use QueryGridlist_mod
+    use power_parser_mod
 
     character*255 :: speciesfile,filepath
     logical :: exists

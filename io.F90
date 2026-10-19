@@ -29,7 +29,7 @@ subroutine fuellist_input
   use fuel_variables, only : ilitter,igrass,ngrass,grassconstant, &
     grho,gmoisture,gss,gdepth,itrees,tfuelbins,treefile,ntspecies, &
     trhofmax,litterconstant,lrho,lmoisture,lss,ldepth
-  use QueryGridlist_mod, only : QueryFuellist_variable, &
+  use power_parser_mod, only : QueryFuellist_variable, &
     QueryFuellist_array
   implicit none
   
